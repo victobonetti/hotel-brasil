@@ -1,5 +1,4 @@
 import type { BetterAuthOptions, BetterAuthPlugin } from "better-auth";
-import { expo } from "@better-auth/expo";
 import { db } from "@finchat/db/client";
 import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
@@ -26,7 +25,6 @@ export function initAuth<
       oAuthProxy({
         productionURL: options.productionUrl,
       }),
-      expo(),
       ...(options.extraPlugins ?? []),
     ],
     socialProviders: {

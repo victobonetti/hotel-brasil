@@ -13,7 +13,6 @@ const config = {
     "@finchat/auth",
     "@finchat/db",
     "@finchat/ui",
-    "@finchat/validators",
   ],
 
   /** We already do linting and typechecking as separate tasks in CI */
