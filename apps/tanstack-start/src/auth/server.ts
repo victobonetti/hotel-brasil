@@ -1,6 +1,5 @@
+import { initAuth } from "@finchat/auth";
 import { reactStartCookies } from "better-auth/react-start";
-
-import { initAuth } from "@acme/auth";
 
 import { env } from "~/env";
 import { getBaseUrl } from "~/lib/url";

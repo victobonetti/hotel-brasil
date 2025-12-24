@@ -1,4 +1,17 @@
+import type { RouterOutputs } from "@finchat/api";
 import { Suspense } from "react";
+import { CreatePostSchema } from "@finchat/db/schema";
+import { cn } from "@finchat/ui";
+import { Button } from "@finchat/ui/button";
+import {
+  Field,
+  FieldContent,
+  FieldError,
+  FieldGroup,
+  FieldLabel,
+} from "@finchat/ui/field";
+import { Input } from "@finchat/ui/input";
+import { toast } from "@finchat/ui/toast";
 import { useForm } from "@tanstack/react-form";
 import {
   useMutation,
@@ -6,20 +19,6 @@ import {
   useSuspenseQuery,
 } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
-
-import type { RouterOutputs } from "@acme/api";
-import { CreatePostSchema } from "@acme/db/schema";
-import { cn } from "@acme/ui";
-import { Button } from "@acme/ui/button";
-import {
-  Field,
-  FieldContent,
-  FieldError,
-  FieldGroup,
-  FieldLabel,
-} from "@acme/ui/field";
-import { Input } from "@acme/ui/input";
-import { toast } from "@acme/ui/toast";
 
 import { AuthShowcase } from "~/component/auth-showcase";
 import { useTRPC } from "~/lib/trpc";

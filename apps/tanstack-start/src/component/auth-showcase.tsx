@@ -1,6 +1,5 @@
+import { Button } from "@finchat/ui/button";
 import { useNavigate } from "@tanstack/react-router";
-
-import { Button } from "@acme/ui/button";
 
 import { authClient } from "~/auth/client";
 

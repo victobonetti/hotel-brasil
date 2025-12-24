@@ -1,8 +1,7 @@
+import { authEnv } from "@finchat/auth/env";
 import { createEnv } from "@t3-oss/env-core";
 import { vercel } from "@t3-oss/env-core/presets-zod";
 import { z } from "zod/v4";
-
-import { authEnv } from "@acme/auth/env";
 
 export const env = createEnv({
   clientPrefix: "VITE_",

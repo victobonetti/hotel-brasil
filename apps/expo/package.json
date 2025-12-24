@@ -1,5 +1,5 @@
 {
-  "name": "@acme/expo",
+  "name": "@finchat/expo",
   "private": true,
   "main": "index.ts",
   "scripts": {
@@ -44,16 +44,16 @@
     "superjson": "2.2.3"
   },
   "devDependencies": {
-    "@acme/api": "workspace:*",
-    "@acme/eslint-config": "workspace:*",
-    "@acme/prettier-config": "workspace:*",
-    "@acme/tailwind-config": "workspace:*",
-    "@acme/tsconfig": "workspace:*",
+    "@finchat/api": "workspace:*",
+    "@finchat/eslint-config": "workspace:*",
+    "@finchat/prettier-config": "workspace:*",
+    "@finchat/tailwind-config": "workspace:*",
+    "@finchat/tsconfig": "workspace:*",
     "@types/react": "catalog:react19",
     "eslint": "catalog:",
     "prettier": "catalog:",
     "tailwindcss": "catalog:",
     "typescript": "catalog:"
   },
-  "prettier": "@acme/prettier-config"
+  "prettier": "@finchat/prettier-config"
 }
