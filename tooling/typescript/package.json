@@ -1,7 +1,7 @@
 {
-  "name": "@finchat/tsconfig",
-  "private": true,
-  "files": [
-    "*.json"
-  ]
+	"files": [
+		"*.json"
+	],
+	"name": "@finchat/tsconfig",
+	"private": true
 }

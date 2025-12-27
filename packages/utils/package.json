@@ -1,0 +1,23 @@
+{
+	"dependencies": {
+		"@t3-oss/env-nextjs": "catalog:",
+		"zod": "catalog:"
+	},
+	"devDependencies": {
+		"@finchat/tsconfig": "workspace:*",
+		"@types/node": "catalog:",
+		"typescript": "catalog:"
+	},
+	"exports": {
+		".": "./src/index.ts",
+		"./env": "./src/env.ts"
+	},
+	"name": "@finchat/utils",
+	"private": true,
+	"scripts": {
+		"build": "tsc",
+		"clean": "git clean -xdf .cache .turbo dist node_modules",
+		"tsc": "tsc --noEmit --emitDeclarationOnly false"
+	},
+	"type": "module"
+}

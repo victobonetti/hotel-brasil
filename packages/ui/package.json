@@ -1,40 +1,39 @@
 {
-  "name": "@finchat/ui",
-  "private": true,
-  "type": "module",
-  "exports": {
-    ".": "./src/index.ts",
-    "./button": "./src/button.tsx",
-    "./dropdown-menu": "./src/dropdown-menu.tsx",
-    "./field": "./src/field.tsx",
-    "./input": "./src/input.tsx",
-    "./label": "./src/label.tsx",
-    "./separator": "./src/separator.tsx",
-    "./theme": "./src/theme.tsx",
-    "./toast": "./src/toast.tsx"
-  },
-  
-  "scripts": {
-    "clean": "git clean -xdf .cache .turbo dist node_modules",
-    "typecheck": "tsc --noEmit --emitDeclarationOnly false",
-    "ui-add": "pnpm dlx shadcn@latest add"
-  },
-  "dependencies": {
-    "@radix-ui/react-icons": "catalog:",
-    "class-variance-authority": "catalog:",
-    "radix-ui": "catalog:",
-    "sonner": "catalog:",
-    "tailwind-merge": "catalog:"
-  },
-  "devDependencies": {
-    "@finchat/tsconfig": "workspace:*",
-    "@types/react": "catalog:",
-    "react": "catalog:",
-    "typescript": "catalog:",
-    "zod": "catalog:"
-  },
-  "peerDependencies": {
-    "react": "catalog:",
-    "zod": "catalog:"
-  }
+	"dependencies": {
+		"@base-ui/react": "catalog:",
+		"@radix-ui/react-icons": "catalog:",
+		"class-variance-authority": "catalog:",
+		"clsx": "catalog:",
+		"lucide-react": "^0.562.0",
+		"next-themes": "catalog:",
+		"radix-ui": "catalog:",
+		"sonner": "catalog:",
+		"tailwind-merge": "catalog:"
+	},
+	"devDependencies": {
+		"@finchat/tsconfig": "workspace:*",
+		"@types/react": "catalog:",
+		"react": "catalog:",
+		"tailwindcss": "catalog:",
+		"tw-animate-css": "catalog:",
+		"typescript": "catalog:",
+		"zod": "catalog:"
+	},
+	"exports": {
+		"./*": "./src/*.tsx",
+		"./globals.css": "./src/styles/globals.css",
+		"./lib/*": "./src/lib/*.ts"
+	},
+	"name": "@finchat/ui",
+	"peerDependencies": {
+		"react": "catalog:",
+		"zod": "catalog:"
+	},
+	"private": true,
+	"scripts": {
+		"clean": "git clean -xdf .cache .turbo dist node_modules",
+		"tsc": "tsc --noEmit --emitDeclarationOnly false",
+		"ui-add": "bunx shadcn@latest add"
+	},
+	"type": "module"
 }

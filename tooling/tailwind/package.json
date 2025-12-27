@@ -1,24 +1,24 @@
 {
-  "name": "@finchat/tailwind-config",
-  "private": true,
-  "type": "module",
-  "exports": {
-    "./theme": "./theme.css",
-    "./postcss-config": "./postcss-config.js"
-  },
-  
-  "scripts": {
-    "clean": "git clean -xdf .cache .turbo node_modules",
-    "typecheck": "tsc --noEmit"
-  },
-  "dependencies": {
-    "@tailwindcss/postcss": "catalog:",
-    "postcss": "catalog:",
-    "tailwindcss": "catalog:"
-  },
-  "devDependencies": {
-    "@finchat/tsconfig": "workspace:*",
-    "@types/node": "catalog:",
-    "typescript": "catalog:"
-  }
+	"dependencies": {
+		"@tailwindcss/postcss": "catalog:",
+		"postcss": "catalog:",
+		"tailwindcss": "catalog:"
+	},
+	"devDependencies": {
+		"@finchat/tsconfig": "workspace:*",
+		"@types/node": "catalog:",
+		"typescript": "catalog:"
+	},
+	"exports": {
+		"./postcss-config": "./postcss-config.js",
+		"./theme": "./theme.css"
+	},
+	"name": "@finchat/tailwind-config",
+	"private": true,
+
+	"scripts": {
+		"clean": "git clean -xdf .cache .turbo node_modules",
+		"tsc": "tsc --noEmit"
+	},
+	"type": "module"
 }

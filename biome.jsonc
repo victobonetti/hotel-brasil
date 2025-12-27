@@ -1,0 +1,167 @@
+{
+	"$schema": "./node_modules/@biomejs/biome/configuration_schema.json",
+	"assist": {
+		"actions": {
+			"recommended": true,
+			"source": {
+				"useSortedAttributes": "on",
+				"useSortedKeys": "on",
+				"useSortedProperties": "on"
+			}
+		}
+	},
+	"css": {
+		"parser": {
+			"tailwindDirectives": true
+		}
+	},
+	"files": {
+		"ignoreUnknown": true,
+		"includes": [
+			"**",
+			// `!!` to force ignore from project scanner
+			"!!**/dist",
+			"!!**/out",
+			"!!**/.next",
+			"!!**/.vercel"
+		]
+	},
+	"linter": {
+		"domains": {
+			"next": "recommended",
+			"project": "recommended",
+			"react": "recommended",
+			"test": "recommended",
+			"turborepo": "recommended"
+		},
+		"rules": {
+			"a11y": {
+				"noNoninteractiveElementInteractions": "on"
+			},
+			"complexity": {
+				"noExcessiveNestedTestSuites": "on",
+				"noUselessStringConcat": "on",
+				"noUselessSwitchCase": "off" // Disabled since it conflicts with `useExhaustiveSwitchCases`
+			},
+			"correctness": {
+				"noGlobalDirnameFilename": "on",
+				"noNestedComponentDefinitions": "on",
+				"noReactPropAssignments": "on",
+				"useParseIntRadix": "on",
+				"useSingleJsDocAsterisk": "on"
+			},
+			"nursery": {
+				"noDeprecatedImports": "on",
+				"noDuplicateDependencies": "on",
+				"noDuplicatedSpreadProps": "on",
+				"noEmptySource": "on",
+				"noEqualsToNull": "on",
+				"noFloatingPromises": "on",
+				"noForIn": "on",
+				"noImportCycles": "on",
+				"noLeakedRender": "on",
+				"noMisusedPromises": "on",
+				"noNextAsyncClientComponent": "on",
+				"noParametersOnlyUsedInRecursion": "on",
+				"noProto": "on",
+				"noReactForwardRef": "on",
+				"noScriptUrl": "on",
+				"noSyncScripts": "on",
+				"noUndeclaredEnvVars": "on",
+				"noUnknownAttribute": "on",
+				"noUnnecessaryConditions": "on",
+				"noUnusedExpressions": "on",
+				"noUselessCatchBinding": "on",
+				"noUselessUndefined": "on",
+				"useAwaitThenable": "off", // TODO: Add this back once https://github.com/biomejs/biome/issues/8476 is resolved
+				"useConsistentArrowReturn": "on",
+				"useConsistentGraphqlDescriptions": "on",
+				"useDestructuring": "on",
+				"useExhaustiveSwitchCases": "on",
+				"useFind": "on",
+				"useRegexpExec": "on",
+				"useSortedClasses": {
+					"level": "on",
+					"options": {
+						"functions": ["cva", "cn"]
+					}
+				},
+				"useSpread": "on",
+				"useUniqueGraphqlOperationName": "on"
+			},
+			"performance": {
+				"noAccumulatingSpread": "on",
+				"noDelete": "on"
+			},
+			"style": {
+				"noCommonJs": "on",
+				"noInferrableTypes": "on",
+				"noNestedTernary": "on",
+				"noNonNullAssertion": "on",
+				"noParameterAssign": "on",
+				"noParameterProperties": "on",
+				"noSubstr": "on",
+				"noUnusedTemplateLiteral": "on",
+				"noUselessElse": "on",
+				"noYodaExpression": "on",
+				"useAsConstAssertion": "on",
+				"useAtIndex": "on",
+				"useBlockStatements": "on",
+				"useCollapsedElseIf": "on",
+				"useCollapsedIf": "on",
+				"useConsistentArrayType": {
+					"level": "on",
+					"options": {
+						"syntax": "generic"
+					}
+				},
+				"useConsistentCurlyBraces": "on",
+				"useConsistentMemberAccessibility": "on",
+				"useConsistentObjectDefinitions": "on",
+				"useConsistentTypeDefinitions": "on",
+				"useDefaultParameterLast": "on",
+				"useDefaultSwitchClause": "on",
+				"useForOf": "on",
+				"useFragmentSyntax": "on",
+				"useGraphqlNamingConvention": "on",
+				"useGroupedAccessorPairs": "on",
+				"useNodeAssertStrict": "on",
+				"useNumberNamespace": "on",
+				"useObjectSpread": "on",
+				"useReactFunctionComponents": "on",
+				"useReadonlyClassProperties": {
+					"level": "on",
+					"options": {
+						"checkAllProperties": true
+					}
+				},
+				"useSelfClosingElements": "on",
+				"useShorthandAssign": "on",
+				"useSingleVarDeclarator": "on",
+				"useThrowNewError": "on",
+				"useThrowOnlyError": "on",
+				"useTrimStartEnd": "on"
+			},
+			"suspicious": {
+				"noAlert": "on",
+				"noBitwiseOperators": "on",
+				"noConsole": "on",
+				"noConstantBinaryExpressions": "on",
+				"noDuplicateTestHooks": "on",
+				"noNonNullAssertedOptionalChain": "on",
+				"noSkippedTests": "on",
+				"noUnknownAtRules": "on",
+				"noVar": "on",
+				"useErrorMessage": "on",
+				"useGuardForIn": "on",
+				"useNumberToFixedDigitsArgument": "on"
+			}
+		}
+	},
+	"vcs": {
+		"clientKind": "git",
+		"defaultBranch": "develop",
+		"enabled": true,
+		"useIgnoreFile": true
+	}
+}

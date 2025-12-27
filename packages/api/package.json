@@ -1,27 +1,24 @@
 {
-  "name": "@finchat/api",
-  "private": true,
-  "type": "module",
-  "exports": {
-    ".": {
-      "types": "./dist/index.d.ts",
-      "default": "./src/index.ts"
-    }
-  },
-  "scripts": {
-    "build": "tsc",
-    "clean": "git clean -xdf .cache .turbo dist node_modules",
-    "typecheck": "tsc --noEmit --emitDeclarationOnly false"
-  },
-  "dependencies": {
-    "@finchat/auth": "workspace:*",
-    "@finchat/db": "workspace:*",
-    "@trpc/server": "catalog:",
-    "superjson": "catalog:",
-    "zod": "catalog:"
-  },
-  "devDependencies": {
-    "@finchat/tsconfig": "workspace:*",
-    "typescript": "catalog:"
-  }
+	"dependencies": {
+		"@finchat/auth": "workspace:*",
+		"@finchat/db": "workspace:*",
+		"@trpc/server": "catalog:",
+		"superjson": "catalog:",
+		"zod": "catalog:"
+	},
+	"devDependencies": {
+		"@finchat/tsconfig": "workspace:*",
+		"typescript": "catalog:"
+	},
+	"exports": {
+		".": "./src/index.ts"
+	},
+	"name": "@finchat/api",
+	"private": true,
+	"scripts": {
+		"build": "tsc",
+		"clean": "git clean -xdf .cache .turbo dist node_modules",
+		"tsc": "tsc --noEmit --emitDeclarationOnly false"
+	},
+	"type": "module"
 }

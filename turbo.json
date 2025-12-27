@@ -1,55 +1,57 @@
 {
-  "$schema": "https://turborepo.com/schema.json",
-  "ui": "tui",
-  "tasks": {
-    "topo": {
-      "dependsOn": ["^topo"]
-    },
-    "build": {
-      "dependsOn": ["^build"],
-      "outputs": [".cache/tsbuildinfo.json", "dist/**"]
-    },
-    "dev": {
-      "cache": false,
-      "persistent": false
-    },
-    "typecheck": {
-      "dependsOn": ["^topo", "^build"],
-      "outputs": [".cache/tsbuildinfo.json"]
-    },
-    "clean": {
-      "cache": false
-    },
-    "//#clean": {
-      "cache": false
-    },
-    "push": {
-      "cache": false,
-      "interactive": true
-    },
-    "studio": {
-      "cache": false,
-      "persistent": true
-    },
-    "ui-add": {
-      "cache": false,
-      "interactive": true
-    }
-  },
-  "globalEnv": [
-    "POSTGRES_URL",
-    "AUTH_DISCORD_ID",
-    "AUTH_DISCORD_SECRET",
-    "AUTH_REDIRECT_PROXY_URL",
-    "AUTH_SECRET",
-    "PORT"
-  ],
-  "globalPassThroughEnv": [
-    "NODE_ENV",
-    "CI",
-    "VERCEL",
-    "VERCEL_ENV",
-    "VERCEL_URL",
-    "npm_lifecycle_event"
-  ]
+	"$schema": "https://turborepo.com/schema.json",
+	"globalEnv": ["DATABASE_URL", "AUTH_SECRET", "PORT"],
+	"globalPassThroughEnv": [
+		"NODE_ENV",
+		"CI",
+		"VERCEL",
+		"VERCEL_ENV",
+		"VERCEL_URL",
+		"npm_lifecycle_event"
+	],
+	"tasks": {
+		"//#check": {
+			"cache": false
+		},
+		"//#clean": {
+			"cache": false
+		},
+		"//#format": {
+			"cache": false
+		},
+		"build": {
+			"dependsOn": ["^build"],
+			"outputs": [".cache/tsbuildinfo.json", "dist/**"]
+		},
+		"clean": {
+			"cache": false
+		},
+		"dev": {
+			"cache": false,
+			"persistent": false
+		},
+		"push": {
+			"cache": false,
+			"interactive": true
+		},
+		"studio": {
+			"cache": false,
+			"persistent": true
+		},
+		"topo": {
+			"dependsOn": ["^topo"]
+		},
+		"tsc": {
+			"dependsOn": ["^topo", "typegen"],
+			"outputs": [".cache/tsbuildinfo.json"]
+		},
+		"typegen": {
+			"outputs": ["next-env.d.ts", ".next/types/**"]
+		},
+		"ui-add": {
+			"cache": false,
+			"interactive": true
+		}
+	},
+	"ui": "tui"
 }

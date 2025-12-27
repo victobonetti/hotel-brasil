@@ -1,42 +1,46 @@
 {
-  "name": "@finchat/nextjs",
-  "private": true,
-  "type": "module",
-  "scripts": {
-    "build": "bun with-env next build",
-    "clean": "git clean -xdf .cache .next .turbo node_modules",
-    "dev": "bun with-env next dev",
-    "start": "bun with-env next start",
-    "typecheck": "tsc --noEmit",
-    "with-env": "dotenv -e ../../.env --"
-  },
-  "dependencies": {
-    "@finchat/api": "workspace:*",
-    "@finchat/auth": "workspace:*",
-    "@finchat/db": "workspace:*",
-    "@finchat/ui": "workspace:*",
-    "@t3-oss/env-nextjs": "catalog:",
-    "@tanstack/react-form": "catalog:",
-    "@tanstack/react-query": "catalog:",
-    "@trpc/client": "catalog:",
-    "@trpc/server": "catalog:",
-    "@trpc/tanstack-react-query": "catalog:",
-    "better-auth": "catalog:",
-    "next": "catalog:",
-    "react": "catalog:",
-    "react-dom": "catalog:",
-    "superjson": "catalog:",
-    "zod": "catalog:"
-  },
-  "devDependencies": {
-    "@finchat/tailwind-config": "workspace:*",
-    "@finchat/tsconfig": "workspace:*",
-    "@types/node": "catalog:",
-    "@types/react": "catalog:",
-    "@types/react-dom": "catalog:",
-    "jiti": "catalog:",
-    "tailwindcss": "catalog:",
-    "tw-animate-css": "catalog:",
-    "typescript": "catalog:"
-  }
+	"dependencies": {
+		"@finchat/api": "workspace:*",
+		"@finchat/auth": "workspace:*",
+		"@finchat/db": "workspace:*",
+		"@finchat/ui": "workspace:*",
+		"@finchat/utils": "workspace:*",
+		"@tanstack/react-form": "catalog:",
+		"@tanstack/react-query": "catalog:",
+		"@trpc/client": "catalog:",
+		"@trpc/server": "catalog:",
+		"@trpc/tanstack-react-query": "catalog:",
+		"better-auth": "catalog:",
+		"next": "catalog:",
+		"next-themes": "catalog:",
+		"react": "catalog:",
+		"react-dom": "catalog:",
+		"server-only": "catalog:",
+		"superjson": "catalog:",
+		"zod": "catalog:"
+	},
+	"devDependencies": {
+		"@finchat/tailwind-config": "workspace:*",
+		"@finchat/tsconfig": "workspace:*",
+		"@tailwindcss/postcss": "catalog:",
+		"@types/node": "catalog:",
+		"@types/react": "catalog:",
+		"@types/react-dom": "catalog:",
+		"jiti": "catalog:",
+		"tailwindcss": "catalog:",
+		"tw-animate-css": "catalog:",
+		"typescript": "catalog:"
+	},
+	"name": "@finchat/nextjs",
+	"private": true,
+	"scripts": {
+		"build": "bun next build",
+		"clean": "git clean -xdf .cache .next .turbo node_modules",
+		"dev": "bun next dev",
+		"pull-secrets": "infisical export --format=dotenv > .env",
+		"start": "bun next start",
+		"tsc": "tsc --noEmit",
+		"typegen": "next typegen"
+	},
+	"type": "module"
 }
