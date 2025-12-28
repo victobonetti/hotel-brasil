@@ -296,9 +296,3 @@ Para transferências entre contas (ex: Conta Corrente -> Poupança):
 3. Criar `TRANSACAO B` (Entrada): Valor positivo, `fk_conta_debitada_id` = Destino.
 
 * *Obs:* Estas transações devem ser filtradas fora dos gráficos de "Gastos por Categoria" para não duplicar volume financeiro.
-
----
-
-### Próximo Passo
-
-Gostaria que eu gerasse as **queries SQL (DDL)** para criar essas tabelas no seu banco de dados (PostgreSQL/MySQL), já com as constraints e chaves estrangeiras configuradas?
