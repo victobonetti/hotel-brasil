@@ -17,6 +17,44 @@ export type OrderCreationPayload = {
 	orderNotes?: string;
 };
 
+export type MenuItemSnapshotSource = {
+	available: boolean;
+	hotelId: string;
+	id: string;
+	name: string;
+	priceInCents: number;
+};
+
+export type RequestedOrderItem = {
+	menuItemId: string;
+	notes?: string;
+	quantity: number;
+};
+
+export type OrderItemSnapshot = {
+	itemNameSnapshot: string;
+	lineTotalInCents: number;
+	menuItemId: string;
+	notes?: string;
+	quantity: number;
+	unitPriceSnapshotInCents: number;
+};
+
+export type GuestSessionOrderContext = {
+	expiresAt: Date;
+	hotelActive: boolean;
+	roomActive: boolean;
+};
+
+export type InitialStatusHistory = {
+	changedAt: Date;
+	changedByUserId: null;
+	fromStatus: null;
+	orderId: string;
+	reason: null;
+	toStatus: "pending";
+};
+
 export type TransitionableOrder = {
 	acceptedAt?: Date | null;
 	cancelledAt?: Date | null;
@@ -71,6 +109,85 @@ export function validateOrderCreation(payload: OrderCreationPayload) {
 	}
 
 	return payload;
+}
+
+export function buildOrderItemSnapshots(
+	menuItems: MenuItemSnapshotSource[],
+	requestedItems: RequestedOrderItem[],
+) {
+	const menuItemsById = new Map(menuItems.map((item) => [item.id, item]));
+
+	return requestedItems.map((requestedItem) => {
+		assertPositiveInteger(requestedItem.quantity, "quantity");
+
+		const menuItem = menuItemsById.get(requestedItem.menuItemId);
+		if (!menuItem) {
+			throw new Error(`Menu item ${requestedItem.menuItemId} was not found`);
+		}
+
+		if (!menuItem.available) {
+			throw new Error(`Menu item ${requestedItem.menuItemId} is unavailable`);
+		}
+
+		const unitPriceSnapshotInCents = menuItem.priceInCents;
+		assertNonNegativeInteger(
+			unitPriceSnapshotInCents,
+			"unitPriceSnapshotInCents",
+		);
+
+		return {
+			itemNameSnapshot: menuItem.name,
+			lineTotalInCents:
+				requestedItem.quantity * unitPriceSnapshotInCents,
+			menuItemId: requestedItem.menuItemId,
+			notes: requestedItem.notes,
+			quantity: requestedItem.quantity,
+			unitPriceSnapshotInCents,
+		} satisfies OrderItemSnapshot;
+	});
+}
+
+export function assertGuestSessionCanOrder(session: GuestSessionOrderContext) {
+	if (session.expiresAt <= new Date()) {
+		throw new Error("Guest session has expired");
+	}
+
+	if (!session.roomActive) {
+		throw new Error("Room is inactive");
+	}
+
+	if (!session.hotelActive) {
+		throw new Error("Hotel is inactive");
+	}
+
+	return session;
+}
+
+export function assertMenuItemsBelongToHotel(
+	hotelId: string,
+	items: Array<{ hotelId: string; id: string }>,
+) {
+	for (const item of items) {
+		if (item.hotelId !== hotelId) {
+			throw new Error(`Menu item ${item.id} does not belong to hotel ${hotelId}`);
+		}
+	}
+
+	return items;
+}
+
+export function createInitialStatusHistory(
+	orderId: string,
+	changedAt = new Date(),
+): InitialStatusHistory {
+	return {
+		changedAt,
+		changedByUserId: null,
+		fromStatus: null,
+		orderId,
+		reason: null,
+		toStatus: "pending",
+	};
 }
 
 export function canTransitionOrderStatus(

@@ -2,7 +2,10 @@ import type { MenuCategoryWithItems } from "@finchat/api";
 
 import { MenuItemCard } from "./menu-item-card";
 
-export function CategorySection(props: { category: MenuCategoryWithItems }) {
+export function CategorySection(props: {
+	category: MenuCategoryWithItems;
+	onAddItem: (input: { menuItemId: string; notes?: string; quantity: number }) => void;
+}) {
 	return (
 		<section className="space-y-5">
 			<div className="space-y-1">
@@ -17,7 +20,7 @@ export function CategorySection(props: { category: MenuCategoryWithItems }) {
 			{props.category.items.length > 0 ? (
 				<div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
 					{props.category.items.map((item) => (
-						<MenuItemCard item={item} key={item.id} />
+						<MenuItemCard item={item} key={item.id} onAdd={props.onAddItem} />
 					))}
 				</div>
 			) : (

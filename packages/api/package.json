@@ -3,6 +3,7 @@
 		"@finchat/auth": "workspace:*",
 		"@finchat/db": "workspace:*",
 		"@trpc/server": "catalog:",
+		"drizzle-orm": "catalog:",
 		"superjson": "catalog:",
 		"zod": "catalog:"
 	},

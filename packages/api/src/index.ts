@@ -42,4 +42,21 @@ export {
 	type MenuCategoryWithItems,
 	type MenuItemView,
 } from "./services/menu-service";
+export {
+	createOrderFromGuestSession,
+	getOrderByGuestSession,
+	getOrderTracking,
+	listGuestOrders,
+	listOrderStatusHistory,
+	OrderServiceError,
+	type OrderTrackingView,
+} from "./services/order-service";
+export {
+	assertGuestSessionCanOrder,
+	assertMenuItemsBelongToHotel,
+	buildOrderItemSnapshots,
+	createInitialStatusHistory,
+	type RequestedOrderItem,
+	type OrderItemSnapshot,
+} from "./domain/order";
 export type { RouterInputs, RouterOutputs };

@@ -1,8 +1,12 @@
 import { describe, expect, test } from "bun:test";
 
 import {
+	assertGuestSessionCanOrder,
+	assertMenuItemsBelongToHotel,
+	buildOrderItemSnapshots,
 	calculateOrderTotal,
 	canTransitionOrderStatus,
+	createInitialStatusHistory,
 	isMenuItemAvailable,
 	transitionOrderStatus,
 	validateOrderCreation,
@@ -81,6 +85,137 @@ describe("validateOrderCreation", () => {
 				{ available: true, menuItemId: "item_1", notes: "No ice", quantity: 1 },
 				{ available: true, menuItemId: "item_2", quantity: 3 },
 			],
+		});
+	});
+});
+
+describe("buildOrderItemSnapshots", () => {
+	test("copies item snapshots and calculates line totals", () => {
+		expect(
+			buildOrderItemSnapshots(
+				[
+					{
+						available: true,
+						hotelId: "hotel-1",
+						id: "item-1",
+						name: "Burger",
+						priceInCents: 4200,
+					},
+				],
+				[{ menuItemId: "item-1", notes: "No onions", quantity: 2 }],
+			),
+		).toEqual([
+			{
+				itemNameSnapshot: "Burger",
+				lineTotalInCents: 8400,
+				menuItemId: "item-1",
+				notes: "No onions",
+				quantity: 2,
+				unitPriceSnapshotInCents: 4200,
+			},
+		]);
+	});
+
+	test("throws if any item does not exist", () => {
+		expect(() =>
+			buildOrderItemSnapshots([], [{ menuItemId: "missing", quantity: 1 }]),
+		).toThrow(/not found/);
+	});
+
+	test("throws if any item is unavailable", () => {
+		expect(() =>
+			buildOrderItemSnapshots(
+				[
+					{
+						available: false,
+						hotelId: "hotel-1",
+						id: "item-1",
+						name: "Burger",
+						priceInCents: 4200,
+					},
+				],
+				[{ menuItemId: "item-1", quantity: 1 }],
+			),
+		).toThrow(/unavailable/);
+	});
+});
+
+describe("assertGuestSessionCanOrder", () => {
+	test("accepts a valid session", () => {
+		expect(
+			assertGuestSessionCanOrder({
+				expiresAt: new Date(Date.now() + 60_000),
+				hotelActive: true,
+				roomActive: true,
+			}),
+		).toEqual({
+			expiresAt: expect.any(Date),
+			hotelActive: true,
+			roomActive: true,
+		});
+	});
+
+	test("fails for an expired session", () => {
+		expect(() =>
+			assertGuestSessionCanOrder({
+				expiresAt: new Date(Date.now() - 60_000),
+				hotelActive: true,
+				roomActive: true,
+			}),
+		).toThrow(/expired/);
+	});
+
+	test("fails for an inactive room", () => {
+		expect(() =>
+			assertGuestSessionCanOrder({
+				expiresAt: new Date(Date.now() + 60_000),
+				hotelActive: true,
+				roomActive: false,
+			}),
+		).toThrow(/Room is inactive/);
+	});
+
+	test("fails for an inactive hotel", () => {
+		expect(() =>
+			assertGuestSessionCanOrder({
+				expiresAt: new Date(Date.now() + 60_000),
+				hotelActive: false,
+				roomActive: true,
+			}),
+		).toThrow(/Hotel is inactive/);
+	});
+});
+
+describe("assertMenuItemsBelongToHotel", () => {
+	test("accepts items from the same hotel", () => {
+		expect(
+			assertMenuItemsBelongToHotel("hotel-1", [
+				{ hotelId: "hotel-1", id: "item-1" },
+				{ hotelId: "hotel-1", id: "item-2" },
+			]),
+		).toHaveLength(2);
+	});
+
+	test("rejects items from another hotel", () => {
+		expect(() =>
+			assertMenuItemsBelongToHotel("hotel-1", [
+				{ hotelId: "hotel-2", id: "item-1" },
+			]),
+		).toThrow(/does not belong/);
+	});
+});
+
+describe("createInitialStatusHistory", () => {
+	test("creates the initial pending status history record", () => {
+		const changedAt = new Date("2026-04-16T10:00:00.000Z");
+
+		expect(createInitialStatusHistory("order-1", changedAt)).toEqual({
+			changedAt,
+			changedByUserId: null,
+			fromStatus: null,
+			orderId: "order-1",
+			reason: null,
+			toStatus: "pending",
 		});
 	});
 });

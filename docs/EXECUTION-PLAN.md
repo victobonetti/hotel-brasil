@@ -280,7 +280,7 @@ Procedures:
 
 ---
 
-## Etapa 3 — Implementar criação de pedido pelo hóspede
+## Etapa 3 — Implementar criação de pedido pelo hóspede [FINALIZADA]
 
 ### Objetivo
 
@@ -348,7 +348,7 @@ Procedures:
 
 ---
 
-## Etapa 4 — Implementar consulta e rastreamento do pedido
+## Etapa 4 — Implementar consulta e rastreamento do pedido [FINALIZADA]
 
 ### Objetivo
 
