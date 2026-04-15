@@ -60,6 +60,7 @@ export type TransitionableOrder = {
 	cancelledAt?: Date | null;
 	deliveredAt?: Date | null;
 	deliveringAt?: Date | null;
+	id?: string;
 	preparingAt?: Date | null;
 	status: OrderStatus;
 };
@@ -187,6 +188,62 @@ export function createInitialStatusHistory(
 		orderId,
 		reason: null,
 		toStatus: "pending",
+	};
+}
+
+export function assertUserCanManageHotel(
+	userId: string,
+	membership: { hotelId: string; userId: string } | null,
+	hotelId: string,
+) {
+	if (!membership || membership.userId !== userId) {
+		throw new Error("User is not assigned to this hotel");
+	}
+
+	if (membership.hotelId !== hotelId) {
+		throw new Error("User cannot manage another hotel");
+	}
+
+	return membership;
+}
+
+export function listOperationalOrders<TOrder extends { hotelId: string; placedAt: Date; status: OrderStatus }>(
+	orders: TOrder[],
+	filters: { hotelId: string; includeCompleted?: boolean },
+) {
+	return orders
+		.filter((order) => {
+			if (order.hotelId !== filters.hotelId) {
+				return false;
+			}
+
+			if (filters.includeCompleted) {
+				return true;
+			}
+
+			return order.status !== "cancelled" && order.status !== "delivered";
+		})
+		.sort((left, right) => left.placedAt.getTime() - right.placedAt.getTime());
+}
+
+export function transitionOrderStatusWithAudit(
+	order: TransitionableOrder & { id: string },
+	nextStatus: OrderStatus,
+	actorId: string,
+	changedAt = new Date(),
+) {
+	const nextOrder = transitionOrderStatus(order, nextStatus, changedAt);
+
+	return {
+		history: {
+			changedAt,
+			changedByUserId: actorId,
+			fromStatus: order.status,
+			orderId: order.id,
+			reason: null,
+			toStatus: nextStatus,
+		},
+		order: nextOrder,
 	};
 }
 

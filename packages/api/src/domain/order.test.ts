@@ -1,6 +1,7 @@
 import { describe, expect, test } from "bun:test";
 
 import {
+	assertUserCanManageHotel,
 	assertGuestSessionCanOrder,
 	assertMenuItemsBelongToHotel,
 	buildOrderItemSnapshots,
@@ -8,6 +9,8 @@ import {
 	canTransitionOrderStatus,
 	createInitialStatusHistory,
 	isMenuItemAvailable,
+	listOperationalOrders,
+	transitionOrderStatusWithAudit,
 	transitionOrderStatus,
 	validateOrderCreation,
 } from "./order";
@@ -217,6 +220,109 @@ describe("createInitialStatusHistory", () => {
 			reason: null,
 			toStatus: "pending",
 		});
+	});
+});
+
+describe("assertUserCanManageHotel", () => {
+	test("accepts a matching membership", () => {
+		expect(
+			assertUserCanManageHotel(
+				"user-1",
+				{ hotelId: "hotel-1", userId: "user-1" },
+				"hotel-1",
+			),
+		).toEqual({ hotelId: "hotel-1", userId: "user-1" });
+	});
+
+	test("rejects missing or wrong membership", () => {
+		expect(() =>
+			assertUserCanManageHotel("user-1", null, "hotel-1"),
+		).toThrow(/not assigned/);
+		expect(() =>
+			assertUserCanManageHotel(
+				"user-1",
+				{ hotelId: "hotel-2", userId: "user-1" },
+				"hotel-1",
+			),
+		).toThrow(/another hotel/);
+	});
+});
+
+describe("listOperationalOrders", () => {
+	test("returns only active orders for the selected hotel sorted by placedAt", () => {
+		expect(
+			listOperationalOrders(
+				[
+					{
+						hotelId: "hotel-1",
+						id: "order-2",
+						placedAt: new Date("2026-04-16T11:00:00.000Z"),
+						status: "accepted" as const,
+					},
+					{
+						hotelId: "hotel-1",
+						id: "order-1",
+						placedAt: new Date("2026-04-16T10:00:00.000Z"),
+						status: "pending" as const,
+					},
+					{
+						hotelId: "hotel-1",
+						id: "order-3",
+						placedAt: new Date("2026-04-16T12:00:00.000Z"),
+						status: "delivered" as const,
+					},
+					{
+						hotelId: "hotel-2",
+						id: "order-4",
+						placedAt: new Date("2026-04-16T09:00:00.000Z"),
+						status: "pending" as const,
+					},
+				],
+				{ hotelId: "hotel-1" },
+			).map((order) => order.id),
+		).toEqual(["order-1", "order-2"]);
+	});
+});
+
+describe("transitionOrderStatusWithAudit", () => {
+	test("updates the order and creates an audit history entry", () => {
+		const changedAt = new Date("2026-04-16T10:00:00.000Z");
+
+		expect(
+			transitionOrderStatusWithAudit(
+				{
+					id: "order-1",
+					status: "pending",
+				},
+				"accepted",
+				"user-1",
+				changedAt,
+			),
+		).toEqual({
+			history: {
+				changedAt,
+				changedByUserId: "user-1",
+				fromStatus: "pending",
+				orderId: "order-1",
+				reason: null,
+				toStatus: "accepted",
+			},
+			order: {
+				acceptedAt: changedAt,
+				id: "order-1",
+				status: "accepted",
+			},
+		});
+	});
+
+	test("fails on invalid transitions", () => {
+		expect(() =>
+			transitionOrderStatusWithAudit(
+				{ id: "order-1", status: "pending" },
+				"delivered",
+				"user-1",
+			),
+		).toThrow(/Cannot transition/);
 	});
 });
 

@@ -32,6 +32,12 @@ export {
 	type TransitionableOrder,
 } from "./domain/order";
 export { generateGuestSessionToken } from "./domain/guest-session";
+export {
+	assertGuestSessionIsActive,
+	assertRoomCanCreateGuestSession,
+	type GuestSessionContext,
+	type RoomTokenContext,
+} from "./domain/guest-session";
 export { belongsToHotel } from "./domain/tenancy";
 export {
 	getMenuForGuestSession,
@@ -54,9 +60,18 @@ export {
 export {
 	assertGuestSessionCanOrder,
 	assertMenuItemsBelongToHotel,
+	assertUserCanManageHotel,
 	buildOrderItemSnapshots,
 	createInitialStatusHistory,
+	listOperationalOrders,
+	transitionOrderStatusWithAudit,
 	type RequestedOrderItem,
 	type OrderItemSnapshot,
 } from "./domain/order";
+export {
+	createGuestSessionFromRoomToken,
+	refreshGuestSession,
+	resolveGuestSession,
+	GuestSessionServiceError,
+} from "./services/guest-session-service";
 export type { RouterInputs, RouterOutputs };

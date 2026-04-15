@@ -4,11 +4,15 @@ import type { OrderStatus } from "@finchat/db/schema";
 import {
 	assertGuestSessionCanOrder,
 	assertMenuItemsBelongToHotel,
+	assertUserCanManageHotel,
 	buildOrderItemSnapshots,
 	calculateOrderTotal,
 	createInitialStatusHistory,
+	listOperationalOrders,
+	transitionOrderStatusWithAudit,
 	validateOrderCreation,
 	type RequestedOrderItem,
+	type TransitionableOrder,
 } from "../domain/order";
 
 export type GuestSessionOrderLookup = {
@@ -73,6 +77,12 @@ export type OrderTrackingView = {
 	};
 };
 
+export type StaffHotelMembership = {
+	hotelId: string;
+	role: "admin" | "frontdesk" | "kitchen" | "manager";
+	userId: string;
+};
+
 type OrderServiceDeps = {
 	createOrder: (
 		order: PersistedOrderRecord,
@@ -105,6 +115,7 @@ export class OrderServiceError extends Error {
 			| "MENU_ITEM_UNAVAILABLE"
 			| "ORDER_NOT_FOUND"
 			| "ROOM_INACTIVE"
+			| "STAFF_MEMBERSHIP_REQUIRED"
 			| "TENANT_MISMATCH",
 		message: string,
 	) {
@@ -129,6 +140,13 @@ function toOrderServiceError(error: unknown): never {
 
 		if (error.message.includes("does not belong")) {
 			throw new OrderServiceError("TENANT_MISMATCH", error.message);
+		}
+
+		if (
+			error.message.includes("not assigned") ||
+			error.message.includes("cannot manage another hotel")
+		) {
+			throw new OrderServiceError("STAFF_MEMBERSHIP_REQUIRED", error.message);
 		}
 
 		if (error.message.includes("unavailable")) {
@@ -307,4 +325,95 @@ export async function listGuestOrders(
 	}
 
 	return await deps.listGuestOrders(guestSession.id);
+}
+
+export async function listActiveOrders(
+	deps: {
+		findMembershipByUserId: (
+			userId: string,
+		) => Promise<StaffHotelMembership | null> | StaffHotelMembership | null;
+		listOrdersByHotelId: (
+			hotelId: string,
+		) => Promise<PersistedOrderRecord[]> | PersistedOrderRecord[];
+	},
+	input: { userId: string },
+) {
+	const membership = await deps.findMembershipByUserId(input.userId);
+	if (!membership) {
+		throw new OrderServiceError(
+			"STAFF_MEMBERSHIP_REQUIRED",
+			"User is not assigned to this hotel",
+		);
+	}
+
+	const orders = await deps.listOrdersByHotelId(membership.hotelId);
+	return listOperationalOrders(orders, { hotelId: membership.hotelId });
+}
+
+export async function transitionStaffOrderStatus(
+	deps: {
+		createHistoryEntry: (
+			history: PersistedOrderHistoryRecord,
+		) => Promise<void> | void;
+		findMembershipByUserId: (
+			userId: string,
+		) => Promise<StaffHotelMembership | null> | StaffHotelMembership | null;
+		findOrderById: (
+			orderId: string,
+		) => Promise<PersistedOrderRecord | null> | PersistedOrderRecord | null;
+		now?: () => Date;
+		updateOrder: (
+			orderId: string,
+			order: Partial<PersistedOrderRecord>,
+		) => Promise<void> | void;
+	},
+	input: { nextStatus: OrderStatus; orderId: string; userId: string },
+) {
+	const order = await deps.findOrderById(input.orderId);
+	if (!order) {
+		throw new OrderServiceError("ORDER_NOT_FOUND", "Order was not found");
+	}
+
+	const membership = await deps.findMembershipByUserId(input.userId);
+	try {
+		assertUserCanManageHotel(input.userId, membership, order.hotelId);
+	} catch (error) {
+		toOrderServiceError(error);
+	}
+
+	const changedAt = deps.now?.() ?? new Date();
+	let transition: ReturnType<typeof transitionOrderStatusWithAudit>;
+	try {
+		transition = transitionOrderStatusWithAudit(
+			order as TransitionableOrder & { id: string },
+			input.nextStatus,
+			input.userId,
+			changedAt,
+		);
+	} catch (error) {
+		toOrderServiceError(error);
+	}
+
+	const history: PersistedOrderHistoryRecord = {
+		...transition.history,
+		id: randomUUID(),
+	};
+
+	await deps.updateOrder(order.id, {
+		acceptedAt: transition.order.acceptedAt ?? null,
+		cancelledAt: transition.order.cancelledAt ?? null,
+		deliveredAt: transition.order.deliveredAt ?? null,
+		deliveringAt: transition.order.deliveringAt ?? null,
+		preparingAt: transition.order.preparingAt ?? null,
+		status: transition.order.status,
+	});
+	await deps.createHistoryEntry(history);
+
+	return {
+		history,
+		order: {
+			...order,
+			...transition.order,
+		},
+	};
 }

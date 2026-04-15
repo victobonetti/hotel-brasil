@@ -392,7 +392,7 @@ No `orderRouter`:
 
 ---
 
-## Etapa 5 — Implementar painel operacional do hotel
+## Etapa 5 — Implementar painel operacional do hotel [FINALIZADA]
 
 ### Objetivo
 
@@ -468,7 +468,7 @@ Procedures:
 
 ---
 
-## Etapa 6 — Sessão do hóspede via QR code/link
+## Etapa 6 — Sessão do hóspede via QR code/link [FINALIZADA]
 
 ### Objetivo
 
