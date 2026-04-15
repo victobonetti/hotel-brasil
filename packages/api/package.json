@@ -18,6 +18,7 @@
 	"scripts": {
 		"build": "tsc",
 		"clean": "git clean -xdf .cache .turbo dist node_modules",
+		"test": "bun test",
 		"tsc": "tsc --noEmit --emitDeclarationOnly false"
 	},
 	"type": "module"

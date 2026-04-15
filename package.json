@@ -23,6 +23,7 @@
 		"dev": "turbo dev studio --continue -F @finchat/nextjs...",
 		"format": "biome check . --write --unsafe --error-on-warnings",
 		"pull-secrets": "bun -F './apps/*' pull-secrets",
+		"test": "turbo run test",
 		"tsc": "turbo run tsc",
 		"ui-add": "turbo run ui-add"
 	},
