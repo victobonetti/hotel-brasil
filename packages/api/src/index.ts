@@ -33,4 +33,13 @@ export {
 } from "./domain/order";
 export { generateGuestSessionToken } from "./domain/guest-session";
 export { belongsToHotel } from "./domain/tenancy";
+export {
+	getMenuForGuestSession,
+	listAvailableItems,
+	listCategoriesByHotel,
+	MenuServiceError,
+	type GuestMenuView,
+	type MenuCategoryWithItems,
+	type MenuItemView,
+} from "./services/menu-service";
 export type { RouterInputs, RouterOutputs };

@@ -233,7 +233,7 @@ Campos:
 
 ---
 
-## Etapa 2 — Implementar o módulo de catálogo
+## Etapa 2 — Implementar o módulo de catálogo [FINALIZADA]
 
 ### Objetivo
 
