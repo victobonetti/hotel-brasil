@@ -65,6 +65,27 @@ export type TransitionableOrder = {
 	status: OrderStatus;
 };
 
+export type AuditableOrder = TransitionableOrder & {
+	guestSessionId?: string | null;
+	hotelId: string;
+	id: string;
+	placedAt?: Date | null;
+	roomId: string;
+};
+
+export type OrderAuditContext = {
+	acceptedAt?: Date | null;
+	cancelledAt?: Date | null;
+	deliveredAt?: Date | null;
+	guestSessionId?: string | null;
+	hotelId: string;
+	orderId: string;
+	placedAt?: Date | null;
+	preparingAt?: Date | null;
+	roomId: string;
+	status: OrderStatus;
+};
+
 const orderStatusTransitions: Record<OrderStatus, OrderStatus[]> = {
 	accepted: ["preparing", "cancelled"],
 	cancelled: [],
@@ -207,6 +228,21 @@ export function assertUserCanManageHotel(
 	return membership;
 }
 
+export function assertOrderExists<TOrder>(
+	order: TOrder | null | undefined,
+	orderId?: string,
+) {
+	if (!order) {
+		if (orderId) {
+			throw new Error(`Order ${orderId} was not found`);
+		}
+
+		throw new Error("Order was not found");
+	}
+
+	return order;
+}
+
 export function listOperationalOrders<TOrder extends { hotelId: string; placedAt: Date; status: OrderStatus }>(
 	orders: TOrder[],
 	filters: { hotelId: string; includeCompleted?: boolean },
@@ -244,6 +280,21 @@ export function transitionOrderStatusWithAudit(
 			toStatus: nextStatus,
 		},
 		order: nextOrder,
+	};
+}
+
+export function createOrderAuditContext(order: AuditableOrder): OrderAuditContext {
+	return {
+		acceptedAt: order.acceptedAt ?? null,
+		cancelledAt: order.cancelledAt ?? null,
+		deliveredAt: order.deliveredAt ?? null,
+		guestSessionId: order.guestSessionId ?? null,
+		hotelId: order.hotelId,
+		orderId: order.id,
+		placedAt: order.placedAt ?? null,
+		preparingAt: order.preparingAt ?? null,
+		roomId: order.roomId,
+		status: order.status,
 	};
 }
 

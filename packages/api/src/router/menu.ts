@@ -1,7 +1,9 @@
 import type { TRPCRouterRecord } from "@trpc/server";
 import { TRPCError } from "@trpc/server";
+import { asc, eq } from "drizzle-orm";
 import { z } from "zod/v4";
 
+import { mapDomainErrorToUserMessage } from "../errors";
 import {
 	getMenuForGuestSession,
 	listAvailableItems,
@@ -12,22 +14,28 @@ import { publicProcedure } from "../trpc";
 
 function mapMenuServiceError(error: unknown): never {
 	if (error instanceof MenuServiceError) {
+		const userMessage = mapDomainErrorToUserMessage(error, "guest");
+
 		if (error.code === "GUEST_SESSION_EXPIRED") {
 			throw new TRPCError({
 				code: "FORBIDDEN",
-				message: error.message,
+				message: userMessage.message,
 			});
 		}
 
 		if (error.code === "GUEST_SESSION_NOT_FOUND") {
 			throw new TRPCError({
 				code: "NOT_FOUND",
-				message: error.message,
+				message: userMessage.message,
 			});
 		}
 	}
 
-	throw error;
+	const fallback = mapDomainErrorToUserMessage(error, "guest");
+	throw new TRPCError({
+		code: "INTERNAL_SERVER_ERROR",
+		message: fallback.message,
+	});
 }
 
 export const menuRouter = {
@@ -94,12 +102,88 @@ export const menuRouter = {
 	listAvailableItems: publicProcedure
 		.input(
 			z.object({
-				hotelId: z.string().min(1),
+				guestSessionToken: z.string().min(1),
 			}),
 		)
 		.query(async ({ ctx, input }) => {
-			const [categories, items] = await Promise.all([
-				ctx.db.query.menuCategories.findMany({
+			try {
+				const guestSession = await ctx.db.query.guestSessions.findFirst({
+					columns: {
+						hotelId: true,
+						token: true,
+					},
+					where: (table, { eq }) => eq(table.token, input.guestSessionToken),
+				});
+
+				if (!guestSession) {
+					throw new MenuServiceError(
+						"GUEST_SESSION_NOT_FOUND",
+						"Guest session token is invalid",
+					);
+				}
+
+				const [categories, items] = await Promise.all([
+					ctx.db.query.menuCategories.findMany({
+						columns: {
+							active: true,
+							description: true,
+							hotelId: true,
+							id: true,
+							name: true,
+							sortOrder: true,
+						},
+						where: (table, { eq }) => eq(table.hotelId, guestSession.hotelId),
+					}),
+					ctx.db.query.menuItems.findMany({
+						columns: {
+							available: true,
+							categoryId: true,
+							description: true,
+							hotelId: true,
+							id: true,
+							imageUrl: true,
+							name: true,
+							preparationTimeMinutes: true,
+							priceInCents: true,
+						},
+						where: (table, { eq }) => eq(table.hotelId, guestSession.hotelId),
+					}),
+				]);
+
+				const visibleCategories = listCategoriesByHotel(categories, guestSession.hotelId);
+				return listAvailableItems(
+					items,
+					guestSession.hotelId,
+					visibleCategories.map((category) => category.id),
+				);
+			} catch (error) {
+				mapMenuServiceError(error);
+			}
+		}),
+	listCategoriesByHotel: publicProcedure
+		.input(
+			z.object({
+				guestSessionToken: z.string().min(1),
+			}),
+		)
+		.query(async ({ ctx, input }) => {
+			try {
+				const guestSession = await ctx.db.query.guestSessions.findFirst({
+					columns: {
+						hotelId: true,
+						token: true,
+					},
+					where: (table, { eq }) => eq(table.token, input.guestSessionToken),
+				});
+
+				if (!guestSession) {
+					throw new MenuServiceError(
+						"GUEST_SESSION_NOT_FOUND",
+						"Guest session token is invalid",
+					);
+				}
+
+				const categories = await ctx.db.query.menuCategories.findMany({
 					columns: {
 						active: true,
 						description: true,
@@ -108,50 +192,13 @@ export const menuRouter = {
 						name: true,
 						sortOrder: true,
 					},
-					where: (table, { eq }) => eq(table.hotelId, input.hotelId),
-				}),
-				ctx.db.query.menuItems.findMany({
-					columns: {
-						available: true,
-						categoryId: true,
-						description: true,
-						hotelId: true,
-						id: true,
-						imageUrl: true,
-						name: true,
-						preparationTimeMinutes: true,
-						priceInCents: true,
-					},
-					where: (table, { eq }) => eq(table.hotelId, input.hotelId),
-				}),
-			]);
+					orderBy: (table) => [asc(table.sortOrder), asc(table.name)],
+					where: (table, { eq }) => eq(table.hotelId, guestSession.hotelId),
+				});
 
-			const visibleCategories = listCategoriesByHotel(categories, input.hotelId);
-			return listAvailableItems(
-				items,
-				input.hotelId,
-				visibleCategories.map((category) => category.id),
-			);
-		}),
-	listCategoriesByHotel: publicProcedure
-		.input(
-			z.object({
-				hotelId: z.string().min(1),
-			}),
-		)
-		.query(async ({ ctx, input }) => {
-			const categories = await ctx.db.query.menuCategories.findMany({
-				columns: {
-					active: true,
-					description: true,
-					hotelId: true,
-					id: true,
-					name: true,
-					sortOrder: true,
-				},
-				where: (table, { eq }) => eq(table.hotelId, input.hotelId),
-			});
-
-			return listCategoriesByHotel(categories, input.hotelId);
+				return listCategoriesByHotel(categories, guestSession.hotelId);
+			} catch (error) {
+				mapMenuServiceError(error);
+			}
 		}),
 } satisfies TRPCRouterRecord;

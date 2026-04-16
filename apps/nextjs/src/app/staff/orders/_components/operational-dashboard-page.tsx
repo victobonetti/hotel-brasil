@@ -3,10 +3,18 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 
+import { PageShell, SectionHeader } from "~/app/_components/page-shell";
 import { useTRPC } from "~/trpc/react";
 import { OrderDetailsDrawer } from "./order-details-drawer";
 import { OrderQueueBoard } from "./order-queue-board";
 import { StaffHotelGuard } from "./staff-hotel-guard";
+
+function formatPrice(priceInCents: number) {
+	return new Intl.NumberFormat("pt-BR", {
+		currency: "BRL",
+		style: "currency",
+	}).format(priceInCents / 100);
+}
 
 export function OperationalDashboardPage() {
 	const trpc = useTRPC();
@@ -25,45 +33,61 @@ export function OperationalDashboardPage() {
 				? "unauthorized"
 				: undefined;
 
-	return (
-		<main className="min-h-screen bg-[linear-gradient(180deg,_rgba(248,250,252,1),_rgba(241,245,249,1))]">
-			<div className="mx-auto flex w-full max-w-7xl flex-col gap-8 px-4 py-10 md:px-8 md:py-14">
-				<header className="space-y-2">
-					<p className="font-medium text-primary text-sm">Operação do hotel</p>
-					<h1 className="font-semibold text-4xl tracking-tight">
-						Painel operacional de pedidos
-					</h1>
-					<p className="max-w-2xl text-muted-foreground">
-						Acompanhe a fila ativa, veja detalhes e avance o status dos pedidos do
-						seu hotel.
-					</p>
-				</header>
+	const activeOrders = activeOrdersQuery.data ?? [];
+	const totalRevenueInCents = activeOrders.reduce(
+		(total, order) => total + order.totalAmountInCents,
+		0,
+	);
 
-				<StaffHotelGuard state={state}>
-					<div className="grid gap-6 lg:grid-cols-[0.95fr_1.05fr]">
-						<OrderQueueBoard
-							onSelect={setSelectedOrderId}
-							orders={activeOrdersQuery.data ?? []}
-							selectedOrderId={selectedOrderId}
-						/>
-						<OrderDetailsDrawer
-							onRefresh={() => {
-								void queryClient.invalidateQueries({
-									queryKey: trpc.staffOrder.listActiveOrders.queryKey(),
-								});
-								if (selectedOrderId) {
-									void queryClient.invalidateQueries({
-										queryKey: trpc.staffOrder.getOrderDetails.queryKey({
-											orderId: selectedOrderId,
-										}),
-									});
-								}
-							}}
-							orderId={selectedOrderId}
-						/>
+	return (
+		<PageShell>
+			<SectionHeader
+				badge="Operação do hotel"
+				description="Acompanhe a fila ativa, abra detalhes com mais rapidez e avance os pedidos do seu hotel com uma leitura mais clara da operação."
+				title="Painel operacional de pedidos"
+			/>
+
+			<StaffHotelGuard errorMessage={activeOrdersQuery.error?.message} state={state}>
+				<div className="grid gap-3 md:grid-cols-3">
+					<div className="rounded-2xl border border-primary/15 bg-card/88 p-4 shadow-sm shadow-primary/10">
+						<p className="font-medium text-primary text-sm">Pedidos ativos</p>
+						<p className="mt-2 font-semibold text-3xl">{activeOrders.length}</p>
 					</div>
-				</StaffHotelGuard>
-			</div>
-		</main>
+					<div className="rounded-2xl border border-primary/15 bg-card/88 p-4 shadow-sm shadow-primary/10">
+						<p className="font-medium text-primary text-sm">Pedido em foco</p>
+						<p className="mt-2 font-semibold text-3xl">{selectedOrderId ? 1 : 0}</p>
+					</div>
+					<div className="rounded-2xl border border-primary/15 bg-card/88 p-4 shadow-sm shadow-primary/10">
+						<p className="font-medium text-primary text-sm">Volume na fila</p>
+						<p className="mt-2 font-semibold text-3xl">
+							{formatPrice(totalRevenueInCents)}
+						</p>
+					</div>
+				</div>
+
+				<div className="grid gap-6 lg:grid-cols-[0.95fr_1.05fr]">
+					<OrderQueueBoard
+						onSelect={setSelectedOrderId}
+						orders={activeOrders}
+						selectedOrderId={selectedOrderId}
+					/>
+					<OrderDetailsDrawer
+						onRefresh={() => {
+							void queryClient.invalidateQueries({
+								queryKey: trpc.staffOrder.listActiveOrders.queryKey(),
+							});
+							if (selectedOrderId) {
+								void queryClient.invalidateQueries({
+									queryKey: trpc.staffOrder.getOrderDetails.queryKey({
+										orderId: selectedOrderId,
+									}),
+								});
+							}
+						}}
+						orderId={selectedOrderId}
+					/>
+				</div>
+			</StaffHotelGuard>
+		</PageShell>
 	);
 }

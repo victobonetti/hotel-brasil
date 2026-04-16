@@ -1,11 +1,11 @@
 import type { TRPCRouterRecord } from "@trpc/server";
 import { TRPCError } from "@trpc/server";
-import { asc, eq } from "drizzle-orm";
+import { and, asc, eq } from "drizzle-orm";
 import { z } from "zod/v4";
 
 import { orders, orderStatusHistories, staffUserHotels } from "@finchat/db/schema";
+import { mapDomainErrorToUserMessage } from "../errors";
 import {
-	getOrderTracking,
 	listActiveOrders,
 	OrderServiceError,
 	transitionStaffOrderStatus,
@@ -14,25 +14,36 @@ import { protectedProcedure } from "../trpc";
 
 function mapStaffOrderServiceError(error: unknown): never {
 	if (error instanceof OrderServiceError) {
+		const userMessage = mapDomainErrorToUserMessage(error, "staff");
+
 		if (
 			error.code === "STAFF_MEMBERSHIP_REQUIRED" ||
 			error.code === "TENANT_MISMATCH" ||
 			error.code === "MENU_ITEM_UNAVAILABLE"
 		) {
-			throw new TRPCError({ code: "FORBIDDEN", message: error.message });
+			throw new TRPCError({ code: "FORBIDDEN", message: userMessage.message });
 		}
 
 		if (error.code === "ORDER_NOT_FOUND") {
-			throw new TRPCError({ code: "NOT_FOUND", message: error.message });
+			throw new TRPCError({ code: "NOT_FOUND", message: userMessage.message });
+		}
+
+		if (error.code === "ORDER_TRANSITION_INVALID") {
+			throw new TRPCError({ code: "BAD_REQUEST", message: userMessage.message });
 		}
 	}
 
-	throw error;
+	const fallback = mapDomainErrorToUserMessage(error, "staff");
+	throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: fallback.message });
 }
 
 const orderActionSchema = z.object({
 	orderId: z.string().min(1),
 });
+
+function logAuditEvent(entry: unknown) {
+	console.info("[order-audit]", JSON.stringify(entry));
+}
 
 export const staffOrderRouter = {
 	acceptOrder: protectedProcedure.input(orderActionSchema).mutation(async ({ ctx, input }) => {
@@ -57,6 +68,7 @@ export const staffOrderRouter = {
 						(await ctx.db.query.orders.findFirst({
 							where: (table, { eq }) => eq(table.id, orderId),
 						})) ?? null,
+					logAuditEvent,
 					updateOrder: async (orderId, order) => {
 						await ctx.db.update(orders).set(order).where(eq(orders.id, orderId));
 					},
@@ -93,6 +105,7 @@ export const staffOrderRouter = {
 						(await ctx.db.query.orders.findFirst({
 							where: (table, { eq }) => eq(table.id, orderId),
 						})) ?? null,
+					logAuditEvent,
 					updateOrder: async (orderId, order) => {
 						await ctx.db.update(orders).set(order).where(eq(orders.id, orderId));
 					},
@@ -195,6 +208,7 @@ export const staffOrderRouter = {
 						(await ctx.db.query.orders.findFirst({
 							where: (table, { eq }) => eq(table.id, orderId),
 						})) ?? null,
+					logAuditEvent,
 					updateOrder: async (orderId, order) => {
 						await ctx.db.update(orders).set(order).where(eq(orders.id, orderId));
 					},
@@ -233,6 +247,7 @@ export const staffOrderRouter = {
 							(await ctx.db.query.orders.findFirst({
 								where: (table, { eq }) => eq(table.id, orderId),
 							})) ?? null,
+						logAuditEvent,
 						updateOrder: async (orderId, order) => {
 							await ctx.db.update(orders).set(order).where(eq(orders.id, orderId));
 						},
@@ -269,6 +284,7 @@ export const staffOrderRouter = {
 						(await ctx.db.query.orders.findFirst({
 							where: (table, { eq }) => eq(table.id, orderId),
 						})) ?? null,
+					logAuditEvent,
 					updateOrder: async (orderId, order) => {
 						await ctx.db.update(orders).set(order).where(eq(orders.id, orderId));
 					},

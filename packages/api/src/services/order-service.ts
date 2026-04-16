@@ -3,17 +3,20 @@ import { randomUUID } from "node:crypto";
 import type { OrderStatus } from "@finchat/db/schema";
 import {
 	assertGuestSessionCanOrder,
+	assertOrderExists,
 	assertMenuItemsBelongToHotel,
 	assertUserCanManageHotel,
 	buildOrderStatusEvent,
 	buildOrderItemSnapshots,
 	calculateOrderTotal,
+	createOrderAuditContext,
 	createInitialStatusHistory,
 	listOperationalOrders,
 	shouldNotifyGuest,
 	transitionOrderStatusWithAudit,
 	validateOrderCreation,
 	type RequestedOrderItem,
+	type OrderAuditContext,
 	type TransitionableOrder,
 } from "../domain/order";
 
@@ -95,6 +98,12 @@ export type InAppOrderStatusNotification = {
 	event: ReturnType<typeof buildOrderStatusEvent>;
 };
 
+export type OrderAuditLogEntry = {
+	action: string;
+	auditContext: OrderAuditContext;
+	actorUserId: string | null;
+};
+
 type OrderServiceDeps = {
 	createOrder: (
 		order: PersistedOrderRecord,
@@ -114,6 +123,7 @@ type OrderServiceDeps = {
 	loadMenuItems: (
 		menuItemIds: string[],
 	) => Promise<MenuItemOrderLookup[]> | MenuItemOrderLookup[];
+	logAuditEvent?: (entry: OrderAuditLogEntry) => Promise<void> | void;
 	now?: () => Date;
 };
 
@@ -126,6 +136,7 @@ export class OrderServiceError extends Error {
 			| "MENU_ITEM_NOT_FOUND"
 			| "MENU_ITEM_UNAVAILABLE"
 			| "ORDER_NOT_FOUND"
+			| "ORDER_TRANSITION_INVALID"
 			| "ROOM_INACTIVE"
 			| "STAFF_MEMBERSHIP_REQUIRED"
 			| "TENANT_MISMATCH",
@@ -165,8 +176,16 @@ function toOrderServiceError(error: unknown): never {
 			throw new OrderServiceError("MENU_ITEM_UNAVAILABLE", error.message);
 		}
 
+		if (error.message.includes("Order") && error.message.includes("not found")) {
+			throw new OrderServiceError("ORDER_NOT_FOUND", error.message);
+		}
+
 		if (error.message.includes("not found")) {
 			throw new OrderServiceError("MENU_ITEM_NOT_FOUND", error.message);
+		}
+
+		if (error.message.includes("Cannot transition order")) {
+			throw new OrderServiceError("ORDER_TRANSITION_INVALID", error.message);
 		}
 	}
 
@@ -264,8 +283,15 @@ export async function createOrderFromGuestSession(
 	};
 
 	await deps.createOrder(order, orderItems, history);
+	const auditContext = createOrderAuditContext(order);
+	await deps.logAuditEvent?.({
+		action: "order.created",
+		auditContext,
+		actorUserId: null,
+	});
 
 	return {
+		auditContext,
 		orderId,
 		status: order.status,
 		totalAmountInCents,
@@ -287,12 +313,24 @@ export async function getOrderTracking(
 		);
 	}
 
-	const tracking = await deps.findOrderTrackingByGuestSession(
-		guestSession.id,
-		input.orderId,
-	);
-	if (!tracking) {
-		throw new OrderServiceError("ORDER_NOT_FOUND", "Order was not found");
+	try {
+		assertGuestSessionCanOrder({
+			expiresAt: guestSession.expiresAt,
+			hotelActive: guestSession.hotelActive,
+			roomActive: guestSession.roomActive,
+		});
+	} catch (error) {
+		toOrderServiceError(error);
+	}
+
+	let tracking: OrderTrackingView;
+	try {
+		tracking = assertOrderExists(
+			await deps.findOrderTrackingByGuestSession(guestSession.id, input.orderId),
+			input.orderId,
+		);
+	} catch (error) {
+		toOrderServiceError(error);
 	}
 
 	return {
@@ -336,6 +374,16 @@ export async function listGuestOrders(
 		);
 	}
 
+	try {
+		assertGuestSessionCanOrder({
+			expiresAt: guestSession.expiresAt,
+			hotelActive: guestSession.hotelActive,
+			roomActive: guestSession.roomActive,
+		});
+	} catch (error) {
+		toOrderServiceError(error);
+	}
+
 	return await deps.listGuestOrders(guestSession.id);
 }
 
@@ -373,6 +421,7 @@ export async function transitionStaffOrderStatus(
 		findOrderById: (
 			orderId: string,
 		) => Promise<PersistedOrderRecord | null> | PersistedOrderRecord | null;
+		logAuditEvent?: (entry: OrderAuditLogEntry) => Promise<void> | void;
 		now?: () => Date;
 		updateOrder: (
 			orderId: string,
@@ -381,9 +430,11 @@ export async function transitionStaffOrderStatus(
 	},
 	input: { nextStatus: OrderStatus; orderId: string; userId: string },
 ) {
-	const order = await deps.findOrderById(input.orderId);
-	if (!order) {
-		throw new OrderServiceError("ORDER_NOT_FOUND", "Order was not found");
+	let order: PersistedOrderRecord;
+	try {
+		order = assertOrderExists(await deps.findOrderById(input.orderId), input.orderId);
+	} catch (error) {
+		toOrderServiceError(error);
 	}
 
 	const membership = await deps.findMembershipByUserId(input.userId);
@@ -420,8 +471,19 @@ export async function transitionStaffOrderStatus(
 		status: transition.order.status,
 	});
 	await deps.createHistoryEntry(history);
+	const nextOrder = {
+		...order,
+		...transition.order,
+	};
+	const auditContext = createOrderAuditContext(nextOrder);
+	await deps.logAuditEvent?.({
+		action: `order.${transition.order.status}`,
+		auditContext,
+		actorUserId: input.userId,
+	});
 
 	return {
+		auditContext,
 		notification: {
 			event: buildOrderStatusEvent({
 				changedAt,
@@ -438,9 +500,6 @@ export async function transitionStaffOrderStatus(
 			},
 		} satisfies InAppOrderStatusNotification,
 		history,
-		order: {
-			...order,
-			...transition.order,
-		},
+		order: nextOrder,
 	};
 }

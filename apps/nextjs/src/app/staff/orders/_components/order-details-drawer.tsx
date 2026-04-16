@@ -27,7 +27,7 @@ export function OrderDetailsDrawer(props: {
 
 	if (!props.orderId) {
 		return (
-			<Card>
+			<Card className="border-primary/15 bg-card/88 shadow-sm shadow-primary/10">
 				<CardHeader>
 					<CardTitle>Detalhes do pedido</CardTitle>
 					<CardDescription>
@@ -40,7 +40,7 @@ export function OrderDetailsDrawer(props: {
 
 	if (orderDetailsQuery.isLoading) {
 		return (
-			<Card>
+			<Card className="border-primary/15 bg-card/88 shadow-sm shadow-primary/10">
 				<CardHeader>
 					<CardTitle>Carregando pedido</CardTitle>
 				</CardHeader>
@@ -63,8 +63,8 @@ export function OrderDetailsDrawer(props: {
 	}
 
 	return (
-		<Card>
-			<CardHeader>
+		<Card className="border-primary/15 bg-card/88 shadow-sm shadow-primary/10">
+			<CardHeader className="border-border/60 border-b">
 				<div className="space-y-1">
 					<CardTitle>Pedido {orderDetailsQuery.data.id}</CardTitle>
 					<CardDescription>
@@ -73,10 +73,13 @@ export function OrderDetailsDrawer(props: {
 					</CardDescription>
 				</div>
 			</CardHeader>
-			<CardContent className="space-y-5">
+			<CardContent className="space-y-5 pt-6">
 				<div className="space-y-3">
 					{orderDetailsQuery.data.items.map((item) => (
-						<div className="rounded-xl border border-border/60 p-3" key={item.id}>
+						<div
+							className="rounded-2xl border border-primary/10 bg-primary/[0.03] p-4"
+							key={item.id}
+						>
 							<p className="font-medium">
 								{item.quantity}x {item.itemNameSnapshot}
 							</p>
@@ -94,10 +97,13 @@ export function OrderDetailsDrawer(props: {
 				/>
 
 				<div className="space-y-2">
-					<p className="font-medium text-sm">Histórico</p>
+					<p className="font-medium text-primary text-sm">Histórico</p>
 					<div className="space-y-2">
 						{orderDetailsQuery.data.statusHistory.map((entry) => (
-							<div className="rounded-lg bg-muted/40 px-3 py-2 text-sm" key={entry.id}>
+							<div
+								className="rounded-xl border border-primary/10 bg-background/80 px-3 py-2 text-sm"
+								key={entry.id}
+							>
 								{entry.toStatus}
 							</div>
 						))}

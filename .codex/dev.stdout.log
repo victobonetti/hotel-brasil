@@ -1,0 +1,109 @@
+• Packages in scope: @finchat/api, @finchat/auth, @finchat/db, @finchat/nextjs, @finchat/tailwind-config, @finchat/tsconfig, @finchat/ui, @finchat/utils
+• Running dev, studio in 8 packages
+• Remote caching disabled
+@finchat/nextjs:dev: cache bypass, force executing 339b1ec94896483e
+@finchat/db:dev: cache bypass, force executing 34f6dc6d7973d340
+@finchat/db:studio: cache bypass, force executing 55f413ff97c6bc51
+@finchat/nextjs:dev: $ bun next dev
+@finchat/db:dev: $ trap 'docker compose stop' EXIT; docker compose up --build
+@finchat/db:studio: $ bun wait-for-db && bun with-env drizzle-kit studio
+@finchat/db:dev: bun: command not found: trap
+@finchat/db:studio: $ while ! nc -z localhost 5432; do sleep 1; done
+@finchat/db:studio: bun: command not found: while
+@finchat/db:studio: bun: command not found: do
+@finchat/db:studio: bun: command not found: done
+@finchat/db:studio: error: script "wait-for-db" exited with code 1
+@finchat/db:studio: error: script "studio" exited with code 1
+@finchat/db:dev: unable to get image 'ghcr.io/neondatabase/wsproxy:latest': error during connect: Get "http://%2F%2F.%2Fpipe%2FdockerDesktopLinuxEngine/v1.48/images/ghcr.io/neondatabase/wsproxy:latest/json": open //./pipe/dockerDesktopLinuxEngine: The system cannot find the file specified.
+@finchat/db:dev: error: script "dev" exited with code 1
+@finchat/nextjs:dev: [baseline-browser-mapping] The data in this module is over two months old.  To ensure accurate Baseline data, please update: `npm i baseline-browser-mapping@latest -D`
+@finchat/nextjs:dev:    ▲ Next.js 16.0.9 (Turbopack, Cache Components)
+@finchat/nextjs:dev:    - Local:         http://localhost:3000
+@finchat/nextjs:dev:    - Network:       http://172.30.96.1:3000
+@finchat/nextjs:dev: 
+@finchat/nextjs:dev:  ✓ Starting...
+@finchat/nextjs:dev:  ✓ Ready in 1417ms
+@finchat/nextjs:dev:  ○ Compiling / ...
+@finchat/nextjs:dev: C:\Users\victo\Desktop\hotel-brasil\finchat\apps\nextjs\.next\dev\server\chunks\ssr\[root-of-the-server]__10809f77._.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: Error: sourceMapURL could not be parsed
+@finchat/nextjs:dev: C:\Users\victo\Desktop\hotel-brasil\finchat\apps\nextjs\.next\dev\server\chunks\ssr\[turbopack]_runtime.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: Error: sourceMapURL could not be parsed
+@finchat/nextjs:dev: C:\Users\victo\Desktop\hotel-brasil\finchat\apps\nextjs\.next\dev\server\chunks\ssr\[root-of-the-server]__a3966eb6._.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: Error: sourceMapURL could not be parsed
+@finchat/nextjs:dev: C:\Users\victo\Desktop\hotel-brasil\finchat\apps\nextjs\.next\dev\server\chunks\ssr\ceb50_next_dist_c2b81681._.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: Error: sourceMapURL could not be parsed
+@finchat/nextjs:dev: C:\Users\victo\Desktop\hotel-brasil\finchat\node_modules\.bun\next@16.0.9+08258074aa072553\node_modules\next\dist\compiled\next-server\app-page-turbo.runtime.dev.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: Error: sourceMapURL could not be parsed
+@finchat/nextjs:dev: C:\Users\victo\Desktop\hotel-brasil\finchat\node_modules\.bun\next@16.0.9+08258074aa072553\node_modules\next\dist\server\base-server.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: Error: sourceMapURL could not be parsed
+@finchat/nextjs:dev: C:\Users\victo\Desktop\hotel-brasil\finchat\node_modules\.bun\next@16.0.9+08258074aa072553\node_modules\next\dist\server\next-server.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: Error: sourceMapURL could not be parsed
+@finchat/nextjs:dev: C:\Users\victo\Desktop\hotel-brasil\finchat\node_modules\.bun\next@16.0.9+08258074aa072553\node_modules\next\dist\server\dev\next-dev-server.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: Error: sourceMapURL could not be parsed
+@finchat/nextjs:dev: C:\Users\victo\Desktop\hotel-brasil\finchat\node_modules\.bun\next@16.0.9+08258074aa072553\node_modules\next\dist\trace\trace.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: Error: sourceMapURL could not be parsed
+@finchat/nextjs:dev: C:\Users\victo\Desktop\hotel-brasil\finchat\node_modules\.bun\next@16.0.9+08258074aa072553\node_modules\next\dist\server\lib\router-server.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: Error: sourceMapURL could not be parsed
+@finchat/nextjs:dev: C:\Users\victo\Desktop\hotel-brasil\finchat\node_modules\.bun\next@16.0.9+08258074aa072553\node_modules\next\dist\server\lib\start-server.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: Error: sourceMapURL could not be parsed
+@finchat/nextjs:dev:  ⨯ Error: Missing DATABASE_URL
+@finchat/nextjs:dev:     at module evaluation (C:\Users\victo\Desktop\hotel-brasil\finchat\apps\nextjs\.next\dev\server\chunks\ssr\[root-of-the-server]__10809f77._.js:610:11)
+@finchat/nextjs:dev:     at instantiateModule (C:\Users\victo\Desktop\hotel-brasil\finchat\apps\nextjs\.next\dev\server\chunks\ssr\[turbopack]_runtime.js:715:9)
+@finchat/nextjs:dev:     at getOrInstantiateModuleFromParent (C:\Users\victo\Desktop\hotel-brasil\finchat\apps\nextjs\.next\dev\server\chunks\ssr\[turbopack]_runtime.js:738:12)
+@finchat/nextjs:dev:     at Context.esmImport [as i] (C:\Users\victo\Desktop\hotel-brasil\finchat\apps\nextjs\.next\dev\server\chunks\ssr\[turbopack]_runtime.js:228:20)
+@finchat/nextjs:dev:     at module evaluation (C:\Users\victo\Desktop\hotel-brasil\finchat\apps\nextjs\.next\dev\server\chunks\ssr\[root-of-the-server]__10809f77._.js:683:157)
+@finchat/nextjs:dev:     at instantiateModule (C:\Users\victo\Desktop\hotel-brasil\finchat\apps\nextjs\.next\dev\server\chunks\ssr\[turbopack]_runtime.js:715:9)
+@finchat/nextjs:dev:     at getOrInstantiateModuleFromParent (C:\Users\victo\Desktop\hotel-brasil\finchat\apps\nextjs\.next\dev\server\chunks\ssr\[turbopack]_runtime.js:738:12)
+@finchat/nextjs:dev:     at Context.esmImport [as i] (C:\Users\victo\Desktop\hotel-brasil\finchat\apps\nextjs\.next\dev\server\chunks\ssr\[turbopack]_runtime.js:228:20)
+@finchat/nextjs:dev:     at module evaluation (C:\Users\victo\Desktop\hotel-brasil\finchat\apps\nextjs\.next\dev\server\chunks\ssr\[root-of-the-server]__10809f77._.js:766:158)
+@finchat/nextjs:dev:     at instantiateModule (C:\Users\victo\Desktop\hotel-brasil\finchat\apps\nextjs\.next\dev\server\chunks\ssr\[turbopack]_runtime.js:715:9)
+@finchat/nextjs:dev:     at getOrInstantiateModuleFromParent (C:\Users\victo\Desktop\hotel-brasil\finchat\apps\nextjs\.next\dev\server\chunks\ssr\[turbopack]_runtime.js:738:12)
+@finchat/nextjs:dev:     at Context.esmImport [as i] (C:\Users\victo\Desktop\hotel-brasil\finchat\apps\nextjs\.next\dev\server\chunks\ssr\[turbopack]_runtime.js:228:20)
+@finchat/nextjs:dev:     at module evaluation (C:\Users\victo\Desktop\hotel-brasil\finchat\apps\nextjs\.next\dev\server\chunks\ssr\[root-of-the-server]__10809f77._.js:808:165)
+@finchat/nextjs:dev:     at instantiateModule (C:\Users\victo\Desktop\hotel-brasil\finchat\apps\nextjs\.next\dev\server\chunks\ssr\[turbopack]_runtime.js:715:9)
+@finchat/nextjs:dev:     at getOrInstantiateModuleFromParent (C:\Users\victo\Desktop\hotel-brasil\finchat\apps\nextjs\.next\dev\server\chunks\ssr\[turbopack]_runtime.js:738:12)
+@finchat/nextjs:dev:     at Context.esmImport [as i] (C:\Users\victo\Desktop\hotel-brasil\finchat\apps\nextjs\.next\dev\server\chunks\ssr\[turbopack]_runtime.js:228:20)
+@finchat/nextjs:dev:     at module evaluation (C:\Users\victo\Desktop\hotel-brasil\finchat\apps\nextjs\.next\dev\server\chunks\ssr\[root-of-the-server]__a3966eb6._.js:21:190)
+@finchat/nextjs:dev:     at instantiateModule (C:\Users\victo\Desktop\hotel-brasil\finchat\apps\nextjs\.next\dev\server\chunks\ssr\[turbopack]_runtime.js:715:9)
+@finchat/nextjs:dev:     at getOrInstantiateModuleFromParent (C:\Users\victo\Desktop\hotel-brasil\finchat\apps\nextjs\.next\dev\server\chunks\ssr\[turbopack]_runtime.js:738:12)
+@finchat/nextjs:dev:     at Context.esmImport [as i] (C:\Users\victo\Desktop\hotel-brasil\finchat\apps\nextjs\.next\dev\server\chunks\ssr\[turbopack]_runtime.js:228:20)
+@finchat/nextjs:dev:     at module evaluation (C:\Users\victo\Desktop\hotel-brasil\finchat\apps\nextjs\.next\dev\server\chunks\ssr\[root-of-the-server]__a3966eb6._.js:55:47)
+@finchat/nextjs:dev:     at instantiateModule (C:\Users\victo\Desktop\hotel-brasil\finchat\apps\nextjs\.next\dev\server\chunks\ssr\[turbopack]_runtime.js:715:9)
+@finchat/nextjs:dev:     at getOrInstantiateModuleFromParent (C:\Users\victo\Desktop\hotel-brasil\finchat\apps\nextjs\.next\dev\server\chunks\ssr\[turbopack]_runtime.js:738:12)
+@finchat/nextjs:dev:     at Context.commonJsRequire [as r] (C:\Users\victo\Desktop\hotel-brasil\finchat\apps\nextjs\.next\dev\server\chunks\ssr\[turbopack]_runtime.js:249:12)
+@finchat/nextjs:dev:     at Array.__TURBOPACK__page__$23$5__ (C:\Users\victo\Desktop\hotel-brasil\finchat\apps\nextjs\.next\dev\server\chunks\ssr\ceb50_next_dist_c2b81681._.js:8201:62)
+@finchat/nextjs:dev:     at async doRender (C:\Users\victo\Desktop\hotel-brasil\finchat\apps\nextjs\.next\dev\server\chunks\ssr\ceb50_next_dist_c2b81681._.js:8588:28)
+@finchat/nextjs:dev:     at async handleResponse (C:\Users\victo\Desktop\hotel-brasil\finchat\apps\nextjs\.next\dev\server\chunks\ssr\ceb50_next_dist_c2b81681._.js:8794:32)
+@finchat/nextjs:dev:     at async handler (C:\Users\victo\Desktop\hotel-brasil\finchat\apps\nextjs\.next\dev\server\chunks\ssr\ceb50_next_dist_c2b81681._.js:9165:20)
+@finchat/nextjs:dev: C:\Users\victo\Desktop\hotel-brasil\finchat\apps\nextjs\.next\dev\server\chunks\ssr\[root-of-the-server]__10809f77._.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: Error: sourceMapURL could not be parsed
+@finchat/nextjs:dev: C:\Users\victo\Desktop\hotel-brasil\finchat\apps\nextjs\.next\dev\server\chunks\ssr\[turbopack]_runtime.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: Error: sourceMapURL could not be parsed
+@finchat/nextjs:dev: C:\Users\victo\Desktop\hotel-brasil\finchat\apps\nextjs\.next\dev\server\chunks\ssr\[root-of-the-server]__a3966eb6._.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: Error: sourceMapURL could not be parsed
+@finchat/nextjs:dev: C:\Users\victo\Desktop\hotel-brasil\finchat\apps\nextjs\.next\dev\server\chunks\ssr\ceb50_next_dist_c2b81681._.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: Error: sourceMapURL could not be parsed
+@finchat/nextjs:dev: C:\Users\victo\Desktop\hotel-brasil\finchat\node_modules\.bun\next@16.0.9+08258074aa072553\node_modules\next\dist\compiled\next-server\app-page-turbo.runtime.dev.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: Error: sourceMapURL could not be parsed
+@finchat/nextjs:dev: C:\Users\victo\Desktop\hotel-brasil\finchat\node_modules\.bun\next@16.0.9+08258074aa072553\node_modules\next\dist\server\base-server.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: Error: sourceMapURL could not be parsed
+@finchat/nextjs:dev: C:\Users\victo\Desktop\hotel-brasil\finchat\node_modules\.bun\next@16.0.9+08258074aa072553\node_modules\next\dist\server\next-server.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: Error: sourceMapURL could not be parsed
+@finchat/nextjs:dev: C:\Users\victo\Desktop\hotel-brasil\finchat\node_modules\.bun\next@16.0.9+08258074aa072553\node_modules\next\dist\server\dev\next-dev-server.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: Error: sourceMapURL could not be parsed
+@finchat/nextjs:dev: C:\Users\victo\Desktop\hotel-brasil\finchat\node_modules\.bun\next@16.0.9+08258074aa072553\node_modules\next\dist\trace\trace.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: Error: sourceMapURL could not be parsed
+@finchat/nextjs:dev: C:\Users\victo\Desktop\hotel-brasil\finchat\node_modules\.bun\next@16.0.9+08258074aa072553\node_modules\next\dist\server\lib\router-server.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: Error: sourceMapURL could not be parsed
+@finchat/nextjs:dev: C:\Users\victo\Desktop\hotel-brasil\finchat\node_modules\.bun\next@16.0.9+08258074aa072553\node_modules\next\dist\server\lib\start-server.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: Error: sourceMapURL could not be parsed
+@finchat/nextjs:dev:  ⨯ Error: Missing DATABASE_URL
+@finchat/nextjs:dev:     at module evaluation (C:\Users\victo\Desktop\hotel-brasil\finchat\apps\nextjs\.next\dev\server\chunks\ssr\[root-of-the-server]__10809f77._.js:610:11)
+@finchat/nextjs:dev:     at instantiateModule (C:\Users\victo\Desktop\hotel-brasil\finchat\apps\nextjs\.next\dev\server\chunks\ssr\[turbopack]_runtime.js:715:9)
+@finchat/nextjs:dev:     at getOrInstantiateModuleFromParent (C:\Users\victo\Desktop\hotel-brasil\finchat\apps\nextjs\.next\dev\server\chunks\ssr\[turbopack]_runtime.js:738:12)
+@finchat/nextjs:dev:     at Context.esmImport [as i] (C:\Users\victo\Desktop\hotel-brasil\finchat\apps\nextjs\.next\dev\server\chunks\ssr\[turbopack]_runtime.js:228:20)
+@finchat/nextjs:dev:     at module evaluation (C:\Users\victo\Desktop\hotel-brasil\finchat\apps\nextjs\.next\dev\server\chunks\ssr\[root-of-the-server]__10809f77._.js:683:157)
+@finchat/nextjs:dev:     at instantiateModule (C:\Users\victo\Desktop\hotel-brasil\finchat\apps\nextjs\.next\dev\server\chunks\ssr\[turbopack]_runtime.js:715:9)
+@finchat/nextjs:dev:     at getOrInstantiateModuleFromParent (C:\Users\victo\Desktop\hotel-brasil\finchat\apps\nextjs\.next\dev\server\chunks\ssr\[turbopack]_runtime.js:738:12)
+@finchat/nextjs:dev:     at Context.esmImport [as i] (C:\Users\victo\Desktop\hotel-brasil\finchat\apps\nextjs\.next\dev\server\chunks\ssr\[turbopack]_runtime.js:228:20)
+@finchat/nextjs:dev:     at module evaluation (C:\Users\victo\Desktop\hotel-brasil\finchat\apps\nextjs\.next\dev\server\chunks\ssr\[root-of-the-server]__10809f77._.js:766:158)
+@finchat/nextjs:dev:     at instantiateModule (C:\Users\victo\Desktop\hotel-brasil\finchat\apps\nextjs\.next\dev\server\chunks\ssr\[turbopack]_runtime.js:715:9)
+@finchat/nextjs:dev:     at getOrInstantiateModuleFromParent (C:\Users\victo\Desktop\hotel-brasil\finchat\apps\nextjs\.next\dev\server\chunks\ssr\[turbopack]_runtime.js:738:12)
+@finchat/nextjs:dev:     at Context.esmImport [as i] (C:\Users\victo\Desktop\hotel-brasil\finchat\apps\nextjs\.next\dev\server\chunks\ssr\[turbopack]_runtime.js:228:20)
+@finchat/nextjs:dev:     at module evaluation (C:\Users\victo\Desktop\hotel-brasil\finchat\apps\nextjs\.next\dev\server\chunks\ssr\[root-of-the-server]__10809f77._.js:808:165)
+@finchat/nextjs:dev:     at instantiateModule (C:\Users\victo\Desktop\hotel-brasil\finchat\apps\nextjs\.next\dev\server\chunks\ssr\[turbopack]_runtime.js:715:9)
+@finchat/nextjs:dev:     at getOrInstantiateModuleFromParent (C:\Users\victo\Desktop\hotel-brasil\finchat\apps\nextjs\.next\dev\server\chunks\ssr\[turbopack]_runtime.js:738:12)
+@finchat/nextjs:dev:     at Context.esmImport [as i] (C:\Users\victo\Desktop\hotel-brasil\finchat\apps\nextjs\.next\dev\server\chunks\ssr\[turbopack]_runtime.js:228:20)
+@finchat/nextjs:dev:     at module evaluation (C:\Users\victo\Desktop\hotel-brasil\finchat\apps\nextjs\.next\dev\server\chunks\ssr\[root-of-the-server]__a3966eb6._.js:21:190)
+@finchat/nextjs:dev:     at instantiateModule (C:\Users\victo\Desktop\hotel-brasil\finchat\apps\nextjs\.next\dev\server\chunks\ssr\[turbopack]_runtime.js:715:9)
+@finchat/nextjs:dev:     at getOrInstantiateModuleFromParent (C:\Users\victo\Desktop\hotel-brasil\finchat\apps\nextjs\.next\dev\server\chunks\ssr\[turbopack]_runtime.js:738:12)
+@finchat/nextjs:dev:     at Context.esmImport [as i] (C:\Users\victo\Desktop\hotel-brasil\finchat\apps\nextjs\.next\dev\server\chunks\ssr\[turbopack]_runtime.js:228:20)
+@finchat/nextjs:dev:     at module evaluation (C:\Users\victo\Desktop\hotel-brasil\finchat\apps\nextjs\.next\dev\server\chunks\ssr\[root-of-the-server]__a3966eb6._.js:55:47)
+@finchat/nextjs:dev:     at instantiateModule (C:\Users\victo\Desktop\hotel-brasil\finchat\apps\nextjs\.next\dev\server\chunks\ssr\[turbopack]_runtime.js:715:9)
+@finchat/nextjs:dev:     at getOrInstantiateModuleFromParent (C:\Users\victo\Desktop\hotel-brasil\finchat\apps\nextjs\.next\dev\server\chunks\ssr\[turbopack]_runtime.js:738:12)
+@finchat/nextjs:dev:     at Context.commonJsRequire [as r] (C:\Users\victo\Desktop\hotel-brasil\finchat\apps\nextjs\.next\dev\server\chunks\ssr\[turbopack]_runtime.js:249:12)
+@finchat/nextjs:dev:     at Array.__TURBOPACK__page__$23$5__ (C:\Users\victo\Desktop\hotel-brasil\finchat\apps\nextjs\.next\dev\server\chunks\ssr\ceb50_next_dist_c2b81681._.js:8201:62)
+@finchat/nextjs:dev:     at async doRender (C:\Users\victo\Desktop\hotel-brasil\finchat\apps\nextjs\.next\dev\server\chunks\ssr\ceb50_next_dist_c2b81681._.js:8588:28)
+@finchat/nextjs:dev:     at async handleResponse (C:\Users\victo\Desktop\hotel-brasil\finchat\apps\nextjs\.next\dev\server\chunks\ssr\ceb50_next_dist_c2b81681._.js:8794:32)
+@finchat/nextjs:dev:     at async handler (C:\Users\victo\Desktop\hotel-brasil\finchat\apps\nextjs\.next\dev\server\chunks\ssr\ceb50_next_dist_c2b81681._.js:9165:20) {
+@finchat/nextjs:dev:   page: '/'
+@finchat/nextjs:dev: }
+@finchat/nextjs:dev:  GET / 500 in 8.3s (compile: 8.1s, render: 200ms)

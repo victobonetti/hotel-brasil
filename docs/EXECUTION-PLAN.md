@@ -609,7 +609,7 @@ Entregar o principal valor percebido: transparência do status do pedido.
 
 ---
 
-## Etapa 9 — Multi-tenant desde a base
+## Etapa 9 — Multi-tenant desde a base [FINALIZADA]
 
 ### Objetivo
 
@@ -636,7 +636,7 @@ Toda entidade de negócio relevante deve carregar `hotelId` direta ou indiretame
 
 ---
 
-## Etapa 10 — Observabilidade, erros e auditoria
+## Etapa 10 — Observabilidade, erros e auditoria [FINALIZADA]
 
 ### Objetivo
 

@@ -13,11 +13,12 @@ type GuardState = "loading" | "needs-auth" | "unauthorized";
 
 export function StaffHotelGuard(props: {
 	children: React.ReactNode;
+	errorMessage?: string;
 	state?: GuardState;
 }) {
 	if (props.state === "loading") {
 		return (
-			<Card className="border-dashed">
+			<Card className="border-dashed border-primary/20 bg-card/85">
 				<CardHeader>
 					<CardTitle>Carregando painel operacional</CardTitle>
 					<CardDescription>
@@ -30,7 +31,7 @@ export function StaffHotelGuard(props: {
 
 	if (props.state === "needs-auth") {
 		return (
-			<Card>
+			<Card className="border-primary/15 bg-card/88">
 				<CardHeader>
 					<CardTitle>Login necessário</CardTitle>
 					<CardDescription>
@@ -50,7 +51,8 @@ export function StaffHotelGuard(props: {
 				<CardHeader>
 					<CardTitle>Acesso negado</CardTitle>
 					<CardDescription>
-						Sua conta está autenticada, mas ainda não possui vínculo com um hotel.
+						{props.errorMessage ??
+							"Sua conta está autenticada, mas ainda não possui vínculo com um hotel."}
 					</CardDescription>
 				</CardHeader>
 			</Card>

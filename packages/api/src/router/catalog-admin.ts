@@ -1,13 +1,16 @@
 import type { TRPCRouterRecord } from "@trpc/server";
 import { TRPCError } from "@trpc/server";
-import { eq, inArray } from "drizzle-orm";
+import { asc, eq, inArray } from "drizzle-orm";
 import { z } from "zod/v4";
 
 import { menuCategories, menuItems } from "@finchat/db/schema";
+import { mapDomainErrorToUserMessage } from "../errors";
 import {
 	CatalogAdminServiceError,
 	createCategory,
 	createMenuItem,
+	listCategoriesForStaff,
+	listMenuItemsForStaff,
 	reorderCategories,
 	toggleMenuItemAvailability,
 	updateCategory,
@@ -17,30 +20,42 @@ import { protectedProcedure } from "../trpc";
 
 function mapCatalogAdminServiceError(error: unknown): never {
 	if (error instanceof CatalogAdminServiceError) {
+		const userMessage = mapDomainErrorToUserMessage(error, "staff");
+
 		if (
 			error.code === "STAFF_MEMBERSHIP_REQUIRED" ||
 			error.code === "TENANT_MISMATCH" ||
 			error.code === "UNAUTHORIZED_ROLE"
 		) {
-			throw new TRPCError({ code: "FORBIDDEN", message: error.message });
+			throw new TRPCError({ code: "FORBIDDEN", message: userMessage.message });
 		}
 
 		if (error.code === "CATEGORY_NOT_FOUND" || error.code === "ITEM_NOT_FOUND") {
-			throw new TRPCError({ code: "NOT_FOUND", message: error.message });
+			throw new TRPCError({ code: "NOT_FOUND", message: userMessage.message });
 		}
 
 		if (error.code === "INVALID_PRICE") {
-			throw new TRPCError({ code: "BAD_REQUEST", message: error.message });
+			throw new TRPCError({ code: "BAD_REQUEST", message: userMessage.message });
 		}
 	}
 
-	throw error;
+	const fallback = mapDomainErrorToUserMessage(error, "staff");
+	throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: fallback.message });
+}
+
+async function findMembershipByUserId(ctx: { db: any }, userId: string) {
+	const membership = await ctx.db.query.staffUserHotels.findFirst({
+		columns: { hotelId: true, role: true, userId: true },
+		where: (table: any, operators: { eq: typeof eq }) =>
+			operators.eq(table.userId, userId),
+	});
+
+	return membership ?? null;
 }
 
 const categoryPayload = z.object({
 	active: z.boolean().optional(),
 	description: z.string().optional(),
-	hotelId: z.string().min(1),
 	name: z.string().min(1),
 	sortOrder: z.number().int().nonnegative().optional(),
 });
@@ -49,7 +64,6 @@ const itemPayload = z.object({
 	available: z.boolean().optional(),
 	categoryId: z.string().min(1),
 	description: z.string().optional(),
-	hotelId: z.string().min(1),
 	imageUrl: z.string().optional(),
 	name: z.string().min(1),
 	preparationTimeMinutes: z.number().int().nonnegative().optional(),
@@ -64,13 +78,7 @@ export const catalogAdminRouter = {
 					createCategoryRecord: async (category) => {
 						await ctx.db.insert(menuCategories).values(category);
 					},
-					findMembershipByUserId: async (userId) => {
-						const membership = await ctx.db.query.staffUserHotels.findFirst({
-							columns: { hotelId: true, role: true, userId: true },
-							where: (table, { eq }) => eq(table.userId, userId),
-						});
-						return membership ?? null;
-					},
+					findMembershipByUserId: async (userId) => await findMembershipByUserId(ctx, userId),
 					listCategoriesByHotelId: async (hotelId) =>
 						await ctx.db.query.menuCategories.findMany({
 							where: (table, { eq }) => eq(table.hotelId, hotelId),
@@ -96,13 +104,7 @@ export const catalogAdminRouter = {
 						(await ctx.db.query.menuCategories.findFirst({
 							where: (table, { eq }) => eq(table.id, categoryId),
 						})) ?? null,
-					findMembershipByUserId: async (userId) => {
-						const membership = await ctx.db.query.staffUserHotels.findFirst({
-							columns: { hotelId: true, role: true, userId: true },
-							where: (table, { eq }) => eq(table.userId, userId),
-						});
-						return membership ?? null;
-					},
+					findMembershipByUserId: async (userId) => await findMembershipByUserId(ctx, userId),
 				},
 				{
 					...input,
@@ -113,48 +115,51 @@ export const catalogAdminRouter = {
 			mapCatalogAdminServiceError(error);
 		}
 	}),
-	listCategories: protectedProcedure
-		.input(
-			z.object({
-				hotelId: z.string().min(1),
-			}),
-		)
-		.query(async ({ ctx, input }) =>
-			await ctx.db.query.menuCategories.findMany({
-				orderBy: (table, { asc }) => [asc(table.sortOrder), asc(table.name)],
-				where: (table, { eq }) => eq(table.hotelId, input.hotelId),
-			}),
-		),
-	listMenuItems: protectedProcedure
-		.input(
-			z.object({
-				hotelId: z.string().min(1),
-			}),
-		)
-		.query(async ({ ctx, input }) =>
-			await ctx.db.query.menuItems.findMany({
-				orderBy: (table, { asc }) => [asc(table.name)],
-				where: (table, { eq }) => eq(table.hotelId, input.hotelId),
-			}),
-		),
+	listCategories: protectedProcedure.query(async ({ ctx }) => {
+		try {
+			return await listCategoriesForStaff(
+				{
+					findMembershipByUserId: async (userId) => await findMembershipByUserId(ctx, userId),
+					listCategoriesByHotelId: async (hotelId) =>
+						await ctx.db.query.menuCategories.findMany({
+							orderBy: (table, { asc }) => [asc(table.sortOrder), asc(table.name)],
+							where: (table, { eq }) => eq(table.hotelId, hotelId),
+						}),
+				},
+				{ userId: ctx.session.user.id },
+			);
+		} catch (error) {
+			mapCatalogAdminServiceError(error);
+		}
+	}),
+	listMenuItems: protectedProcedure.query(async ({ ctx }) => {
+		try {
+			return await listMenuItemsForStaff(
+				{
+					findMembershipByUserId: async (userId) => await findMembershipByUserId(ctx, userId),
+					listMenuItemsByHotelId: async (hotelId) =>
+						await ctx.db.query.menuItems.findMany({
+							orderBy: (table, { asc }) => [asc(table.name)],
+							where: (table, { eq }) => eq(table.hotelId, hotelId),
+						}),
+				},
+				{ userId: ctx.session.user.id },
+			);
+		} catch (error) {
+			mapCatalogAdminServiceError(error);
+		}
+	}),
 	reorderCategories: protectedProcedure
 		.input(
 			z.object({
 				categoryIds: z.array(z.string().min(1)).min(1),
-				hotelId: z.string().min(1),
 			}),
 		)
 		.mutation(async ({ ctx, input }) => {
 			try {
 				return await reorderCategories(
 					{
-						findMembershipByUserId: async (userId) => {
-							const membership = await ctx.db.query.staffUserHotels.findFirst({
-								columns: { hotelId: true, role: true, userId: true },
-								where: (table, { eq }) => eq(table.userId, userId),
-							});
-							return membership ?? null;
-						},
+						findMembershipByUserId: async (userId) => await findMembershipByUserId(ctx, userId),
 						listCategoriesByIds: async (categoryIds) =>
 							categoryIds.length === 0
 								? []
@@ -188,13 +193,7 @@ export const catalogAdminRouter = {
 			try {
 				return await toggleMenuItemAvailability(
 					{
-						findMembershipByUserId: async (userId) => {
-							const membership = await ctx.db.query.staffUserHotels.findFirst({
-								columns: { hotelId: true, role: true, userId: true },
-								where: (table, { eq }) => eq(table.userId, userId),
-							});
-							return membership ?? null;
-						},
+						findMembershipByUserId: async (userId) => await findMembershipByUserId(ctx, userId),
 						findMenuItemById: async (itemId) =>
 							(await ctx.db.query.menuItems.findFirst({
 								where: (table, { eq }) => eq(table.id, itemId),
@@ -229,13 +228,7 @@ export const catalogAdminRouter = {
 							(await ctx.db.query.menuCategories.findFirst({
 								where: (table, { eq }) => eq(table.id, categoryId),
 							})) ?? null,
-						findMembershipByUserId: async (userId) => {
-							const membership = await ctx.db.query.staffUserHotels.findFirst({
-								columns: { hotelId: true, role: true, userId: true },
-								where: (table, { eq }) => eq(table.userId, userId),
-							});
-							return membership ?? null;
-						},
+						findMembershipByUserId: async (userId) => await findMembershipByUserId(ctx, userId),
 						updateCategoryRecord: async (categoryId, category) => {
 							await ctx.db
 								.update(menuCategories)
@@ -273,13 +266,7 @@ export const catalogAdminRouter = {
 							(await ctx.db.query.menuCategories.findFirst({
 								where: (table, { eq }) => eq(table.id, categoryId),
 							})) ?? null,
-						findMembershipByUserId: async (userId) => {
-							const membership = await ctx.db.query.staffUserHotels.findFirst({
-								columns: { hotelId: true, role: true, userId: true },
-								where: (table, { eq }) => eq(table.userId, userId),
-							});
-							return membership ?? null;
-						},
+						findMembershipByUserId: async (userId) => await findMembershipByUserId(ctx, userId),
 						findMenuItemById: async (itemId) =>
 							(await ctx.db.query.menuItems.findFirst({
 								where: (table, { eq }) => eq(table.id, itemId),

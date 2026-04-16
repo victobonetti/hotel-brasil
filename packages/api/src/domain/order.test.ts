@@ -1,6 +1,7 @@
 import { describe, expect, test } from "bun:test";
 
 import {
+	assertOrderExists,
 	assertUserCanManageHotel,
 	assertGuestSessionCanOrder,
 	assertMenuItemsBelongToHotel,
@@ -9,6 +10,7 @@ import {
 	calculateOrderTotal,
 	canTransitionOrderStatus,
 	createInitialStatusHistory,
+	createOrderAuditContext,
 	isMenuItemAvailable,
 	listOperationalOrders,
 	shouldNotifyGuest,
@@ -250,6 +252,18 @@ describe("assertUserCanManageHotel", () => {
 	});
 });
 
+describe("assertOrderExists", () => {
+	test("returns the order when it exists", () => {
+		expect(assertOrderExists({ id: "order-1" }, "order-1")).toEqual({
+			id: "order-1",
+		});
+	});
+
+	test("throws when the order is missing", () => {
+		expect(() => assertOrderExists(null, "order-404")).toThrow(/order-404/);
+	});
+});
+
 describe("listOperationalOrders", () => {
 	test("returns only active orders for the selected hotel sorted by placedAt", () => {
 		expect(
@@ -325,6 +339,33 @@ describe("transitionOrderStatusWithAudit", () => {
 				"user-1",
 			),
 		).toThrow(/Cannot transition/);
+	});
+});
+
+describe("createOrderAuditContext", () => {
+	test("creates a correlatable audit payload from an order", () => {
+		expect(
+			createOrderAuditContext({
+				acceptedAt: null,
+				guestSessionId: "session-1",
+				hotelId: "hotel-1",
+				id: "order-1",
+				placedAt: new Date("2026-04-16T10:00:00.000Z"),
+				roomId: "room-101",
+				status: "pending",
+			}),
+		).toEqual({
+			acceptedAt: null,
+			cancelledAt: null,
+			deliveredAt: null,
+			guestSessionId: "session-1",
+			hotelId: "hotel-1",
+			orderId: "order-1",
+			placedAt: new Date("2026-04-16T10:00:00.000Z"),
+			preparingAt: null,
+			roomId: "room-101",
+			status: "pending",
+		});
 	});
 });
 

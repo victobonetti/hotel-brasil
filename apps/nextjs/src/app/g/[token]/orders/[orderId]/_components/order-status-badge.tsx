@@ -28,5 +28,9 @@ const variants: Record<OrderStatus, "default" | "destructive" | "secondary" | "o
 	};
 
 export function OrderStatusBadge(props: { status: OrderStatus }) {
-	return <Badge variant={variants[props.status]}>{labels[props.status]}</Badge>;
+	return (
+		<Badge className="rounded-full px-3 py-1" variant={variants[props.status]}>
+			{labels[props.status]}
+		</Badge>
+	);
 }

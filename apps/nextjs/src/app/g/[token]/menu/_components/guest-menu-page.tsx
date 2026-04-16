@@ -1,5 +1,6 @@
 "use client";
 
+import { Badge } from "@finchat/ui/badge";
 import { Button } from "@finchat/ui/button";
 import {
 	Card,
@@ -13,9 +14,9 @@ import { Separator } from "@finchat/ui/separator";
 import { Textarea } from "@finchat/ui/textarea";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
-import { Badge } from "@finchat/ui/badge";
 import { useState } from "react";
 
+import { PageShell, SectionHeader } from "~/app/_components/page-shell";
 import { useTRPC } from "~/trpc/react";
 import { CategorySection } from "./category-section";
 import { GuestSessionGuard } from "./guest-session-guard";
@@ -25,6 +26,13 @@ function formatSessionExpiry(expiresAt: Date) {
 		dateStyle: "short",
 		timeStyle: "short",
 	}).format(expiresAt);
+}
+
+function formatPrice(priceInCents: number) {
+	return new Intl.NumberFormat("pt-BR", {
+		currency: "BRL",
+		style: "currency",
+	}).format(priceInCents / 100);
 }
 
 export function GuestMenuPage(props: { guestSessionToken: string }) {
@@ -49,6 +57,17 @@ export function GuestMenuPage(props: { guestSessionToken: string }) {
 
 	const totalItems = items.reduce((total, item) => total + item.quantity, 0);
 
+	function resolveMenuItem(menuItemId: string) {
+		return menuQuery.data?.categories
+			.flatMap((category) => category.items)
+			.find((candidate) => candidate.id === menuItemId);
+	}
+
+	const totalValueInCents = items.reduce((total, item) => {
+		const menuItem = resolveMenuItem(item.menuItemId);
+		return total + (menuItem?.priceInCents ?? 0) * item.quantity;
+	}, 0);
+
 	function handleAddItem(input: {
 		menuItemId: string;
 		notes?: string;
@@ -58,86 +77,111 @@ export function GuestMenuPage(props: { guestSessionToken: string }) {
 	}
 
 	return (
-		<main className="min-h-screen bg-[radial-gradient(circle_at_top,_rgba(14,165,233,0.16),_transparent_38%),linear-gradient(180deg,_rgba(255,255,255,1),_rgba(248,250,252,1))]">
-			<div className="mx-auto flex w-full max-w-6xl flex-col gap-10 px-4 py-10 md:px-8 md:py-14">
-				<GuestSessionGuard
-					errorMessage={menuQuery.error?.message}
-					isLoading={menuQuery.isLoading}
-				>
-					<div className="space-y-8">
-						<header className="space-y-4">
-							<Badge variant="outline">Menu digital</Badge>
-							<div className="space-y-2">
-								<h1 className="font-semibold text-4xl tracking-tight md:text-5xl">
-									Cardápio do quarto
-								</h1>
-								<p className="max-w-2xl text-base text-muted-foreground md:text-lg">
-									Veja os itens disponíveis do seu hotel e acompanhe tudo sem
-									precisar ligar para a recepção.
-								</p>
-							</div>
+		<PageShell containerClassName="max-w-6xl gap-10">
+			<GuestSessionGuard
+				errorMessage={menuQuery.error?.message}
+				isLoading={menuQuery.isLoading}
+			>
+				<div className="space-y-8">
+					<SectionHeader
+						badge="Menu digital"
+						description="Escolha os itens do seu quarto, personalize observações e envie o pedido com a mesma praticidade de uma experiência premium de hospitalidade."
+						title="Cardápio do quarto com pedido guiado"
+					/>
 
-							{menuQuery.data ? (
-								<div className="flex flex-wrap items-center gap-3 text-muted-foreground text-sm">
-									<Badge variant="secondary">
-										Quarto {menuQuery.data.guestSession.roomId}
-									</Badge>
-									<span>
-										Sessão válida até{" "}
-										{formatSessionExpiry(menuQuery.data.guestSession.expiresAt)}
-									</span>
-								</div>
-							) : null}
-						</header>
-
-						<Card className="border-border/60 bg-background/80 backdrop-blur-sm">
-							<CardHeader>
-								<CardTitle>Seu pedido</CardTitle>
-								<CardDescription>
-									Revise os itens selecionados e confirme o envio para a cozinha.
-								</CardDescription>
-							</CardHeader>
-							<CardContent className="space-y-4">
-								{items.length > 0 ? (
-									<div className="space-y-3">
-										{items.map((item, index) => (
-											<div
-												className="flex items-start justify-between gap-3 rounded-xl border border-border/60 p-3"
-												key={`${item.menuItemId}-${index}`}
-											>
-												<div className="space-y-1">
-													<p className="font-medium">
-														{item.quantity}x {item.menuItemId}
-													</p>
-													{item.notes ? (
-														<p className="text-muted-foreground text-sm">
-															{item.notes}
-														</p>
-													) : null}
-												</div>
-												<Button
-													onClick={() =>
-														setItems((currentItems) =>
-															currentItems.filter((_, itemIndex) => itemIndex !== index),
-														)
-													}
-													size="sm"
-													type="button"
-													variant="ghost"
-												>
-													Remover
-												</Button>
-											</div>
-										))}
-									</div>
-								) : (
-									<p className="text-muted-foreground text-sm">
-										Nenhum item adicionado ainda.
+					{menuQuery.data ? (
+						<div className="grid gap-3 md:grid-cols-3">
+							<Card className="border-primary/15 bg-card/88 backdrop-blur-sm" size="sm">
+								<CardContent className="space-y-1 pt-4">
+									<p className="font-medium text-primary text-sm">Quarto</p>
+									<p className="font-semibold text-2xl">
+										{menuQuery.data.guestSession.roomId}
 									</p>
-								)}
+								</CardContent>
+							</Card>
+							<Card className="border-primary/15 bg-card/88 backdrop-blur-sm" size="sm">
+								<CardContent className="space-y-1 pt-4">
+									<p className="font-medium text-primary text-sm">Sessão ativa até</p>
+									<p className="font-semibold text-lg">
+										{formatSessionExpiry(menuQuery.data.guestSession.expiresAt)}
+									</p>
+								</CardContent>
+							</Card>
+							<Card className="border-primary/15 bg-card/88 backdrop-blur-sm" size="sm">
+								<CardContent className="space-y-1 pt-4">
+									<p className="font-medium text-primary text-sm">Itens no pedido</p>
+									<p className="font-semibold text-2xl">{totalItems}</p>
+								</CardContent>
+							</Card>
+						</div>
+					) : null}
 
-								<Separator />
+					<Card className="border-primary/15 bg-card/88 shadow-lg shadow-primary/10 backdrop-blur-sm">
+						<CardHeader className="border-border/60 border-b">
+							<div className="flex flex-wrap items-start justify-between gap-3">
+								<div className="space-y-1">
+									<CardTitle>Seu pedido</CardTitle>
+									<CardDescription>
+										Revise os itens selecionados antes de confirmar o envio.
+									</CardDescription>
+								</div>
+								<Badge className="rounded-full px-3 py-1" variant="secondary">
+									{totalItems} item(ns)
+								</Badge>
+							</div>
+						</CardHeader>
+						<CardContent className="space-y-5 pt-6">
+							{items.length > 0 ? (
+								<div className="space-y-3">
+									{items.map((item, index) => (
+										<div
+											className="flex items-start justify-between gap-3 rounded-2xl border border-primary/10 bg-primary/[0.03] p-4"
+											key={`${item.menuItemId}-${index}`}
+										>
+											<div className="space-y-1">
+												<p className="font-medium">
+													{item.quantity}x{" "}
+													{resolveMenuItem(item.menuItemId)?.name ?? "Item do menu"}
+												</p>
+												<p className="text-muted-foreground text-sm">
+													{resolveMenuItem(item.menuItemId)
+														? formatPrice(
+																(resolveMenuItem(item.menuItemId)?.priceInCents ?? 0) *
+																	item.quantity,
+															)
+														: item.menuItemId}
+												</p>
+												{item.notes ? (
+													<p className="text-muted-foreground text-sm">
+														{item.notes}
+													</p>
+												) : null}
+											</div>
+											<Button
+												onClick={() =>
+													setItems((currentItems) =>
+														currentItems.filter((_, itemIndex) => itemIndex !== index),
+													)
+												}
+												size="sm"
+												type="button"
+												variant="ghost"
+											>
+												Remover
+											</Button>
+										</div>
+									))}
+								</div>
+							) : (
+								<div className="rounded-2xl border border-dashed border-primary/20 bg-primary/[0.03] px-5 py-6 text-muted-foreground text-sm">
+									Nenhum item adicionado ainda. Use os cards abaixo para montar seu
+									pedido.
+								</div>
+							)}
 
+							<Separator />
+
+							<div className="grid gap-5 lg:grid-cols-[1.1fr_0.9fr]">
 								<div className="space-y-2">
 									<Label htmlFor="order-notes">Observações gerais</Label>
 									<Textarea
@@ -148,11 +192,20 @@ export function GuestMenuPage(props: { guestSessionToken: string }) {
 									/>
 								</div>
 
-								<div className="flex flex-wrap items-center justify-between gap-3">
-									<p className="text-muted-foreground text-sm">
-										{totalItems} item(ns) adicionados
-									</p>
+								<div className="rounded-2xl border border-primary/10 bg-background/80 p-4">
+									<p className="font-medium text-primary text-sm">Resumo rápido</p>
+									<div className="mt-3 flex items-center justify-between text-sm">
+										<span className="text-muted-foreground">Itens</span>
+										<span className="font-medium">{totalItems}</span>
+									</div>
+									<div className="mt-2 flex items-center justify-between text-sm">
+										<span className="text-muted-foreground">Estimativa atual</span>
+										<span className="font-medium">
+											{formatPrice(totalValueInCents)}
+										</span>
+									</div>
 									<Button
+										className="mt-4 w-full shadow-sm shadow-primary/20"
 										disabled={items.length === 0 || createOrderMutation.isPending}
 										onClick={() =>
 											createOrderMutation.mutate({
@@ -168,26 +221,27 @@ export function GuestMenuPage(props: { guestSessionToken: string }) {
 											: "Confirmar pedido"}
 									</Button>
 								</div>
-								{createOrderMutation.error ? (
-									<p className="text-destructive text-sm">
-										{createOrderMutation.error.message}
-									</p>
-								) : null}
-							</CardContent>
-						</Card>
+							</div>
 
-						<div className="space-y-8">
-							{menuQuery.data?.categories.map((category) => (
-								<CategorySection
-									category={category}
-									key={category.id}
-									onAddItem={handleAddItem}
-								/>
-							))}
-						</div>
+							{createOrderMutation.error ? (
+								<p className="text-destructive text-sm">
+									{createOrderMutation.error.message}
+								</p>
+							) : null}
+						</CardContent>
+					</Card>
+
+					<div className="space-y-8">
+						{menuQuery.data?.categories.map((category) => (
+							<CategorySection
+								category={category}
+								key={category.id}
+								onAddItem={handleAddItem}
+							/>
+						))}
 					</div>
-				</GuestSessionGuard>
-			</div>
-		</main>
+				</div>
+			</GuestSessionGuard>
+		</PageShell>
 	);
 }

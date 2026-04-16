@@ -4,6 +4,7 @@ import { eq, gt } from "drizzle-orm";
 import { z } from "zod/v4";
 
 import { guestSessions, hotels, rooms } from "@finchat/db/schema";
+import { mapDomainErrorToUserMessage } from "../errors";
 import {
 	createGuestSessionFromRoomToken,
 	GuestSessionServiceError,
@@ -14,23 +15,26 @@ import { publicProcedure } from "../trpc";
 
 function mapGuestSessionServiceError(error: unknown): never {
 	if (error instanceof GuestSessionServiceError) {
+		const userMessage = mapDomainErrorToUserMessage(error, "guest");
+
 		if (
 			error.code === "GUEST_SESSION_EXPIRED" ||
 			error.code === "HOTEL_INACTIVE" ||
 			error.code === "ROOM_INACTIVE"
 		) {
-			throw new TRPCError({ code: "FORBIDDEN", message: error.message });
+			throw new TRPCError({ code: "FORBIDDEN", message: userMessage.message });
 		}
 
 		if (
 			error.code === "GUEST_SESSION_NOT_FOUND" ||
 			error.code === "ROOM_TOKEN_NOT_FOUND"
 		) {
-			throw new TRPCError({ code: "NOT_FOUND", message: error.message });
+			throw new TRPCError({ code: "NOT_FOUND", message: userMessage.message });
 		}
 	}
 
-	throw error;
+	const fallback = mapDomainErrorToUserMessage(error, "guest");
+	throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: fallback.message });
 }
 
 export const guestSessionRouter = {

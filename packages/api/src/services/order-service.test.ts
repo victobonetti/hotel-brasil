@@ -4,6 +4,7 @@ import {
 	createOrderFromGuestSession,
 	getOrderTracking,
 	listOrderStatusHistory,
+	transitionStaffOrderStatus,
 	type PersistedOrderHistoryRecord,
 	type PersistedOrderItemRecord,
 	type PersistedOrderRecord,
@@ -59,6 +60,13 @@ describe("createOrderFromGuestSession", () => {
 
 		expect(result.status).toBe("pending");
 		expect(result.totalAmountInCents).toBe(8400);
+		expect(result.auditContext).toMatchObject({
+			guestSessionId: "session-1",
+			hotelId: "hotel-1",
+			orderId: expect.any(String),
+			roomId: "room-101",
+			status: "pending",
+		});
 		expect(created.order?.status).toBe("pending");
 		expect(created.items?.[0]).toMatchObject({
 			itemNameSnapshot: "Burger",
@@ -257,5 +265,52 @@ describe("listOrderStatusHistory", () => {
 
 		expect(history).toHaveLength(1);
 		expect(history[0]?.orderId).toBe("order-1");
+	});
+});
+
+describe("transitionStaffOrderStatus", () => {
+	test("returns history, notification and audit context for a valid transition", async () => {
+		const result = await transitionStaffOrderStatus(
+			{
+				createHistoryEntry: () => undefined,
+				findMembershipByUserId: () => ({
+					hotelId: "hotel-1",
+					role: "manager",
+					userId: "user-1",
+				}),
+				findOrderById: () => ({
+					acceptedAt: null,
+					cancelledAt: null,
+					deliveredAt: null,
+					deliveringAt: null,
+					guestSessionId: "session-1",
+					hotelId: "hotel-1",
+					id: "order-1",
+					notes: null,
+					placedAt: new Date("2026-04-16T10:00:00.000Z"),
+					preparingAt: null,
+					roomId: "room-101",
+					status: "pending",
+					totalAmountInCents: 4200,
+				}),
+				now: () => new Date("2026-04-16T10:05:00.000Z"),
+				updateOrder: () => undefined,
+			},
+			{
+				nextStatus: "accepted",
+				orderId: "order-1",
+				userId: "user-1",
+			},
+		);
+
+		expect(result.auditContext).toMatchObject({
+			guestSessionId: "session-1",
+			hotelId: "hotel-1",
+			orderId: "order-1",
+			roomId: "room-101",
+			status: "accepted",
+		});
+		expect(result.notification.event.status).toBe("accepted");
+		expect(result.history.changedByUserId).toBe("user-1");
 	});
 });

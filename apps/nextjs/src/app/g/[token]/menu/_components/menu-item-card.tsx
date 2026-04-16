@@ -25,8 +25,8 @@ export function MenuItemCard(props: {
 	onAdd: (input: { menuItemId: string; notes?: string; quantity: number }) => void;
 }) {
 	return (
-		<Card className="h-full border-border/60 bg-background/80 backdrop-blur-sm" size="sm">
-			<CardHeader>
+		<Card className="h-full border-primary/15 bg-card/88 shadow-sm shadow-primary/10 backdrop-blur-sm" size="sm">
+			<CardHeader className="border-border/60 border-b">
 				<div className="flex items-start justify-between gap-3">
 					<div className="space-y-1">
 						<CardTitle>{props.item.name}</CardTitle>
@@ -34,13 +34,17 @@ export function MenuItemCard(props: {
 							<CardDescription>{props.item.description}</CardDescription>
 						) : null}
 					</div>
-					<Badge variant="secondary">{formatPrice(props.item.priceInCents)}</Badge>
+					<Badge className="rounded-full px-3 py-1" variant="secondary">
+						{formatPrice(props.item.priceInCents)}
+					</Badge>
 				</div>
 			</CardHeader>
-			<CardContent className="space-y-4">
-				<div className="flex items-center justify-between gap-3 text-muted-foreground text-xs">
+			<CardContent className="space-y-4 pt-4">
+				<div className="flex items-center justify-between gap-3 rounded-xl bg-primary/[0.04] px-3 py-2 text-muted-foreground text-xs">
 					<span>Entrega estimada</span>
-					<span>{props.item.preparationTimeMinutes ?? 15} min</span>
+					<span className="font-medium text-foreground">
+						{props.item.preparationTimeMinutes ?? 15} min
+					</span>
 				</div>
 				<form
 					action={(formData) => {
@@ -72,7 +76,7 @@ export function MenuItemCard(props: {
 							placeholder="Ex.: sem cebola, molho à parte"
 						/>
 					</div>
-					<Button className="w-full" type="submit">
+					<Button className="w-full shadow-sm shadow-primary/20" type="submit">
 						Adicionar ao pedido
 					</Button>
 				</form>

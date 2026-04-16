@@ -3,6 +3,8 @@ import { describe, expect, test } from "bun:test";
 import {
 	createCategory,
 	createMenuItem,
+	listCategoriesForStaff,
+	listMenuItemsForStaff,
 	reorderCategories,
 	toggleMenuItemAvailability,
 	updateCategory,
@@ -33,7 +35,6 @@ describe("createCategory", () => {
 				],
 			},
 			{
-				hotelId: "hotel-1",
 				name: "Lunch",
 				userId: "user-1",
 			},
@@ -97,7 +98,6 @@ describe("reorderCategories", () => {
 			},
 			{
 				categoryIds: ["cat-2", "cat-1"],
-				hotelId: "hotel-1",
 				userId: "user-1",
 			},
 		);
@@ -126,7 +126,6 @@ describe("createMenuItem", () => {
 			},
 			{
 				categoryId: "cat-1",
-				hotelId: "hotel-1",
 				name: "Burger",
 				priceInCents: 4200,
 				userId: "user-1",
@@ -154,13 +153,53 @@ describe("createMenuItem", () => {
 				},
 				{
 					categoryId: "cat-1",
-					hotelId: "hotel-1",
 					name: "Burger",
 					priceInCents: -1,
 					userId: "user-1",
 				},
 			),
 		).rejects.toMatchObject({ code: "INVALID_PRICE" });
+	});
+});
+
+describe("listCategoriesForStaff", () => {
+	test("returns only categories from the staff hotel", async () => {
+		const categories = await listCategoriesForStaff(
+			{
+				findMembershipByUserId: () => membership,
+				listCategoriesByHotelId: (hotelId) => [
+					{
+						active: true,
+						description: null,
+						hotelId,
+						id: "cat-1",
+						name: "Breakfast",
+						sortOrder: 0,
+					},
+				],
+			},
+			{ userId: "user-1" },
+		);
+
+		expect(categories).toEqual([
+			expect.objectContaining({
+				hotelId: "hotel-1",
+			}),
+		]);
+	});
+});
+
+describe("listMenuItemsForStaff", () => {
+	test("rejects a user without hotel membership", async () => {
+		await expect(
+			listMenuItemsForStaff(
+				{
+					findMembershipByUserId: () => null,
+					listMenuItemsByHotelId: () => [],
+				},
+				{ userId: "user-1" },
+			),
+		).rejects.toMatchObject({ code: "STAFF_MEMBERSHIP_REQUIRED" });
 	});
 });
 

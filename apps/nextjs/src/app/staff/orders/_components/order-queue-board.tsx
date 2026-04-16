@@ -37,14 +37,14 @@ export function OrderQueueBoard(props: {
 	selectedOrderId: string | null;
 }) {
 	return (
-		<Card>
-			<CardHeader>
+		<Card className="border-primary/15 bg-card/88 shadow-sm shadow-primary/10">
+			<CardHeader className="border-border/60 border-b">
 				<CardTitle>Fila operacional</CardTitle>
 			</CardHeader>
-			<CardContent className="space-y-3">
+			<CardContent className="space-y-3 pt-6">
 				{props.orders.map((order) => (
 					<Button
-						className="h-auto w-full justify-start rounded-xl border border-border/60 px-4 py-4 text-left"
+						className="h-auto w-full justify-start rounded-2xl border border-primary/10 px-4 py-4 text-left shadow-none"
 						key={order.id}
 						onClick={() => props.onSelect(order.id)}
 						variant={props.selectedOrderId === order.id ? "secondary" : "outline"}
@@ -63,6 +63,11 @@ export function OrderQueueBoard(props: {
 						</div>
 					</Button>
 				))}
+				{props.orders.length === 0 ? (
+					<div className="rounded-2xl border border-dashed border-primary/20 bg-primary/[0.03] px-5 py-6 text-muted-foreground text-sm">
+						Não há pedidos ativos na fila neste momento.
+					</div>
+				) : null}
 			</CardContent>
 		</Card>
 	);

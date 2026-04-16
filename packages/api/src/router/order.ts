@@ -12,6 +12,7 @@ import {
 	rooms,
 } from "@finchat/db/schema";
 import { and, asc, desc, eq, inArray } from "drizzle-orm";
+import { mapDomainErrorToUserMessage } from "../errors";
 import {
 	createOrderFromGuestSession,
 	getOrderByGuestSession,
@@ -24,6 +25,8 @@ import { publicProcedure } from "../trpc";
 
 function mapOrderServiceError(error: unknown): never {
 	if (error instanceof OrderServiceError) {
+		const userMessage = mapDomainErrorToUserMessage(error, "guest");
+
 		if (
 			error.code === "GUEST_SESSION_EXPIRED" ||
 			error.code === "HOTEL_INACTIVE" ||
@@ -31,7 +34,7 @@ function mapOrderServiceError(error: unknown): never {
 			error.code === "MENU_ITEM_UNAVAILABLE" ||
 			error.code === "TENANT_MISMATCH"
 		) {
-			throw new TRPCError({ code: "FORBIDDEN", message: error.message });
+			throw new TRPCError({ code: "FORBIDDEN", message: userMessage.message });
 		}
 
 		if (
@@ -39,11 +42,16 @@ function mapOrderServiceError(error: unknown): never {
 			error.code === "ORDER_NOT_FOUND" ||
 			error.code === "MENU_ITEM_NOT_FOUND"
 		) {
-			throw new TRPCError({ code: "NOT_FOUND", message: error.message });
+			throw new TRPCError({ code: "NOT_FOUND", message: userMessage.message });
+		}
+
+		if (error.code === "ORDER_TRANSITION_INVALID") {
+			throw new TRPCError({ code: "BAD_REQUEST", message: userMessage.message });
 		}
 	}
 
-	throw error;
+	const fallback = mapDomainErrorToUserMessage(error, "guest");
+	throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: fallback.message });
 }
 
 const guestOrderItemSchema = z.object({
@@ -106,6 +114,9 @@ export const orderRouter = {
 										})
 										.from(menuItems)
 										.where(inArray(menuItems.id, menuItemIds)),
+						logAuditEvent: (entry) => {
+							console.info("[order-audit]", JSON.stringify(entry));
+						},
 					},
 					input,
 				);

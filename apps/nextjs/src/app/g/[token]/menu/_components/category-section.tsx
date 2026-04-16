@@ -8,13 +8,20 @@ export function CategorySection(props: {
 }) {
 	return (
 		<section className="space-y-5">
-			<div className="space-y-1">
-				<h2 className="font-semibold text-2xl tracking-tight">{props.category.name}</h2>
-				{props.category.description ? (
-					<p className="max-w-2xl text-muted-foreground">
-						{props.category.description}
-					</p>
-				) : null}
+			<div className="flex items-end justify-between gap-3">
+				<div className="space-y-1">
+					<h2 className="font-semibold text-2xl tracking-tight">
+						{props.category.name}
+					</h2>
+					{props.category.description ? (
+						<p className="max-w-2xl text-muted-foreground">
+							{props.category.description}
+						</p>
+					) : null}
+				</div>
+				<div className="rounded-full border border-primary/15 bg-primary/[0.05] px-3 py-1 font-medium text-primary text-xs">
+					{props.category.items.length} item(ns)
+				</div>
 			</div>
 
 			{props.category.items.length > 0 ? (
@@ -24,7 +31,7 @@ export function CategorySection(props: {
 					))}
 				</div>
 			) : (
-				<div className="rounded-2xl border border-dashed border-border/70 bg-muted/30 px-5 py-6 text-muted-foreground text-sm">
+				<div className="rounded-2xl border border-dashed border-primary/20 bg-primary/[0.03] px-5 py-6 text-muted-foreground text-sm">
 					Não há itens disponíveis nesta categoria no momento.
 				</div>
 			)}

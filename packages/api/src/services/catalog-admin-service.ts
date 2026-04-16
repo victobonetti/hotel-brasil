@@ -93,12 +93,59 @@ function assertSameHotel(resourceHotelId: string, hotelId: string, entity: strin
 function ensureCatalogAccess(
 	userId: string,
 	membership: StaffHotelMembership | null,
-	hotelId: string,
 ) {
-	assertUserCanManageHotel(userId, membership, hotelId);
+	if (!membership) {
+		throw new Error("User is not assigned to this hotel");
+	}
+
+	assertUserCanManageHotel(userId, membership, membership.hotelId);
 	const resolvedMembership = membership as StaffHotelMembership;
 	assertCatalogAdminRole(resolvedMembership.role);
 	return resolvedMembership;
+}
+
+export async function listCategoriesForStaff(
+	deps: {
+		findMembershipByUserId: (
+			userId: string,
+		) => Promise<StaffHotelMembership | null> | StaffHotelMembership | null;
+		listCategoriesByHotelId: (
+			hotelId: string,
+		) => Promise<CatalogCategoryRecord[]> | CatalogCategoryRecord[];
+	},
+	input: { userId: string },
+) {
+	const membership = await deps.findMembershipByUserId(input.userId);
+	let access: StaffHotelMembership;
+	try {
+		access = ensureCatalogAccess(input.userId, membership);
+	} catch (error) {
+		toCatalogAdminServiceError(error);
+	}
+
+	return await deps.listCategoriesByHotelId(access.hotelId);
+}
+
+export async function listMenuItemsForStaff(
+	deps: {
+		findMembershipByUserId: (
+			userId: string,
+		) => Promise<StaffHotelMembership | null> | StaffHotelMembership | null;
+		listMenuItemsByHotelId: (
+			hotelId: string,
+		) => Promise<CatalogMenuItemRecord[]> | CatalogMenuItemRecord[];
+	},
+	input: { userId: string },
+) {
+	const membership = await deps.findMembershipByUserId(input.userId);
+	let access: StaffHotelMembership;
+	try {
+		access = ensureCatalogAccess(input.userId, membership);
+	} catch (error) {
+		toCatalogAdminServiceError(error);
+	}
+
+	return await deps.listMenuItemsByHotelId(access.hotelId);
 }
 
 export async function createCategory(
@@ -116,24 +163,24 @@ export async function createCategory(
 	input: {
 		active?: boolean;
 		description?: string;
-		hotelId: string;
 		name: string;
 		sortOrder?: number;
 		userId: string;
 	},
 ) {
 	const membership = await deps.findMembershipByUserId(input.userId);
+	let access: StaffHotelMembership;
 	try {
-		ensureCatalogAccess(input.userId, membership, input.hotelId);
+		access = ensureCatalogAccess(input.userId, membership);
 	} catch (error) {
 		toCatalogAdminServiceError(error);
 	}
 
-	const existingCategories = await deps.listCategoriesByHotelId(input.hotelId);
+	const existingCategories = await deps.listCategoriesByHotelId(access.hotelId);
 	const category: CatalogCategoryRecord = {
 		active: input.active ?? true,
 		description: input.description ?? null,
-		hotelId: input.hotelId,
+		hotelId: access.hotelId,
 		id: randomUUID(),
 		name: input.name,
 		sortOrder: input.sortOrder ?? existingCategories.length,
@@ -171,7 +218,8 @@ export async function updateCategory(
 
 	const membership = await deps.findMembershipByUserId(input.userId);
 	try {
-		ensureCatalogAccess(input.userId, membership, category.hotelId);
+		ensureCatalogAccess(input.userId, membership);
+		assertUserCanManageHotel(input.userId, membership, category.hotelId);
 	} catch (error) {
 		toCatalogAdminServiceError(error);
 	}
@@ -205,13 +253,13 @@ export async function reorderCategories(
 	},
 	input: {
 		categoryIds: string[];
-		hotelId: string;
 		userId: string;
 	},
 ) {
 	const membership = await deps.findMembershipByUserId(input.userId);
+	let access: StaffHotelMembership;
 	try {
-		ensureCatalogAccess(input.userId, membership, input.hotelId);
+		access = ensureCatalogAccess(input.userId, membership);
 	} catch (error) {
 		toCatalogAdminServiceError(error);
 	}
@@ -219,10 +267,17 @@ export async function reorderCategories(
 	const categories = await deps.listCategoriesByIds(input.categoryIds);
 	for (const category of categories) {
 		try {
-			assertSameHotel(category.hotelId, input.hotelId, "Category");
+			assertSameHotel(category.hotelId, access.hotelId, "Category");
 		} catch (error) {
 			toCatalogAdminServiceError(error);
 		}
+	}
+
+	if (categories.length !== input.categoryIds.length) {
+		throw new CatalogAdminServiceError(
+			"CATEGORY_NOT_FOUND",
+			"Category was not found",
+		);
 	}
 
 	await Promise.all(
@@ -253,7 +308,6 @@ export async function createMenuItem(
 		available?: boolean;
 		categoryId: string;
 		description?: string;
-		hotelId: string;
 		imageUrl?: string;
 		name: string;
 		preparationTimeMinutes?: number;
@@ -262,8 +316,9 @@ export async function createMenuItem(
 	},
 ) {
 	const membership = await deps.findMembershipByUserId(input.userId);
+	let access: StaffHotelMembership;
 	try {
-		ensureCatalogAccess(input.userId, membership, input.hotelId);
+		access = ensureCatalogAccess(input.userId, membership);
 		assertNonNegativePrice(input.priceInCents);
 	} catch (error) {
 		toCatalogAdminServiceError(error);
@@ -275,7 +330,7 @@ export async function createMenuItem(
 	}
 
 	try {
-		assertSameHotel(category.hotelId, input.hotelId, "Category");
+		assertSameHotel(category.hotelId, access.hotelId, "Category");
 	} catch (error) {
 		toCatalogAdminServiceError(error);
 	}
@@ -284,7 +339,7 @@ export async function createMenuItem(
 		available: input.available ?? true,
 		categoryId: input.categoryId,
 		description: input.description ?? null,
-		hotelId: input.hotelId,
+		hotelId: access.hotelId,
 		id: randomUUID(),
 		imageUrl: input.imageUrl ?? null,
 		name: input.name,
@@ -331,7 +386,8 @@ export async function updateMenuItem(
 
 	const membership = await deps.findMembershipByUserId(input.userId);
 	try {
-		ensureCatalogAccess(input.userId, membership, item.hotelId);
+		ensureCatalogAccess(input.userId, membership);
+		assertUserCanManageHotel(input.userId, membership, item.hotelId);
 		if (input.priceInCents !== undefined) {
 			assertNonNegativePrice(input.priceInCents);
 		}
@@ -401,7 +457,8 @@ export async function toggleMenuItemAvailability(
 
 	const membership = await deps.findMembershipByUserId(input.userId);
 	try {
-		ensureCatalogAccess(input.userId, membership, item.hotelId);
+		ensureCatalogAccess(input.userId, membership);
+		assertUserCanManageHotel(input.userId, membership, item.hotelId);
 	} catch (error) {
 		toCatalogAdminServiceError(error);
 	}

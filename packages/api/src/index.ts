@@ -21,11 +21,19 @@ type RouterOutputs = inferRouterOutputs<AppRouter>;
 export { type AppRouter, appRouter } from "./root";
 export { createTRPCContext } from "./trpc";
 export {
+	mapDomainErrorToUserMessage,
+	type UserFacingAudience,
+	type UserFacingErrorMessage,
+} from "./errors";
+export {
+	assertOrderExists,
 	calculateOrderTotal,
 	canTransitionOrderStatus,
+	createOrderAuditContext,
 	isMenuItemAvailable,
 	transitionOrderStatus,
 	validateOrderCreation,
+	type OrderAuditContext,
 	type OrderCreationItem,
 	type OrderCreationPayload,
 	type OrderTotalLineItem,
@@ -38,7 +46,12 @@ export {
 	type GuestSessionContext,
 	type RoomTokenContext,
 } from "./domain/guest-session";
-export { belongsToHotel } from "./domain/tenancy";
+export {
+	assertResourceBelongsToTenant,
+	belongsToHotel,
+	createTenantScope,
+	type TenantScope,
+} from "./domain/tenancy";
 export {
 	getMenuForGuestSession,
 	listAvailableItems,
@@ -74,6 +87,8 @@ export {
 export {
 	createCategory,
 	createMenuItem,
+	listCategoriesForStaff,
+	listMenuItemsForStaff,
 	reorderCategories,
 	toggleMenuItemAvailability,
 	updateCategory,
