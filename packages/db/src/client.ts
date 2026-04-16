@@ -1,27 +1,27 @@
-import { neonConfig, Pool } from "@neondatabase/serverless";
-import { drizzle } from "drizzle-orm/neon-serverless";
+import { drizzle } from "drizzle-orm/postgres-js";
+import postgres from "postgres";
 
 import * as schema from "./schema";
 
 if (!process.env.DATABASE_URL) {
 	throw new Error("Missing DATABASE_URL");
 }
-const url = new URL(process.env.DATABASE_URL);
-const connectionString = url.toString();
 
-if (url.hostname === "localhost") {
-	neonConfig.wsProxy = (host) => `${host}:5433/v1`;
-	neonConfig.useSecureWebSocket = false;
-	neonConfig.pipelineTLS = false;
-	neonConfig.pipelineConnect = false;
-} else {
-	neonConfig.webSocketConstructor = WebSocket;
-	neonConfig.poolQueryViaFetch = true;
+type SqlOptions = {
+	ssl: false | "require";
+};
+
+export function getSqlOptions(databaseUrl: string): SqlOptions {
+	const { hostname } = new URL(databaseUrl);
+
+	return {
+		ssl: hostname === "localhost" ? false : "require",
+	};
 }
 
-const pool = new Pool({ connectionString });
+const client = postgres(process.env.DATABASE_URL, getSqlOptions(process.env.DATABASE_URL));
 
-export const db = drizzle({ client: pool, schema });
+export const db = drizzle({ client, schema });
 
 export type Drizzle = typeof db;
 export type DrizzleTransaction = Parameters<

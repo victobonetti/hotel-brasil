@@ -11,6 +11,7 @@ import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 
 import { auth, getSession } from "~/auth/server";
+import { GoogleSignInButton } from "./google-sign-in-button";
 
 export async function AuthShowcase() {
 	const session = await getSession();
@@ -34,24 +35,7 @@ export async function AuthShowcase() {
 							O acesso do staff respeita o vínculo da conta com cada hotel.
 						</p>
 					</div>
-					<form>
-						<Button
-							className="w-full"
-							formAction={async () => {
-								"use server";
-								await auth.api.signInSocial({
-									body: {
-										callbackURL: "/",
-										provider: "google",
-									},
-								});
-							}}
-							size="lg"
-							type="submit"
-						>
-							Entrar com Google
-						</Button>
-					</form>
+					<GoogleSignInButton />
 				</CardContent>
 			</Card>
 		);

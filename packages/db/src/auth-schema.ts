@@ -1,4 +1,16 @@
-import { pgTable } from "drizzle-orm/pg-core";
+import { customType, pgTable } from "drizzle-orm/pg-core";
+
+const jsonText = customType<{ data: unknown; driverData: string }>({
+	dataType() {
+		return "text";
+	},
+	fromDriver(value) {
+		return value;
+	},
+	toDriver(value) {
+		return typeof value === "string" ? value : JSON.stringify(value);
+	},
+});
 
 export const users = pgTable("user", (t) => ({
 	createdAt: t.timestamp().notNull(),
@@ -49,5 +61,5 @@ export const verifications = pgTable("verification", (t) => ({
 	id: t.text().primaryKey(),
 	identifier: t.text().notNull(),
 	updatedAt: t.timestamp(),
-	value: t.text().notNull(),
+	value: jsonText("value").notNull(),
 }));

@@ -1,0 +1,8 @@
+   ▲ Next.js 16.0.9 (Turbopack, Cache Components)
+   - Local:         http://localhost:3000
+   - Network:       http://54.232.189.113:3000
+   - Environments: .env
+
+ ✓ Starting...
+ ✓ Ready in 747ms
+ POST /api/auth/sign-in/social 200 in 3.8s (compile: 1672ms, render: 2.1s)
