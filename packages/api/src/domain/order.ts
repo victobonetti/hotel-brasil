@@ -247,6 +247,40 @@ export function transitionOrderStatusWithAudit(
 	};
 }
 
+export type OrderStatusEvent = {
+	hotelId: string;
+	orderId: string;
+	roomId: string;
+	status: OrderStatus;
+	timestamp: Date;
+};
+
+export function buildOrderStatusEvent(input: {
+	changedAt?: Date;
+	hotelId: string;
+	orderId: string;
+	roomId: string;
+	status: OrderStatus;
+}) {
+	return {
+		hotelId: input.hotelId,
+		orderId: input.orderId,
+		roomId: input.roomId,
+		status: input.status,
+		timestamp: input.changedAt ?? new Date(),
+	} satisfies OrderStatusEvent;
+}
+
+export function shouldNotifyGuest(status: OrderStatus) {
+	return (
+		status === "accepted" ||
+		status === "preparing" ||
+		status === "out_for_delivery" ||
+		status === "delivered" ||
+		status === "cancelled"
+	);
+}
+
 export function canTransitionOrderStatus(
 	currentStatus: OrderStatus,
 	nextStatus: OrderStatus,

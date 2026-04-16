@@ -21,27 +21,42 @@ export function OrderActionButtons(props: {
 	const trpc = useTRPC();
 	const acceptMutation = useMutation(
 		trpc.staffOrder.acceptOrder.mutationOptions({
-			onSuccess: props.onSuccess,
+			onSuccess: (data) => {
+				void data;
+				props.onSuccess?.();
+			},
 		}),
 	);
 	const preparingMutation = useMutation(
 		trpc.staffOrder.markOrderPreparing.mutationOptions({
-			onSuccess: props.onSuccess,
+			onSuccess: (data) => {
+				void data;
+				props.onSuccess?.();
+			},
 		}),
 	);
 	const outForDeliveryMutation = useMutation(
 		trpc.staffOrder.markOrderOutForDelivery.mutationOptions({
-			onSuccess: props.onSuccess,
+			onSuccess: (data) => {
+				void data;
+				props.onSuccess?.();
+			},
 		}),
 	);
 	const deliveredMutation = useMutation(
 		trpc.staffOrder.markOrderDelivered.mutationOptions({
-			onSuccess: props.onSuccess,
+			onSuccess: (data) => {
+				void data;
+				props.onSuccess?.();
+			},
 		}),
 	);
 	const cancelMutation = useMutation(
 		trpc.staffOrder.cancelOrder.mutationOptions({
-			onSuccess: props.onSuccess,
+			onSuccess: (data) => {
+				void data;
+				props.onSuccess?.();
+			},
 		}),
 	);
 

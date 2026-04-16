@@ -4,12 +4,14 @@ import {
 	assertUserCanManageHotel,
 	assertGuestSessionCanOrder,
 	assertMenuItemsBelongToHotel,
+	buildOrderStatusEvent,
 	buildOrderItemSnapshots,
 	calculateOrderTotal,
 	canTransitionOrderStatus,
 	createInitialStatusHistory,
 	isMenuItemAvailable,
 	listOperationalOrders,
+	shouldNotifyGuest,
 	transitionOrderStatusWithAudit,
 	transitionOrderStatus,
 	validateOrderCreation,
@@ -323,6 +325,42 @@ describe("transitionOrderStatusWithAudit", () => {
 				"user-1",
 			),
 		).toThrow(/Cannot transition/);
+	});
+});
+
+describe("buildOrderStatusEvent", () => {
+	test("builds the minimum payload for in-app status updates", () => {
+		const changedAt = new Date("2026-04-16T10:00:00.000Z");
+
+		expect(
+			buildOrderStatusEvent({
+				changedAt,
+				hotelId: "hotel-1",
+				orderId: "order-1",
+				roomId: "room-101",
+				status: "accepted",
+			}),
+		).toEqual({
+			hotelId: "hotel-1",
+			orderId: "order-1",
+			roomId: "room-101",
+			status: "accepted",
+			timestamp: changedAt,
+		});
+	});
+});
+
+describe("shouldNotifyGuest", () => {
+	test("returns true for guest-visible operational transitions", () => {
+		expect(shouldNotifyGuest("accepted")).toBe(true);
+		expect(shouldNotifyGuest("preparing")).toBe(true);
+		expect(shouldNotifyGuest("out_for_delivery")).toBe(true);
+		expect(shouldNotifyGuest("delivered")).toBe(true);
+		expect(shouldNotifyGuest("cancelled")).toBe(true);
+	});
+
+	test("returns false for internal or initial states", () => {
+		expect(shouldNotifyGuest("pending")).toBe(false);
 	});
 });
 

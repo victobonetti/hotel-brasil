@@ -521,7 +521,7 @@ Procedures:
 
 ---
 
-## Etapa 7 — Admin de catálogo para o hotel
+## Etapa 7 — Admin de catálogo para o hotel [FINALIZADA]
 
 ### Objetivo
 
@@ -563,7 +563,7 @@ Procedures:
 
 ---
 
-## Etapa 8 — Tempo real e notificações
+## Etapa 8 — Tempo real e notificações [FINALIZADA]
 
 ### Objetivo
 

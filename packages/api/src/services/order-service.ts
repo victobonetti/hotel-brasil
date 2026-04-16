@@ -5,10 +5,12 @@ import {
 	assertGuestSessionCanOrder,
 	assertMenuItemsBelongToHotel,
 	assertUserCanManageHotel,
+	buildOrderStatusEvent,
 	buildOrderItemSnapshots,
 	calculateOrderTotal,
 	createInitialStatusHistory,
 	listOperationalOrders,
+	shouldNotifyGuest,
 	transitionOrderStatusWithAudit,
 	validateOrderCreation,
 	type RequestedOrderItem,
@@ -81,6 +83,16 @@ export type StaffHotelMembership = {
 	hotelId: string;
 	role: "admin" | "frontdesk" | "kitchen" | "manager";
 	userId: string;
+};
+
+export type InAppOrderStatusNotification = {
+	guest: {
+		shouldNotify: boolean;
+	};
+	staff: {
+		shouldRefetchActiveOrders: boolean;
+	};
+	event: ReturnType<typeof buildOrderStatusEvent>;
 };
 
 type OrderServiceDeps = {
@@ -410,6 +422,21 @@ export async function transitionStaffOrderStatus(
 	await deps.createHistoryEntry(history);
 
 	return {
+		notification: {
+			event: buildOrderStatusEvent({
+				changedAt,
+				hotelId: order.hotelId,
+				orderId: order.id,
+				roomId: order.roomId,
+				status: transition.order.status,
+			}),
+			guest: {
+				shouldNotify: shouldNotifyGuest(transition.order.status),
+			},
+			staff: {
+				shouldRefetchActiveOrders: true,
+			},
+		} satisfies InAppOrderStatusNotification,
 		history,
 		order: {
 			...order,

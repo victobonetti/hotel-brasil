@@ -55,19 +55,33 @@ export {
 	listGuestOrders,
 	listOrderStatusHistory,
 	OrderServiceError,
+	type InAppOrderStatusNotification,
 	type OrderTrackingView,
 } from "./services/order-service";
 export {
 	assertGuestSessionCanOrder,
 	assertMenuItemsBelongToHotel,
 	assertUserCanManageHotel,
+	buildOrderStatusEvent,
 	buildOrderItemSnapshots,
 	createInitialStatusHistory,
 	listOperationalOrders,
+	shouldNotifyGuest,
 	transitionOrderStatusWithAudit,
 	type RequestedOrderItem,
 	type OrderItemSnapshot,
 } from "./domain/order";
+export {
+	createCategory,
+	createMenuItem,
+	reorderCategories,
+	toggleMenuItemAvailability,
+	updateCategory,
+	updateMenuItem,
+	CatalogAdminServiceError,
+	type CatalogCategoryRecord,
+	type CatalogMenuItemRecord,
+} from "./services/catalog-admin-service";
 export {
 	createGuestSessionFromRoomToken,
 	refreshGuestSession,
