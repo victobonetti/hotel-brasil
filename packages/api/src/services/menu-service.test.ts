@@ -4,7 +4,7 @@ import {
 	getMenuForGuestSession,
 	listAvailableItems,
 	listCategoriesByHotel,
-	MenuServiceError,
+	type MenuServiceError,
 } from "./menu-service";
 
 const baseCategories = [
@@ -116,7 +116,9 @@ describe("listCategoriesByHotel", () => {
 describe("listAvailableItems", () => {
 	test("orders items correctly by name", () => {
 		expect(
-			listAvailableItems(baseItems, "hotel-a", ["cat-lunch"]).map((item) => item.id),
+			listAvailableItems(baseItems, "hotel-a", ["cat-lunch"]).map(
+				(item) => item.id,
+			),
 		).toEqual(["item-juice", "item-sandwich"]);
 	});
 
@@ -146,22 +148,31 @@ describe("getMenuForGuestSession", () => {
 					hotelId: "hotel-a",
 					id: "session-1",
 					roomId: "room-101",
+					roomLabel: "101",
 					token: "valid",
 				}),
 				listCategoriesByHotel: () => baseCategories,
 				listItemsByHotel: () => baseItems,
 				now: () => new Date("2026-04-15T00:00:00.000Z"),
 			},
-			{ guestSessionToken: "valid" },
+			{ guestSessionToken: "valid", page: 1, pageSize: 6 },
 		);
 
 		expect(menu.categories.map((category) => category.id)).toEqual([
 			"cat-lunch",
 			"cat-breakfast",
 		]);
+		expect(menu.pagination).toMatchObject({
+			hasNextPage: false,
+			hasPreviousPage: false,
+			page: 1,
+			pageSize: 6,
+			totalItems: 2,
+			totalPages: 1,
+		});
 	});
 
-	test("returns only available items", async () => {
+	test("returns only available items inside the visible categories", async () => {
 		const menu = await getMenuForGuestSession(
 			{
 				findGuestSessionByToken: () => ({
@@ -169,17 +180,21 @@ describe("getMenuForGuestSession", () => {
 					hotelId: "hotel-a",
 					id: "session-1",
 					roomId: "room-101",
+					roomLabel: "101",
 					token: "valid",
 				}),
 				listCategoriesByHotel: () => baseCategories,
 				listItemsByHotel: () => baseItems,
 				now: () => new Date("2026-04-15T00:00:00.000Z"),
 			},
-			{ guestSessionToken: "valid" },
+			{ guestSessionToken: "valid", page: 1, pageSize: 6 },
 		);
 
-		expect(menu.categories.flatMap((category) => category.items).map((item) => item.id))
-			.toEqual(["item-juice", "item-sandwich"]);
+		expect(
+			menu.categories
+				.flatMap((category) => category.items)
+				.map((item) => item.id),
+		).toEqual(["item-juice", "item-sandwich"]);
 	});
 
 	test("does not return items from another hotel", async () => {
@@ -190,18 +205,19 @@ describe("getMenuForGuestSession", () => {
 					hotelId: "hotel-a",
 					id: "session-1",
 					roomId: "room-101",
+					roomLabel: "101",
 					token: "valid",
 				}),
 				listCategoriesByHotel: () => baseCategories,
 				listItemsByHotel: () => baseItems,
 				now: () => new Date("2026-04-15T00:00:00.000Z"),
 			},
-			{ guestSessionToken: "valid" },
+			{ guestSessionToken: "valid", page: 1, pageSize: 6 },
 		);
 
-		expect(menu.categories.flatMap((category) => category.items)).not.toContainEqual(
-			expect.objectContaining({ id: "item-other-hotel" }),
-		);
+		expect(
+			menu.categories.flatMap((category) => category.items),
+		).not.toContainEqual(expect.objectContaining({ id: "item-other-hotel" }));
 	});
 
 	test("fails when the session is expired", async () => {
@@ -213,13 +229,14 @@ describe("getMenuForGuestSession", () => {
 						hotelId: "hotel-a",
 						id: "session-1",
 						roomId: "room-101",
+						roomLabel: "101",
 						token: "expired",
 					}),
 					listCategoriesByHotel: () => baseCategories,
 					listItemsByHotel: () => baseItems,
 					now: () => new Date("2026-04-15T00:00:00.000Z"),
 				},
-				{ guestSessionToken: "expired" },
+				{ guestSessionToken: "expired", page: 1, pageSize: 6 },
 			),
 		).rejects.toMatchObject({
 			code: "GUEST_SESSION_EXPIRED",
@@ -234,10 +251,83 @@ describe("getMenuForGuestSession", () => {
 					listCategoriesByHotel: () => baseCategories,
 					listItemsByHotel: () => baseItems,
 				},
-				{ guestSessionToken: "invalid" },
+				{ guestSessionToken: "invalid", page: 1, pageSize: 6 },
 			),
 		).rejects.toMatchObject({
 			code: "GUEST_SESSION_NOT_FOUND",
 		} satisfies Partial<MenuServiceError>);
+	});
+
+	test("passes through the friendly room label when it exists", async () => {
+		const menu = await getMenuForGuestSession(
+			{
+				findGuestSessionByToken: () => ({
+					expiresAt: new Date("2026-04-16T00:00:00.000Z"),
+					hotelId: "hotel-a",
+					id: "session-1",
+					roomId: "room-101",
+					roomLabel: "305",
+					token: "valid",
+				}),
+				listCategoriesByHotel: () => baseCategories,
+				listItemsByHotel: () => baseItems,
+				now: () => new Date("2026-04-15T00:00:00.000Z"),
+			},
+			{ guestSessionToken: "valid", page: 1, pageSize: 6 },
+		);
+
+		expect(menu.guestSession.roomLabel).toBe("305");
+	});
+
+	test("paginates visible categories after filtering and ordering", async () => {
+		const menu = await getMenuForGuestSession(
+			{
+				findGuestSessionByToken: () => ({
+					expiresAt: new Date("2026-04-16T00:00:00.000Z"),
+					hotelId: "hotel-a",
+					id: "session-1",
+					roomId: "room-101",
+					roomLabel: "101",
+					token: "valid",
+				}),
+				listCategoriesByHotel: () =>
+					Array.from({ length: 7 }, (_, index) => ({
+						active: true,
+						description: `Category ${index + 1}`,
+						hotelId: "hotel-a",
+						id: `cat-${index + 1}`,
+						name: `Category ${index + 1}`,
+						sortOrder: index,
+					})),
+				listItemsByHotel: () => [
+					{
+						available: true,
+						categoryId: "cat-7",
+						description: "Last category item",
+						hotelId: "hotel-a",
+						id: "item-7",
+						imageUrl: null,
+						name: "Late Item",
+						preparationTimeMinutes: 10,
+						priceInCents: 3200,
+					},
+				],
+				now: () => new Date("2026-04-15T00:00:00.000Z"),
+			},
+			{ guestSessionToken: "valid", page: 2, pageSize: 6 },
+		);
+
+		expect(menu.categories.map((category) => category.id)).toEqual(["cat-7"]);
+		expect(menu.categories[0]?.items.map((item) => item.id)).toEqual([
+			"item-7",
+		]);
+		expect(menu.pagination).toMatchObject({
+			hasNextPage: false,
+			hasPreviousPage: true,
+			page: 2,
+			pageSize: 6,
+			totalItems: 7,
+			totalPages: 2,
+		});
 	});
 });

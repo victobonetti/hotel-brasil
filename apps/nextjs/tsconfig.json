@@ -7,7 +7,7 @@
 		},
 		"plugins": [{ "name": "next" }]
 	},
-	"exclude": ["node_modules"],
+	"exclude": ["node_modules", "src/**/*.test.ts"],
 	"extends": "@finchat/tsconfig/base.json",
 	"include": [".", ".next/types/**/*.ts"]
 }

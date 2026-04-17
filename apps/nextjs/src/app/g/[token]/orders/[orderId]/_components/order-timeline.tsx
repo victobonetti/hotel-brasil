@@ -2,7 +2,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@finchat/ui/card";
 
 import { OrderStatusBadge } from "./order-status-badge";
 
-type HistoryItem = {
+interface HistoryItem {
 	changedAt: Date;
 	id: string;
 	reason: string | null;
@@ -13,7 +13,7 @@ type HistoryItem = {
 		| "out_for_delivery"
 		| "pending"
 		| "preparing";
-};
+}
 
 function formatDate(date: Date) {
 	return new Intl.DateTimeFormat("pt-BR", {
@@ -22,9 +22,9 @@ function formatDate(date: Date) {
 	}).format(date);
 }
 
-export function OrderTimeline(props: { history: HistoryItem[] }) {
+export function OrderTimeline(props: { history: Array<HistoryItem> }) {
 	return (
-		<Card className="border-primary/15 bg-card/88 shadow-sm shadow-primary/10">
+		<Card className="border-primary/15 bg-card/88 shadow-primary/10 shadow-sm">
 			<CardHeader className="border-border/60 border-b">
 				<CardTitle>Linha do tempo</CardTitle>
 			</CardHeader>
@@ -32,7 +32,7 @@ export function OrderTimeline(props: { history: HistoryItem[] }) {
 				{props.history.map((entry, index) => (
 					<div className="flex items-start gap-3" key={entry.id}>
 						<div className="mt-1.5 flex flex-col items-center">
-							<div className="size-3 rounded-full bg-primary shadow-sm shadow-primary/40" />
+							<div className="size-3 rounded-full bg-primary shadow-primary/40 shadow-sm" />
 							{index < props.history.length - 1 ? (
 								<div className="mt-1 h-12 w-px bg-border" />
 							) : null}

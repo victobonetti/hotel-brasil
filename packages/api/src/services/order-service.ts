@@ -1,44 +1,46 @@
 import { randomUUID } from "node:crypto";
 
 import type { OrderStatus } from "@finchat/db/schema";
+import { buildPaginationMetadata, type PaginatedResult } from "@finchat/utils";
 import {
 	assertGuestSessionCanOrder,
-	assertOrderExists,
 	assertMenuItemsBelongToHotel,
+	assertOrderExists,
 	assertUserCanManageHotel,
-	buildOrderStatusEvent,
 	buildOrderItemSnapshots,
+	buildOrderStatusEvent,
 	calculateOrderTotal,
-	createOrderAuditContext,
 	createInitialStatusHistory,
+	createOrderAuditContext,
 	listOperationalOrders,
+	type OrderAuditContext,
+	type RequestedOrderItem,
 	shouldNotifyGuest,
+	type TransitionableOrder,
 	transitionOrderStatusWithAudit,
 	validateOrderCreation,
-	type RequestedOrderItem,
-	type OrderAuditContext,
-	type TransitionableOrder,
 } from "../domain/order";
 
-export type GuestSessionOrderLookup = {
+export interface GuestSessionOrderLookup {
 	expiresAt: Date;
 	hotelActive: boolean;
 	hotelId: string;
 	id: string;
+	roomLabel?: string;
 	roomActive: boolean;
 	roomId: string;
 	token: string;
-};
+}
 
-export type MenuItemOrderLookup = {
+export interface MenuItemOrderLookup {
 	available: boolean;
 	hotelId: string;
 	id: string;
 	name: string;
 	priceInCents: number;
-};
+}
 
-export type PersistedOrderRecord = {
+export interface PersistedOrderRecord {
 	acceptedAt: Date | null;
 	cancelledAt: Date | null;
 	deliveredAt: Date | null;
@@ -52,9 +54,9 @@ export type PersistedOrderRecord = {
 	roomId: string;
 	status: OrderStatus;
 	totalAmountInCents: number;
-};
+}
 
-export type PersistedOrderItemRecord = {
+export interface PersistedOrderItemRecord {
 	id: string;
 	itemNameSnapshot: string;
 	lineTotalInCents: number;
@@ -63,9 +65,9 @@ export type PersistedOrderItemRecord = {
 	orderId: string;
 	quantity: number;
 	unitPriceSnapshotInCents: number;
-};
+}
 
-export type PersistedOrderHistoryRecord = {
+export interface PersistedOrderHistoryRecord {
 	changedAt: Date;
 	changedByUserId: string | null;
 	fromStatus: OrderStatus | null;
@@ -73,22 +75,22 @@ export type PersistedOrderHistoryRecord = {
 	orderId: string;
 	reason: string | null;
 	toStatus: OrderStatus;
-};
+}
 
-export type OrderTrackingView = {
-	history: PersistedOrderHistoryRecord[];
+export interface OrderTrackingView {
+	history: Array<PersistedOrderHistoryRecord>;
 	order: PersistedOrderRecord & {
-		items: PersistedOrderItemRecord[];
+		items: Array<PersistedOrderItemRecord>;
 	};
-};
+}
 
-export type StaffHotelMembership = {
+export interface StaffHotelMembership {
 	hotelId: string;
 	role: "admin" | "frontdesk" | "kitchen" | "manager";
 	userId: string;
-};
+}
 
-export type InAppOrderStatusNotification = {
+export interface InAppOrderStatusNotification {
 	guest: {
 		shouldNotify: boolean;
 	};
@@ -96,18 +98,18 @@ export type InAppOrderStatusNotification = {
 		shouldRefetchActiveOrders: boolean;
 	};
 	event: ReturnType<typeof buildOrderStatusEvent>;
-};
+}
 
-export type OrderAuditLogEntry = {
+export interface OrderAuditLogEntry {
 	action: string;
 	auditContext: OrderAuditContext;
 	actorUserId: string | null;
-};
+}
 
-type OrderServiceDeps = {
+interface OrderServiceDeps {
 	createOrder: (
 		order: PersistedOrderRecord,
-		items: PersistedOrderItemRecord[],
+		items: Array<PersistedOrderItemRecord>,
 		history: PersistedOrderHistoryRecord,
 	) => Promise<void> | void;
 	findGuestSessionByToken: (
@@ -119,13 +121,13 @@ type OrderServiceDeps = {
 	) => Promise<OrderTrackingView | null> | OrderTrackingView | null;
 	listGuestOrders: (
 		guestSessionId: string,
-	) => Promise<PersistedOrderRecord[]> | PersistedOrderRecord[];
+	) => Promise<Array<PersistedOrderRecord>> | Array<PersistedOrderRecord>;
 	loadMenuItems: (
-		menuItemIds: string[],
-	) => Promise<MenuItemOrderLookup[]> | MenuItemOrderLookup[];
+		menuItemIds: Array<string>,
+	) => Promise<Array<MenuItemOrderLookup>> | Array<MenuItemOrderLookup>;
 	logAuditEvent?: (entry: OrderAuditLogEntry) => Promise<void> | void;
 	now?: () => Date;
-};
+}
 
 export class OrderServiceError extends Error {
 	constructor(
@@ -176,7 +178,10 @@ function toOrderServiceError(error: unknown): never {
 			throw new OrderServiceError("MENU_ITEM_UNAVAILABLE", error.message);
 		}
 
-		if (error.message.includes("Order") && error.message.includes("not found")) {
+		if (
+			error.message.includes("Order") &&
+			error.message.includes("not found")
+		) {
 			throw new OrderServiceError("ORDER_NOT_FOUND", error.message);
 		}
 
@@ -196,11 +201,13 @@ export async function createOrderFromGuestSession(
 	deps: OrderServiceDeps,
 	input: {
 		guestSessionToken: string;
-		items: RequestedOrderItem[];
+		items: Array<RequestedOrderItem>;
 		orderNotes?: string;
 	},
 ) {
-	const guestSession = await deps.findGuestSessionByToken(input.guestSessionToken);
+	const guestSession = await deps.findGuestSessionByToken(
+		input.guestSessionToken,
+	);
 	if (!guestSession) {
 		throw new OrderServiceError(
 			"GUEST_SESSION_NOT_FOUND",
@@ -269,12 +276,14 @@ export async function createOrderFromGuestSession(
 		totalAmountInCents,
 	};
 
-	const orderItems: PersistedOrderItemRecord[] = snapshots.map((snapshot) => ({
-		...snapshot,
-		id: randomUUID(),
-		notes: snapshot.notes ?? null,
-		orderId,
-	}));
+	const orderItems: Array<PersistedOrderItemRecord> = snapshots.map(
+		(snapshot) => ({
+			...snapshot,
+			id: randomUUID(),
+			notes: snapshot.notes ?? null,
+			orderId,
+		}),
+	);
 
 	const initialHistoryData = createInitialStatusHistory(orderId, now);
 	const history: PersistedOrderHistoryRecord = {
@@ -286,8 +295,8 @@ export async function createOrderFromGuestSession(
 	const auditContext = createOrderAuditContext(order);
 	await deps.logAuditEvent?.({
 		action: "order.created",
-		auditContext,
 		actorUserId: null,
+		auditContext,
 	});
 
 	return {
@@ -305,7 +314,9 @@ export async function getOrderTracking(
 		orderId: string;
 	},
 ) {
-	const guestSession = await deps.findGuestSessionByToken(input.guestSessionToken);
+	const guestSession = await deps.findGuestSessionByToken(
+		input.guestSessionToken,
+	);
 	if (!guestSession) {
 		throw new OrderServiceError(
 			"GUEST_SESSION_NOT_FOUND",
@@ -326,7 +337,10 @@ export async function getOrderTracking(
 	let tracking: OrderTrackingView;
 	try {
 		tracking = assertOrderExists(
-			await deps.findOrderTrackingByGuestSession(guestSession.id, input.orderId),
+			await deps.findOrderTrackingByGuestSession(
+				guestSession.id,
+				input.orderId,
+			),
 			input.orderId,
 		);
 	} catch (error) {
@@ -366,7 +380,9 @@ export async function listGuestOrders(
 	deps: OrderServiceDeps,
 	input: { guestSessionToken: string },
 ) {
-	const guestSession = await deps.findGuestSessionByToken(input.guestSessionToken);
+	const guestSession = await deps.findGuestSessionByToken(
+		input.guestSessionToken,
+	);
 	if (!guestSession) {
 		throw new OrderServiceError(
 			"GUEST_SESSION_NOT_FOUND",
@@ -389,15 +405,17 @@ export async function listGuestOrders(
 
 export async function listActiveOrders(
 	deps: {
+		countOrdersByHotelId: (hotelId: string) => Promise<number> | number;
 		findMembershipByUserId: (
 			userId: string,
 		) => Promise<StaffHotelMembership | null> | StaffHotelMembership | null;
 		listOrdersByHotelId: (
 			hotelId: string,
-		) => Promise<PersistedOrderRecord[]> | PersistedOrderRecord[];
+			input: { limit: number; offset: number },
+		) => Promise<Array<PersistedOrderRecord>> | Array<PersistedOrderRecord>;
 	},
-	input: { userId: string },
-) {
+	input: { page?: number; pageSize: number; userId: string },
+): Promise<PaginatedResult<PersistedOrderRecord>> {
 	const membership = await deps.findMembershipByUserId(input.userId);
 	if (!membership) {
 		throw new OrderServiceError(
@@ -406,8 +424,21 @@ export async function listActiveOrders(
 		);
 	}
 
-	const orders = await deps.listOrdersByHotelId(membership.hotelId);
-	return listOperationalOrders(orders, { hotelId: membership.hotelId });
+	const totalItems = await deps.countOrdersByHotelId(membership.hotelId);
+	const pagination = buildPaginationMetadata({
+		page: input.page,
+		pageSize: input.pageSize,
+		totalItems,
+	});
+	const orders = await deps.listOrdersByHotelId(membership.hotelId, {
+		limit: pagination.pageSize,
+		offset: (pagination.page - 1) * pagination.pageSize,
+	});
+
+	return {
+		items: listOperationalOrders(orders, { hotelId: membership.hotelId }),
+		pagination,
+	};
 }
 
 export async function transitionStaffOrderStatus(
@@ -432,7 +463,10 @@ export async function transitionStaffOrderStatus(
 ) {
 	let order: PersistedOrderRecord;
 	try {
-		order = assertOrderExists(await deps.findOrderById(input.orderId), input.orderId);
+		order = assertOrderExists(
+			await deps.findOrderById(input.orderId),
+			input.orderId,
+		);
 	} catch (error) {
 		toOrderServiceError(error);
 	}
@@ -478,12 +512,13 @@ export async function transitionStaffOrderStatus(
 	const auditContext = createOrderAuditContext(nextOrder);
 	await deps.logAuditEvent?.({
 		action: `order.${transition.order.status}`,
-		auditContext,
 		actorUserId: input.userId,
+		auditContext,
 	});
 
 	return {
 		auditContext,
+		history,
 		notification: {
 			event: buildOrderStatusEvent({
 				changedAt,
@@ -499,7 +534,6 @@ export async function transitionStaffOrderStatus(
 				shouldRefetchActiveOrders: true,
 			},
 		} satisfies InAppOrderStatusNotification,
-		history,
 		order: nextOrder,
 	};
 }

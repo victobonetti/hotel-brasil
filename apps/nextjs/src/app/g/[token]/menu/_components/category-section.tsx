@@ -4,7 +4,11 @@ import { MenuItemCard } from "./menu-item-card";
 
 export function CategorySection(props: {
 	category: MenuCategoryWithItems;
-	onAddItem: (input: { menuItemId: string; notes?: string; quantity: number }) => void;
+	onAddItem: (input: {
+		menuItemId: string;
+		notes?: string;
+		quantity: number;
+	}) => void;
 }) {
 	return (
 		<section className="space-y-5">
@@ -31,7 +35,7 @@ export function CategorySection(props: {
 					))}
 				</div>
 			) : (
-				<div className="rounded-2xl border border-dashed border-primary/20 bg-primary/[0.03] px-5 py-6 text-muted-foreground text-sm">
+				<div className="rounded-2xl border border-primary/20 border-dashed bg-primary/[0.03] px-5 py-6 text-muted-foreground text-sm">
 					Não há itens disponíveis nesta categoria no momento.
 				</div>
 			)}

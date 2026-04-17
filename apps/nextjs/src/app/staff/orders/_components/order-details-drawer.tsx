@@ -8,8 +8,18 @@ import {
 	CardHeader,
 	CardTitle,
 } from "@finchat/ui/card";
+import { PAGE_SIZES, paginateItems } from "@finchat/utils";
 import { useQuery } from "@tanstack/react-query";
+import type { Route } from "next";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { useEffect } from "react";
 
+import { PaginationControls } from "~/app/_components/pagination-controls";
+import {
+	buildPageSearch,
+	parsePageParam,
+	shouldSyncPageParam,
+} from "~/app/_components/pagination-state";
 import { useTRPC } from "~/trpc/react";
 import { OrderActionButtons } from "./order-action-buttons";
 
@@ -18,20 +28,83 @@ export function OrderDetailsDrawer(props: {
 	orderId: string | null;
 }) {
 	const trpc = useTRPC();
+	const pathname = usePathname();
+	const router = useRouter();
+	const searchParams = useSearchParams();
+	const itemsPage = parsePageParam(
+		searchParams.get("detailsItemsPage") ?? undefined,
+	);
+	const historyPage = parsePageParam(
+		searchParams.get("detailsHistoryPage") ?? undefined,
+	);
 	const orderDetailsQuery = useQuery({
-		...trpc.staffOrder.getOrderDetails.queryOptions(
-			props.orderId ? { orderId: props.orderId } : undefined!,
-		),
+		...trpc.staffOrder.getOrderDetails.queryOptions({
+			orderId: props.orderId ?? "",
+		}),
 		enabled: Boolean(props.orderId),
 	});
 
+	const paginatedItems = paginateItems(orderDetailsQuery.data?.items ?? [], {
+		page: itemsPage,
+		pageSize: PAGE_SIZES.categoryDetailsItems,
+	});
+	const paginatedHistory = paginateItems(
+		orderDetailsQuery.data?.statusHistory ?? [],
+		{
+			page: historyPage,
+			pageSize: PAGE_SIZES.categoryDetailsHistory,
+		},
+	);
+
+	useEffect(() => {
+		if (!shouldSyncPageParam(itemsPage, paginatedItems.pagination)) {
+			return;
+		}
+
+		const nextSearch = buildPageSearch(
+			new URLSearchParams(searchParams.toString()),
+			"detailsItemsPage",
+			paginatedItems.pagination.page,
+		);
+		router.replace(
+			(nextSearch.length > 0 ? `${pathname}?${nextSearch}` : pathname) as Route,
+			{
+				scroll: false,
+			},
+		);
+	}, [itemsPage, paginatedItems.pagination, pathname, router, searchParams]);
+
+	useEffect(() => {
+		if (!shouldSyncPageParam(historyPage, paginatedHistory.pagination)) {
+			return;
+		}
+
+		const nextSearch = buildPageSearch(
+			new URLSearchParams(searchParams.toString()),
+			"detailsHistoryPage",
+			paginatedHistory.pagination.page,
+		);
+		router.replace(
+			(nextSearch.length > 0 ? `${pathname}?${nextSearch}` : pathname) as Route,
+			{
+				scroll: false,
+			},
+		);
+	}, [
+		historyPage,
+		paginatedHistory.pagination,
+		pathname,
+		router,
+		searchParams,
+	]);
+
 	if (!props.orderId) {
 		return (
-			<Card className="border-primary/15 bg-card/88 shadow-sm shadow-primary/10">
+			<Card className="border-primary/15 bg-card/88 shadow-primary/10 shadow-sm">
 				<CardHeader>
 					<CardTitle>Detalhes do pedido</CardTitle>
 					<CardDescription>
-						Selecione um pedido da fila para ver itens, histórico e ações.
+						Selecione um pedido da fila para ver itens, historico e acoes.
 					</CardDescription>
 				</CardHeader>
 			</Card>
@@ -40,7 +113,7 @@ export function OrderDetailsDrawer(props: {
 
 	if (orderDetailsQuery.isLoading) {
 		return (
-			<Card className="border-primary/15 bg-card/88 shadow-sm shadow-primary/10">
+			<Card className="border-primary/15 bg-card/88 shadow-primary/10 shadow-sm">
 				<CardHeader>
 					<CardTitle>Carregando pedido</CardTitle>
 				</CardHeader>
@@ -52,10 +125,10 @@ export function OrderDetailsDrawer(props: {
 		return (
 			<Card className="border-destructive/20 bg-destructive/5">
 				<CardHeader>
-					<CardTitle>Pedido indisponível</CardTitle>
+					<CardTitle>Pedido indisponivel</CardTitle>
 					<CardDescription>
 						{orderDetailsQuery.error?.message ??
-							"Não foi possível carregar esse pedido."}
+							"Nao foi possivel carregar esse pedido."}
 					</CardDescription>
 				</CardHeader>
 			</Card>
@@ -63,19 +136,21 @@ export function OrderDetailsDrawer(props: {
 	}
 
 	return (
-		<Card className="border-primary/15 bg-card/88 shadow-sm shadow-primary/10">
+		<Card className="border-primary/15 bg-card/88 shadow-primary/10 shadow-sm">
 			<CardHeader className="border-border/60 border-b">
 				<div className="space-y-1">
 					<CardTitle>Pedido {orderDetailsQuery.data.id}</CardTitle>
 					<CardDescription>
-						Quarto {orderDetailsQuery.data.roomId} • status atual{" "}
-						{orderDetailsQuery.data.status}
+						Quarto{" "}
+						{orderDetailsQuery.data.room?.label ??
+							orderDetailsQuery.data.roomId}{" "}
+						- status atual {orderDetailsQuery.data.status}
 					</CardDescription>
 				</div>
 			</CardHeader>
 			<CardContent className="space-y-5 pt-6">
 				<div className="space-y-3">
-					{orderDetailsQuery.data.items.map((item) => (
+					{paginatedItems.items.map((item) => (
 						<div
 							className="rounded-2xl border border-primary/10 bg-primary/[0.03] p-4"
 							key={item.id}
@@ -88,6 +163,10 @@ export function OrderDetailsDrawer(props: {
 							) : null}
 						</div>
 					))}
+					<PaginationControls
+						pageParam="detailsItemsPage"
+						pagination={paginatedItems.pagination}
+					/>
 				</div>
 
 				<OrderActionButtons
@@ -97,9 +176,9 @@ export function OrderDetailsDrawer(props: {
 				/>
 
 				<div className="space-y-2">
-					<p className="font-medium text-primary text-sm">Histórico</p>
+					<p className="font-medium text-primary text-sm">Historico</p>
 					<div className="space-y-2">
-						{orderDetailsQuery.data.statusHistory.map((entry) => (
+						{paginatedHistory.items.map((entry) => (
 							<div
 								className="rounded-xl border border-primary/10 bg-background/80 px-3 py-2 text-sm"
 								key={entry.id}
@@ -108,6 +187,10 @@ export function OrderDetailsDrawer(props: {
 							</div>
 						))}
 					</div>
+					<PaginationControls
+						pageParam="detailsHistoryPage"
+						pagination={paginatedHistory.pagination}
+					/>
 				</div>
 
 				<Button onClick={props.onRefresh} variant="outline">

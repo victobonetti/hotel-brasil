@@ -1,61 +1,61 @@
 import type { OrderStatus } from "@finchat/db/schema";
 
-export type OrderTotalLineItem = {
+export interface OrderTotalLineItem {
 	quantity: number;
 	unitPriceSnapshotInCents: number;
-};
+}
 
-export type OrderCreationItem = {
+export interface OrderCreationItem {
 	available: boolean;
 	menuItemId: string;
 	notes?: string;
 	quantity: number;
-};
+}
 
-export type OrderCreationPayload = {
-	items: OrderCreationItem[];
+export interface OrderCreationPayload {
+	items: Array<OrderCreationItem>;
 	orderNotes?: string;
-};
+}
 
-export type MenuItemSnapshotSource = {
+export interface MenuItemSnapshotSource {
 	available: boolean;
 	hotelId: string;
 	id: string;
 	name: string;
 	priceInCents: number;
-};
+}
 
-export type RequestedOrderItem = {
+export interface RequestedOrderItem {
 	menuItemId: string;
 	notes?: string;
 	quantity: number;
-};
+}
 
-export type OrderItemSnapshot = {
+export interface OrderItemSnapshot {
 	itemNameSnapshot: string;
 	lineTotalInCents: number;
 	menuItemId: string;
 	notes?: string;
 	quantity: number;
 	unitPriceSnapshotInCents: number;
-};
+}
 
-export type GuestSessionOrderContext = {
+export interface GuestSessionOrderContext {
 	expiresAt: Date;
 	hotelActive: boolean;
 	roomActive: boolean;
-};
+}
 
-export type InitialStatusHistory = {
+export interface InitialStatusHistory {
 	changedAt: Date;
 	changedByUserId: null;
 	fromStatus: null;
 	orderId: string;
 	reason: null;
 	toStatus: "pending";
-};
+}
 
-export type TransitionableOrder = {
+export interface TransitionableOrder {
 	acceptedAt?: Date | null;
 	cancelledAt?: Date | null;
 	deliveredAt?: Date | null;
@@ -63,7 +63,7 @@ export type TransitionableOrder = {
 	id?: string;
 	preparingAt?: Date | null;
 	status: OrderStatus;
-};
+}
 
 export type AuditableOrder = TransitionableOrder & {
 	guestSessionId?: string | null;
@@ -73,7 +73,7 @@ export type AuditableOrder = TransitionableOrder & {
 	roomId: string;
 };
 
-export type OrderAuditContext = {
+export interface OrderAuditContext {
 	acceptedAt?: Date | null;
 	cancelledAt?: Date | null;
 	deliveredAt?: Date | null;
@@ -84,9 +84,9 @@ export type OrderAuditContext = {
 	preparingAt?: Date | null;
 	roomId: string;
 	status: OrderStatus;
-};
+}
 
-const orderStatusTransitions: Record<OrderStatus, OrderStatus[]> = {
+const orderStatusTransitions: Record<OrderStatus, Array<OrderStatus>> = {
 	accepted: ["preparing", "cancelled"],
 	cancelled: [],
 	delivered: [],
@@ -107,7 +107,7 @@ function assertNonNegativeInteger(value: number, fieldName: string) {
 	}
 }
 
-export function calculateOrderTotal(items: OrderTotalLineItem[]) {
+export function calculateOrderTotal(items: Array<OrderTotalLineItem>) {
 	return items.reduce((total, item) => {
 		assertPositiveInteger(item.quantity, "quantity");
 		assertNonNegativeInteger(
@@ -134,8 +134,8 @@ export function validateOrderCreation(payload: OrderCreationPayload) {
 }
 
 export function buildOrderItemSnapshots(
-	menuItems: MenuItemSnapshotSource[],
-	requestedItems: RequestedOrderItem[],
+	menuItems: Array<MenuItemSnapshotSource>,
+	requestedItems: Array<RequestedOrderItem>,
 ) {
 	const menuItemsById = new Map(menuItems.map((item) => [item.id, item]));
 
@@ -159,8 +159,7 @@ export function buildOrderItemSnapshots(
 
 		return {
 			itemNameSnapshot: menuItem.name,
-			lineTotalInCents:
-				requestedItem.quantity * unitPriceSnapshotInCents,
+			lineTotalInCents: requestedItem.quantity * unitPriceSnapshotInCents,
 			menuItemId: requestedItem.menuItemId,
 			notes: requestedItem.notes,
 			quantity: requestedItem.quantity,
@@ -191,7 +190,9 @@ export function assertMenuItemsBelongToHotel(
 ) {
 	for (const item of items) {
 		if (item.hotelId !== hotelId) {
-			throw new Error(`Menu item ${item.id} does not belong to hotel ${hotelId}`);
+			throw new Error(
+				`Menu item ${item.id} does not belong to hotel ${hotelId}`,
+			);
 		}
 	}
 
@@ -243,8 +244,10 @@ export function assertOrderExists<TOrder>(
 	return order;
 }
 
-export function listOperationalOrders<TOrder extends { hotelId: string; placedAt: Date; status: OrderStatus }>(
-	orders: TOrder[],
+export function listOperationalOrders<
+	TOrder extends { hotelId: string; placedAt: Date; status: OrderStatus },
+>(
+	orders: Array<TOrder>,
 	filters: { hotelId: string; includeCompleted?: boolean },
 ) {
 	return orders
@@ -283,7 +286,9 @@ export function transitionOrderStatusWithAudit(
 	};
 }
 
-export function createOrderAuditContext(order: AuditableOrder): OrderAuditContext {
+export function createOrderAuditContext(
+	order: AuditableOrder,
+): OrderAuditContext {
 	return {
 		acceptedAt: order.acceptedAt ?? null,
 		cancelledAt: order.cancelledAt ?? null,
@@ -298,13 +303,13 @@ export function createOrderAuditContext(order: AuditableOrder): OrderAuditContex
 	};
 }
 
-export type OrderStatusEvent = {
+export interface OrderStatusEvent {
 	hotelId: string;
 	orderId: string;
 	roomId: string;
 	status: OrderStatus;
 	timestamp: Date;
-};
+}
 
 export function buildOrderStatusEvent(input: {
 	changedAt?: Date;

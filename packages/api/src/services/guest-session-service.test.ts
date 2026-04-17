@@ -15,7 +15,7 @@ const room = {
 };
 
 const activeSession = {
-	expiresAt: new Date("2026-04-17T12:00:00.000Z"),
+	expiresAt: new Date("2099-04-17T12:00:00.000Z"),
 	hotelActive: true,
 	hotelId: "hotel-1",
 	id: "session-1",
@@ -32,7 +32,7 @@ describe("createGuestSessionFromRoomToken", () => {
 				findActiveGuestSessionByRoomId: () => activeSession,
 				findGuestSessionByToken: () => null,
 				findRoomByQrCodeToken: () => room,
-				now: () => new Date("2026-04-16T10:00:00.000Z"),
+				now: () => new Date("2099-04-16T10:00:00.000Z"),
 				updateGuestSessionExpiry: () => undefined,
 			},
 			{ roomToken: "room-token-1" },
@@ -52,7 +52,7 @@ describe("createGuestSessionFromRoomToken", () => {
 				findActiveGuestSessionByRoomId: () => null,
 				findGuestSessionByToken: () => null,
 				findRoomByQrCodeToken: () => room,
-				now: () => new Date("2026-04-16T10:00:00.000Z"),
+				now: () => new Date("2099-04-16T10:00:00.000Z"),
 				updateGuestSessionExpiry: () => undefined,
 			},
 			{ roomToken: "room-token-1" },
@@ -129,10 +129,10 @@ describe("resolveGuestSession", () => {
 					findActiveGuestSessionByRoomId: () => null,
 					findGuestSessionByToken: () => ({
 						...activeSession,
-						expiresAt: new Date("2026-04-15T10:00:00.000Z"),
+						expiresAt: new Date("2020-04-15T10:00:00.000Z"),
 					}),
 					findRoomByQrCodeToken: () => null,
-					now: () => new Date("2026-04-16T10:00:00.000Z"),
+					now: () => new Date("2099-04-16T10:00:00.000Z"),
 					updateGuestSessionExpiry: () => undefined,
 				},
 				{ guestSessionToken: "guest-token-1" },
@@ -151,7 +151,7 @@ describe("refreshGuestSession", () => {
 				findActiveGuestSessionByRoomId: () => null,
 				findGuestSessionByToken: () => activeSession,
 				findRoomByQrCodeToken: () => null,
-				now: () => new Date("2026-04-16T10:00:00.000Z"),
+				now: () => new Date("2099-04-16T10:00:00.000Z"),
 				updateGuestSessionExpiry: (_token, expiresAt) => {
 					nextExpiry = expiresAt;
 				},

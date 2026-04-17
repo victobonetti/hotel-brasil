@@ -186,7 +186,9 @@ export const orderStatusHistories = pgTable(
 	"order_status_history",
 	{
 		changedAt: timestamp({ withTimezone: true }).notNull().defaultNow(),
-		changedByUserId: text().references(() => users.id, { onDelete: "set null" }),
+		changedByUserId: text().references(() => users.id, {
+			onDelete: "set null",
+		}),
 		fromStatus: orderStatusEnum(),
 		id: text().primaryKey(),
 		orderId: text()
@@ -239,13 +241,16 @@ export const roomsRelations = relations(rooms, ({ many, one }) => ({
 	orders: many(orders),
 }));
 
-export const menuCategoriesRelations = relations(menuCategories, ({ many, one }) => ({
-	hotel: one(hotels, {
-		fields: [menuCategories.hotelId],
-		references: [hotels.id],
+export const menuCategoriesRelations = relations(
+	menuCategories,
+	({ many, one }) => ({
+		hotel: one(hotels, {
+			fields: [menuCategories.hotelId],
+			references: [hotels.id],
+		}),
+		items: many(menuItems),
 	}),
-	items: many(menuItems),
-}));
+);
 
 export const menuItemsRelations = relations(menuItems, ({ many, one }) => ({
 	category: one(menuCategories, {
@@ -259,17 +264,20 @@ export const menuItemsRelations = relations(menuItems, ({ many, one }) => ({
 	orderItems: many(orderItems),
 }));
 
-export const guestSessionsRelations = relations(guestSessions, ({ many, one }) => ({
-	hotel: one(hotels, {
-		fields: [guestSessions.hotelId],
-		references: [hotels.id],
+export const guestSessionsRelations = relations(
+	guestSessions,
+	({ many, one }) => ({
+		hotel: one(hotels, {
+			fields: [guestSessions.hotelId],
+			references: [hotels.id],
+		}),
+		orders: many(orders),
+		room: one(rooms, {
+			fields: [guestSessions.roomId],
+			references: [rooms.id],
+		}),
 	}),
-	orders: many(orders),
-	room: one(rooms, {
-		fields: [guestSessions.roomId],
-		references: [rooms.id],
-	}),
-}));
+);
 
 export const ordersRelations = relations(orders, ({ many, one }) => ({
 	guestSession: one(guestSessions, {
@@ -313,16 +321,20 @@ export const orderStatusHistoriesRelations = relations(
 	}),
 );
 
-export const staffUserHotelsRelations = relations(staffUserHotels, ({ one }) => ({
-	hotel: one(hotels, {
-		fields: [staffUserHotels.hotelId],
-		references: [hotels.id],
+export const staffUserHotelsRelations = relations(
+	staffUserHotels,
+	({ one }) => ({
+		hotel: one(hotels, {
+			fields: [staffUserHotels.hotelId],
+			references: [hotels.id],
+		}),
+		user: one(users, {
+			fields: [staffUserHotels.userId],
+			references: [users.id],
+		}),
 	}),
-	user: one(users, {
-		fields: [staffUserHotels.userId],
-		references: [users.id],
-	}),
-}));
+);
 
 export type OrderStatus = (typeof orderStatusEnum.enumValues)[number];
-export type StaffUserHotelRole = (typeof staffUserHotelRoleEnum.enumValues)[number];
+export type StaffUserHotelRole =
+	(typeof staffUserHotelRoleEnum.enumValues)[number];

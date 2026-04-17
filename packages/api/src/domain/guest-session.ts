@@ -4,7 +4,7 @@ export function generateGuestSessionToken() {
 	return randomBytes(24).toString("base64url");
 }
 
-export type GuestSessionContext = {
+export interface GuestSessionContext {
 	expiresAt: Date;
 	hotelActive: boolean;
 	hotelId: string;
@@ -12,15 +12,15 @@ export type GuestSessionContext = {
 	roomActive: boolean;
 	roomId: string;
 	token: string;
-};
+}
 
-export type RoomTokenContext = {
+export interface RoomTokenContext {
 	hotelActive: boolean;
 	hotelId: string;
 	qrCodeToken: string;
 	roomActive: boolean;
 	roomId: string;
-};
+}
 
 export function assertGuestSessionIsActive(session: {
 	expiresAt: Date;

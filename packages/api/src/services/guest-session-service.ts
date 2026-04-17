@@ -3,24 +3,22 @@ import { randomUUID } from "node:crypto";
 import {
 	assertGuestSessionIsActive,
 	assertRoomCanCreateGuestSession,
-	generateGuestSessionToken,
 	type GuestSessionContext,
+	generateGuestSessionToken,
 	type RoomTokenContext,
 } from "../domain/guest-session";
 
-export type PersistedGuestSession = {
+export interface PersistedGuestSession {
 	createdAt: Date;
 	expiresAt: Date;
 	hotelId: string;
 	id: string;
 	roomId: string;
 	token: string;
-};
+}
 
-type GuestSessionServiceDeps = {
-	createGuestSession: (
-		session: PersistedGuestSession,
-	) => Promise<void> | void;
+interface GuestSessionServiceDeps {
+	createGuestSession: (session: PersistedGuestSession) => Promise<void> | void;
 	findActiveGuestSessionByRoomId: (
 		roomId: string,
 		now: Date,
@@ -36,7 +34,7 @@ type GuestSessionServiceDeps = {
 		token: string,
 		expiresAt: Date,
 	) => Promise<void> | void;
-};
+}
 
 export class GuestSessionServiceError extends Error {
 	constructor(
@@ -56,7 +54,10 @@ export class GuestSessionServiceError extends Error {
 function toGuestSessionServiceError(error: unknown): never {
 	if (error instanceof Error) {
 		if (error.message.includes("expired")) {
-			throw new GuestSessionServiceError("GUEST_SESSION_EXPIRED", error.message);
+			throw new GuestSessionServiceError(
+				"GUEST_SESSION_EXPIRED",
+				error.message,
+			);
 		}
 
 		if (error.message.includes("Room is inactive")) {
@@ -115,7 +116,10 @@ export async function createGuestSessionFromRoomToken(
 	}
 
 	const now = deps.now?.() ?? new Date();
-	const activeSession = await deps.findActiveGuestSessionByRoomId(room.roomId, now);
+	const activeSession = await deps.findActiveGuestSessionByRoomId(
+		room.roomId,
+		now,
+	);
 	if (activeSession) {
 		return activeSession;
 	}

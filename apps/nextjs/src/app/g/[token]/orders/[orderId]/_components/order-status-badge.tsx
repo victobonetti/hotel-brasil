@@ -17,15 +17,17 @@ const labels: Record<OrderStatus, string> = {
 	preparing: "Em preparo",
 };
 
-const variants: Record<OrderStatus, "default" | "destructive" | "secondary" | "outline"> =
-	{
-		accepted: "secondary",
-		cancelled: "destructive",
-		delivered: "default",
-		out_for_delivery: "secondary",
-		pending: "outline",
-		preparing: "secondary",
-	};
+const variants: Record<
+	OrderStatus,
+	"default" | "destructive" | "secondary" | "outline"
+> = {
+	accepted: "secondary",
+	cancelled: "destructive",
+	delivered: "default",
+	out_for_delivery: "secondary",
+	pending: "outline",
+	preparing: "secondary",
+};
 
 export function OrderStatusBadge(props: { status: OrderStatus }) {
 	return (

@@ -1,9 +1,8 @@
+import { guestSessions, hotels, rooms } from "@finchat/db/schema";
 import type { TRPCRouterRecord } from "@trpc/server";
 import { TRPCError } from "@trpc/server";
 import { eq, gt } from "drizzle-orm";
 import { z } from "zod/v4";
-
-import { guestSessions, hotels, rooms } from "@finchat/db/schema";
 import { mapDomainErrorToUserMessage } from "../errors";
 import {
 	createGuestSessionFromRoomToken,
@@ -34,7 +33,10 @@ function mapGuestSessionServiceError(error: unknown): never {
 	}
 
 	const fallback = mapDomainErrorToUserMessage(error, "guest");
-	throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: fallback.message });
+	throw new TRPCError({
+		code: "INTERNAL_SERVER_ERROR",
+		message: fallback.message,
+	});
 }
 
 export const guestSessionRouter = {
@@ -68,7 +70,9 @@ export const guestSessionRouter = {
 								.where(gt(guestSessions.expiresAt, now))
 								.limit(1);
 
-							return result.find((session) => session.roomId === roomId) ?? null;
+							return (
+								result.find((session) => session.roomId === roomId) ?? null
+							);
 						},
 						findGuestSessionByToken: () => null,
 						findRoomByQrCodeToken: async (qrCodeToken) => {

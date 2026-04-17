@@ -128,11 +128,23 @@
 	}
 
 	body {
-		@apply min-h-dvh bg-background text-foreground antialiased;
 		background-image:
-			radial-gradient(circle at top, color-mix(in oklab, var(--primary) 18%, transparent) 0%, transparent 38%),
-			radial-gradient(circle at 82% 10%, color-mix(in oklab, var(--accent) 28%, transparent) 0%, transparent 24%),
-			linear-gradient(180deg, color-mix(in oklab, var(--background) 95%, white 5%) 0%, var(--background) 100%);
+			radial-gradient(
+				circle at top,
+				color-mix(in oklab, var(--primary) 18%, transparent) 0%,
+				transparent 38%
+			),
+			radial-gradient(
+				circle at 82% 10%,
+				color-mix(in oklab, var(--accent) 28%, transparent) 0%,
+				transparent 24%
+			),
+			linear-gradient(
+				180deg,
+				color-mix(in oklab, var(--background) 95%, white 5%) 0%,
+				var(--background) 100%
+			);
+		@apply min-h-dvh bg-background text-foreground antialiased;
 	}
 
 	button:not(:disabled),
@@ -141,7 +153,7 @@
 	}
 
 	::selection {
-		background: color-mix(in oklab, var(--primary) 30%, white);
 		color: var(--foreground);
+		background: color-mix(in oklab, var(--primary) 30%, white);
 	}
 }

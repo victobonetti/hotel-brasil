@@ -35,12 +35,20 @@ test("createTenantScope returns the normalized tenant scope", () => {
 
 test("assertResourceBelongsToTenant accepts matching hotel IDs", () => {
 	expect(
-		assertResourceBelongsToTenant("hotel_1", { hotelId: "hotel_1" }, "Category"),
+		assertResourceBelongsToTenant(
+			"hotel_1",
+			{ hotelId: "hotel_1" },
+			"Category",
+		),
 	).toBe("hotel_1");
 });
 
 test("assertResourceBelongsToTenant rejects cross-tenant access", () => {
 	expect(() =>
-		assertResourceBelongsToTenant("hotel_2", { hotelId: "hotel_1" }, "Category"),
+		assertResourceBelongsToTenant(
+			"hotel_2",
+			{ hotelId: "hotel_1" },
+			"Category",
+		),
 	).toThrow(/does not belong/);
 });

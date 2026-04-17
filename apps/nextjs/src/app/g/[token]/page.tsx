@@ -1,10 +1,7 @@
-import { redirect } from "next/navigation";
-
-import { createTRPCContext } from "@finchat/api";
-
-import { auth } from "~/auth/server";
-import { appRouter } from "@finchat/api";
+import { appRouter, createTRPCContext } from "@finchat/api";
 import { headers } from "next/headers";
+import { redirect } from "next/navigation";
+import { auth } from "~/auth/server";
 
 export default async function GuestSessionEntryPage(props: {
 	params: Promise<{ token: string }>;
@@ -15,9 +12,10 @@ export default async function GuestSessionEntryPage(props: {
 		headers: new Headers(await headers()),
 	});
 	const caller = appRouter.createCaller(context);
-	const guestSession = await caller.guestSession.createGuestSessionFromRoomToken({
-		roomToken: token,
-	});
+	const guestSession =
+		await caller.guestSession.createGuestSessionFromRoomToken({
+			roomToken: token,
+		});
 
 	redirect(`/g/${guestSession.token}/menu`);
 }

@@ -1,17 +1,16 @@
-import type { TRPCRouterRecord } from "@trpc/server";
-import { TRPCError } from "@trpc/server";
-import { z } from "zod/v4";
-
 import {
 	guestSessions,
 	hotels,
 	menuItems,
 	orderItems,
-	orders,
 	orderStatusHistories,
+	orders,
 	rooms,
 } from "@finchat/db/schema";
-import { and, asc, desc, eq, inArray } from "drizzle-orm";
+import type { TRPCRouterRecord } from "@trpc/server";
+import { TRPCError } from "@trpc/server";
+import { desc, eq, inArray } from "drizzle-orm";
+import { z } from "zod/v4";
 import { mapDomainErrorToUserMessage } from "../errors";
 import {
 	createOrderFromGuestSession,
@@ -46,12 +45,18 @@ function mapOrderServiceError(error: unknown): never {
 		}
 
 		if (error.code === "ORDER_TRANSITION_INVALID") {
-			throw new TRPCError({ code: "BAD_REQUEST", message: userMessage.message });
+			throw new TRPCError({
+				code: "BAD_REQUEST",
+				message: userMessage.message,
+			});
 		}
 	}
 
 	const fallback = mapDomainErrorToUserMessage(error, "guest");
-	throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: fallback.message });
+	throw new TRPCError({
+		code: "INTERNAL_SERVER_ERROR",
+		message: fallback.message,
+	});
 }
 
 const guestOrderItemSchema = z.object({
@@ -89,6 +94,7 @@ export const orderRouter = {
 									id: guestSessions.id,
 									roomActive: rooms.active,
 									roomId: guestSessions.roomId,
+									roomLabel: rooms.label,
 									token: guestSessions.token,
 								})
 								.from(guestSessions)
@@ -114,9 +120,7 @@ export const orderRouter = {
 										})
 										.from(menuItems)
 										.where(inArray(menuItems.id, menuItemIds)),
-						logAuditEvent: (entry) => {
-							console.info("[order-audit]", JSON.stringify(entry));
-						},
+						logAuditEvent: (_entry) => {},
 					},
 					input,
 				);
@@ -133,7 +137,7 @@ export const orderRouter = {
 		)
 		.query(async ({ ctx, input }) => {
 			try {
-				return await getOrderByGuestSession(
+				const tracking = await getOrderByGuestSession(
 					{
 						createOrder: () => undefined,
 						findGuestSessionByToken: async (token) => {
@@ -145,6 +149,7 @@ export const orderRouter = {
 									id: guestSessions.id,
 									roomActive: rooms.active,
 									roomId: guestSessions.roomId,
+									roomLabel: rooms.label,
 									token: guestSessions.token,
 								})
 								.from(guestSessions)
@@ -155,19 +160,27 @@ export const orderRouter = {
 
 							return result[0] ?? null;
 						},
-						findOrderTrackingByGuestSession: async (guestSessionId, orderId) => {
+						findOrderTrackingByGuestSession: async (
+							guestSessionId,
+							orderId,
+						) => {
 							const order = await ctx.db.query.orders.findFirst({
-								with: {
-									items: true,
-									statusHistory: {
-										orderBy: (table, { asc }) => [asc(table.changedAt)],
-									},
-								},
 								where: (table, { and, eq }) =>
 									and(
 										eq(table.id, orderId),
 										eq(table.guestSessionId, guestSessionId),
 									),
+								with: {
+									items: true,
+									room: {
+										columns: {
+											label: true,
+										},
+									},
+									statusHistory: {
+										orderBy: (table, { asc }) => [asc(table.changedAt)],
+									},
+								},
 							});
 
 							if (!order) {
@@ -184,6 +197,21 @@ export const orderRouter = {
 					},
 					input,
 				);
+
+				const room = await ctx.db.query.rooms.findFirst({
+					columns: {
+						label: true,
+					},
+					where: (table, { eq }) => eq(table.id, tracking.order.roomId),
+				});
+
+				return {
+					...tracking,
+					order: {
+						...tracking.order,
+						roomLabel: room?.label ?? null,
+					},
+				};
 			} catch (error) {
 				mapOrderServiceError(error);
 			}
@@ -197,7 +225,7 @@ export const orderRouter = {
 		)
 		.query(async ({ ctx, input }) => {
 			try {
-				return await getOrderTracking(
+				const tracking = await getOrderTracking(
 					{
 						createOrder: () => undefined,
 						findGuestSessionByToken: async (token) => {
@@ -209,6 +237,7 @@ export const orderRouter = {
 									id: guestSessions.id,
 									roomActive: rooms.active,
 									roomId: guestSessions.roomId,
+									roomLabel: rooms.label,
 									token: guestSessions.token,
 								})
 								.from(guestSessions)
@@ -219,19 +248,27 @@ export const orderRouter = {
 
 							return result[0] ?? null;
 						},
-						findOrderTrackingByGuestSession: async (guestSessionId, orderId) => {
+						findOrderTrackingByGuestSession: async (
+							guestSessionId,
+							orderId,
+						) => {
 							const order = await ctx.db.query.orders.findFirst({
-								with: {
-									items: true,
-									statusHistory: {
-										orderBy: (table, { asc }) => [asc(table.changedAt)],
-									},
-								},
 								where: (table, { and, eq }) =>
 									and(
 										eq(table.id, orderId),
 										eq(table.guestSessionId, guestSessionId),
 									),
+								with: {
+									items: true,
+									room: {
+										columns: {
+											label: true,
+										},
+									},
+									statusHistory: {
+										orderBy: (table, { asc }) => [asc(table.changedAt)],
+									},
+								},
 							});
 
 							if (!order) {
@@ -248,6 +285,21 @@ export const orderRouter = {
 					},
 					input,
 				);
+
+				const room = await ctx.db.query.rooms.findFirst({
+					columns: {
+						label: true,
+					},
+					where: (table, { eq }) => eq(table.id, tracking.order.roomId),
+				});
+
+				return {
+					...tracking,
+					order: {
+						...tracking.order,
+						roomLabel: room?.label ?? null,
+					},
+				};
 			} catch (error) {
 				mapOrderServiceError(error);
 			}
@@ -328,19 +380,22 @@ export const orderRouter = {
 
 							return result[0] ?? null;
 						},
-						findOrderTrackingByGuestSession: async (guestSessionId, orderId) => {
+						findOrderTrackingByGuestSession: async (
+							guestSessionId,
+							orderId,
+						) => {
 							const order = await ctx.db.query.orders.findFirst({
+								where: (table, { and, eq }) =>
+									and(
+										eq(table.id, orderId),
+										eq(table.guestSessionId, guestSessionId),
+									),
 								with: {
 									items: true,
 									statusHistory: {
 										orderBy: (table, { asc }) => [asc(table.changedAt)],
 									},
 								},
-								where: (table, { and, eq }) =>
-									and(
-										eq(table.id, orderId),
-										eq(table.guestSessionId, guestSessionId),
-									),
 							});
 
 							if (!order) {

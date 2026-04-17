@@ -3,15 +3,16 @@ import { describe, expect, test } from "bun:test";
 import {
 	createOrderFromGuestSession,
 	getOrderTracking,
+	listActiveOrders,
 	listOrderStatusHistory,
-	transitionStaffOrderStatus,
 	type PersistedOrderHistoryRecord,
 	type PersistedOrderItemRecord,
 	type PersistedOrderRecord,
+	transitionStaffOrderStatus,
 } from "./order-service";
 
 const guestSession = {
-	expiresAt: new Date("2026-04-17T12:00:00.000Z"),
+	expiresAt: new Date("2099-04-17T12:00:00.000Z"),
 	hotelActive: true,
 	hotelId: "hotel-1",
 	id: "session-1",
@@ -34,7 +35,7 @@ describe("createOrderFromGuestSession", () => {
 	test("creates a pending order with items, total and initial history", async () => {
 		const created: {
 			history?: PersistedOrderHistoryRecord;
-			items?: PersistedOrderItemRecord[];
+			items?: Array<PersistedOrderItemRecord>;
 			order?: PersistedOrderRecord;
 		} = {};
 
@@ -49,7 +50,7 @@ describe("createOrderFromGuestSession", () => {
 				findOrderTrackingByGuestSession: () => null,
 				listGuestOrders: () => [],
 				loadMenuItems: () => menuItems,
-				now: () => new Date("2026-04-16T10:00:00.000Z"),
+				now: () => new Date("2099-04-16T10:00:00.000Z"),
 			},
 			{
 				guestSessionToken: "token-1",
@@ -108,7 +109,7 @@ describe("createOrderFromGuestSession", () => {
 					findOrderTrackingByGuestSession: () => null,
 					listGuestOrders: () => [],
 					loadMenuItems: () => [{ ...menuItems[0], available: false }],
-					now: () => new Date("2026-04-16T10:00:00.000Z"),
+					now: () => new Date("2099-04-16T10:00:00.000Z"),
 				},
 				{
 					guestSessionToken: "token-1",
@@ -127,7 +128,7 @@ describe("createOrderFromGuestSession", () => {
 					findOrderTrackingByGuestSession: () => null,
 					listGuestOrders: () => [],
 					loadMenuItems: () => [{ ...menuItems[0], hotelId: "hotel-2" }],
-					now: () => new Date("2026-04-16T10:00:00.000Z"),
+					now: () => new Date("2099-04-16T10:00:00.000Z"),
 				},
 				{
 					guestSessionToken: "token-1",
@@ -265,6 +266,50 @@ describe("listOrderStatusHistory", () => {
 
 		expect(history).toHaveLength(1);
 		expect(history[0]?.orderId).toBe("order-1");
+	});
+});
+
+describe("listActiveOrders", () => {
+	test("returns paginated operational orders", async () => {
+		const orders = Array.from({ length: 9 }, (_, index) => ({
+			acceptedAt: null,
+			cancelledAt: null,
+			deliveredAt: null,
+			deliveringAt: null,
+			guestSessionId: `session-${index + 1}`,
+			hotelId: "hotel-1",
+			id: `order-${index + 1}`,
+			notes: null,
+			placedAt: new Date(`2026-04-16T10:0${index}:00.000Z`),
+			preparingAt: null,
+			roomId: `room-${index + 1}`,
+			status: "pending" as const,
+			totalAmountInCents: 1000 + index,
+		}));
+
+		const result = await listActiveOrders(
+			{
+				countOrdersByHotelId: () => orders.length,
+				findMembershipByUserId: () => ({
+					hotelId: "hotel-1",
+					role: "manager",
+					userId: "user-1",
+				}),
+				listOrdersByHotelId: (_hotelId, input) =>
+					orders.slice(input.offset, input.offset + input.limit),
+			},
+			{ page: 2, pageSize: 8, userId: "user-1" },
+		);
+
+		expect(result.items.map((order) => order.id)).toEqual(["order-9"]);
+		expect(result.pagination).toMatchObject({
+			hasNextPage: false,
+			hasPreviousPage: true,
+			page: 2,
+			pageSize: 8,
+			totalItems: 9,
+			totalPages: 2,
+		});
 	});
 });
 

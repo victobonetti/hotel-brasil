@@ -1,8 +1,8 @@
+import { PAGE_SIZES } from "@finchat/utils";
 import type { TRPCRouterRecord } from "@trpc/server";
 import { TRPCError } from "@trpc/server";
-import { asc, eq } from "drizzle-orm";
+import { asc } from "drizzle-orm";
 import { z } from "zod/v4";
-
 import { mapDomainErrorToUserMessage } from "../errors";
 import {
 	getMenuForGuestSession,
@@ -43,6 +43,7 @@ export const menuRouter = {
 		.input(
 			z.object({
 				guestSessionToken: z.string().min(1),
+				page: z.number().int().optional(),
 			}),
 		)
 		.query(async ({ ctx, input }) => {
@@ -50,16 +51,36 @@ export const menuRouter = {
 				return await getMenuForGuestSession(
 					{
 						findGuestSessionByToken: async (token) =>
-							(await ctx.db.query.guestSessions.findFirst({
-								columns: {
-									expiresAt: true,
-									hotelId: true,
-									id: true,
-									roomId: true,
-									token: true,
-								},
-								where: (table, { eq }) => eq(table.token, token),
-							})) ?? null,
+							await ctx.db.query.guestSessions
+								.findFirst({
+									columns: {
+										expiresAt: true,
+										hotelId: true,
+										id: true,
+										roomId: true,
+										token: true,
+									},
+									where: (table, { eq }) => eq(table.token, token),
+									with: {
+										room: {
+											columns: {
+												label: true,
+											},
+										},
+									},
+								})
+								.then((session) =>
+									session
+										? {
+												expiresAt: session.expiresAt,
+												hotelId: session.hotelId,
+												id: session.id,
+												roomId: session.roomId,
+												roomLabel: session.room?.label ?? null,
+												token: session.token,
+											}
+										: null,
+								),
 						listCategoriesByHotel: (hotelId) =>
 							ctx.db.query.menuCategories.findMany({
 								columns: {
@@ -93,7 +114,10 @@ export const menuRouter = {
 								where: (table, { eq }) => eq(table.hotelId, hotelId),
 							}),
 					},
-					input,
+					{
+						...input,
+						pageSize: PAGE_SIZES.guestMenuCategories,
+					},
 				);
 			} catch (error) {
 				mapMenuServiceError(error);
@@ -150,7 +174,10 @@ export const menuRouter = {
 					}),
 				]);
 
-				const visibleCategories = listCategoriesByHotel(categories, guestSession.hotelId);
+				const visibleCategories = listCategoriesByHotel(
+					categories,
+					guestSession.hotelId,
+				);
 				return listAvailableItems(
 					items,
 					guestSession.hotelId,

@@ -7,9 +7,11 @@ import {
 	CardTitle,
 } from "@finchat/ui/card";
 
+import { getOrderDisplayMeta } from "~/app/_components/order-display";
 import { OrderStatusBadge } from "./order-status-badge";
 
-type OrderSummary = {
+interface OrderSummary {
+	id: string;
 	items: Array<{
 		id: string;
 		itemNameSnapshot: string;
@@ -20,6 +22,7 @@ type OrderSummary = {
 	notes: string | null;
 	placedAt: Date;
 	roomId: string;
+	roomLabel?: string | null;
 	status:
 		| "accepted"
 		| "cancelled"
@@ -28,7 +31,7 @@ type OrderSummary = {
 		| "pending"
 		| "preparing";
 	totalAmountInCents: number;
-};
+}
 
 function formatPrice(priceInCents: number) {
 	return new Intl.NumberFormat("pt-BR", {
@@ -45,14 +48,20 @@ function formatDate(date: Date) {
 }
 
 export function OrderSummaryCard(props: { order: OrderSummary }) {
+	const orderDisplay = getOrderDisplayMeta({
+		orderId: props.order.id,
+		roomId: props.order.roomId,
+		roomLabel: props.order.roomLabel,
+	});
+
 	return (
-		<Card className="border-primary/15 bg-card/88 shadow-sm shadow-primary/10">
+		<Card className="border-primary/15 bg-card/88 shadow-primary/10 shadow-sm">
 			<CardHeader className="border-border/60 border-b">
 				<div className="flex flex-wrap items-center justify-between gap-3">
 					<div className="space-y-1">
-						<CardTitle>Resumo do pedido</CardTitle>
+						<CardTitle>{orderDisplay.orderTitle}</CardTitle>
 						<CardDescription>
-							Quarto {props.order.roomId} • {formatDate(props.order.placedAt)}
+							{orderDisplay.roomReference} • {formatDate(props.order.placedAt)}
 						</CardDescription>
 					</div>
 					<OrderStatusBadge status={props.order.status} />
@@ -73,14 +82,16 @@ export function OrderSummaryCard(props: { order: OrderSummary }) {
 									<p className="text-muted-foreground text-sm">{item.notes}</p>
 								) : null}
 							</div>
-							<Badge variant="secondary">{formatPrice(item.lineTotalInCents)}</Badge>
+							<Badge variant="secondary">
+								{formatPrice(item.lineTotalInCents)}
+							</Badge>
 						</div>
 					))}
 				</div>
 
 				{props.order.notes ? (
 					<div className="rounded-2xl border border-primary/10 bg-background/80 p-4 text-sm">
-						<p className="font-medium text-primary">Observações do pedido</p>
+						<p className="font-medium text-primary">Observacoes do pedido</p>
 						<p className="mt-1 text-muted-foreground">{props.order.notes}</p>
 					</div>
 				) : null}

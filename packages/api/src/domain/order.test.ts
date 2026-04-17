@@ -1,12 +1,12 @@
 import { describe, expect, test } from "bun:test";
 
 import {
-	assertOrderExists,
-	assertUserCanManageHotel,
 	assertGuestSessionCanOrder,
 	assertMenuItemsBelongToHotel,
-	buildOrderStatusEvent,
+	assertOrderExists,
+	assertUserCanManageHotel,
 	buildOrderItemSnapshots,
+	buildOrderStatusEvent,
 	calculateOrderTotal,
 	canTransitionOrderStatus,
 	createInitialStatusHistory,
@@ -14,8 +14,8 @@ import {
 	isMenuItemAvailable,
 	listOperationalOrders,
 	shouldNotifyGuest,
-	transitionOrderStatusWithAudit,
 	transitionOrderStatus,
+	transitionOrderStatusWithAudit,
 	validateOrderCreation,
 } from "./order";
 
@@ -48,7 +48,9 @@ describe("calculateOrderTotal", () => {
 
 describe("validateOrderCreation", () => {
 	test("throws when there are no items", () => {
-		expect(() => validateOrderCreation({ items: [] })).toThrow(/at least one item/);
+		expect(() => validateOrderCreation({ items: [] })).toThrow(
+			/at least one item/,
+		);
 	});
 
 	test("throws when quantity is zero or negative", () => {
@@ -83,7 +85,12 @@ describe("validateOrderCreation", () => {
 		expect(
 			validateOrderCreation({
 				items: [
-					{ available: true, menuItemId: "item_1", notes: "No ice", quantity: 1 },
+					{
+						available: true,
+						menuItemId: "item_1",
+						notes: "No ice",
+						quantity: 1,
+					},
 					{ available: true, menuItemId: "item_2", quantity: 3 },
 				],
 			}),
@@ -239,9 +246,9 @@ describe("assertUserCanManageHotel", () => {
 	});
 
 	test("rejects missing or wrong membership", () => {
-		expect(() =>
-			assertUserCanManageHotel("user-1", null, "hotel-1"),
-		).toThrow(/not assigned/);
+		expect(() => assertUserCanManageHotel("user-1", null, "hotel-1")).toThrow(
+			/not assigned/,
+		);
 		expect(() =>
 			assertUserCanManageHotel(
 				"user-1",
@@ -409,15 +416,21 @@ describe("canTransitionOrderStatus", () => {
 	test("allows the happy path status sequence", () => {
 		expect(canTransitionOrderStatus("pending", "accepted")).toBe(true);
 		expect(canTransitionOrderStatus("accepted", "preparing")).toBe(true);
-		expect(canTransitionOrderStatus("preparing", "out_for_delivery")).toBe(true);
-		expect(canTransitionOrderStatus("out_for_delivery", "delivered")).toBe(true);
+		expect(canTransitionOrderStatus("preparing", "out_for_delivery")).toBe(
+			true,
+		);
+		expect(canTransitionOrderStatus("out_for_delivery", "delivered")).toBe(
+			true,
+		);
 	});
 
 	test("allows cancellation before delivery", () => {
 		expect(canTransitionOrderStatus("pending", "cancelled")).toBe(true);
 		expect(canTransitionOrderStatus("accepted", "cancelled")).toBe(true);
 		expect(canTransitionOrderStatus("preparing", "cancelled")).toBe(true);
-		expect(canTransitionOrderStatus("out_for_delivery", "cancelled")).toBe(true);
+		expect(canTransitionOrderStatus("out_for_delivery", "cancelled")).toBe(
+			true,
+		);
 	});
 
 	test("blocks invalid skips and terminal transitions", () => {

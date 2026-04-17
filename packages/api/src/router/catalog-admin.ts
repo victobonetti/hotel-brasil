@@ -1,9 +1,9 @@
+import { menuCategories, menuItems } from "@finchat/db/schema";
+import { PAGE_SIZES } from "@finchat/utils";
 import type { TRPCRouterRecord } from "@trpc/server";
 import { TRPCError } from "@trpc/server";
-import { asc, eq, inArray } from "drizzle-orm";
+import { count, eq, inArray } from "drizzle-orm";
 import { z } from "zod/v4";
-
-import { menuCategories, menuItems } from "@finchat/db/schema";
 import { mapDomainErrorToUserMessage } from "../errors";
 import {
 	CatalogAdminServiceError,
@@ -30,17 +30,26 @@ function mapCatalogAdminServiceError(error: unknown): never {
 			throw new TRPCError({ code: "FORBIDDEN", message: userMessage.message });
 		}
 
-		if (error.code === "CATEGORY_NOT_FOUND" || error.code === "ITEM_NOT_FOUND") {
+		if (
+			error.code === "CATEGORY_NOT_FOUND" ||
+			error.code === "ITEM_NOT_FOUND"
+		) {
 			throw new TRPCError({ code: "NOT_FOUND", message: userMessage.message });
 		}
 
-		if (error.code === "INVALID_PRICE") {
-			throw new TRPCError({ code: "BAD_REQUEST", message: userMessage.message });
+		if (error.code === "INVALID_PRICE" || error.code === "INVALID_IMAGE") {
+			throw new TRPCError({
+				code: "BAD_REQUEST",
+				message: userMessage.message,
+			});
 		}
 	}
 
 	const fallback = mapDomainErrorToUserMessage(error, "staff");
-	throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: fallback.message });
+	throw new TRPCError({
+		code: "INTERNAL_SERVER_ERROR",
+		message: fallback.message,
+	});
 }
 
 async function findMembershipByUserId(ctx: { db: any }, userId: string) {
@@ -70,85 +79,171 @@ const itemPayload = z.object({
 	priceInCents: z.number().int(),
 });
 
+const pageInput = z
+	.object({
+		page: z.number().int().optional(),
+	})
+	.optional();
+
 export const catalogAdminRouter = {
-	createCategory: protectedProcedure.input(categoryPayload).mutation(async ({ ctx, input }) => {
-		try {
-			return await createCategory(
-				{
-					createCategoryRecord: async (category) => {
-						await ctx.db.insert(menuCategories).values(category);
+	createCategory: protectedProcedure
+		.input(categoryPayload)
+		.mutation(async ({ ctx, input }) => {
+			try {
+				return await createCategory(
+					{
+						createCategoryRecord: async (category) => {
+							await ctx.db.insert(menuCategories).values(category);
+						},
+						findMembershipByUserId: async (userId) =>
+							await findMembershipByUserId(ctx, userId),
+						listCategoriesByHotelId: async (hotelId) =>
+							await ctx.db.query.menuCategories.findMany({
+								where: (table, { eq }) => eq(table.hotelId, hotelId),
+							}),
 					},
-					findMembershipByUserId: async (userId) => await findMembershipByUserId(ctx, userId),
-					listCategoriesByHotelId: async (hotelId) =>
+					{
+						...input,
+						userId: ctx.session.user.id,
+					},
+				);
+			} catch (error) {
+				mapCatalogAdminServiceError(error);
+			}
+		}),
+	createMenuItem: protectedProcedure
+		.input(itemPayload)
+		.mutation(async ({ ctx, input }) => {
+			try {
+				return await createMenuItem(
+					{
+						createMenuItemRecord: async (item) => {
+							await ctx.db.insert(menuItems).values(item);
+						},
+						findCategoryById: async (categoryId) =>
+							(await ctx.db.query.menuCategories.findFirst({
+								where: (table, { eq }) => eq(table.id, categoryId),
+							})) ?? null,
+						findMembershipByUserId: async (userId) =>
+							await findMembershipByUserId(ctx, userId),
+					},
+					{
+						...input,
+						userId: ctx.session.user.id,
+					},
+				);
+			} catch (error) {
+				mapCatalogAdminServiceError(error);
+			}
+		}),
+	listCategories: protectedProcedure
+		.input(pageInput)
+		.query(async ({ ctx, input }) => {
+			try {
+				return await listCategoriesForStaff(
+					{
+						countCategoriesByHotelId: async (hotelId) => {
+							const [result] = await ctx.db
+								.select({ totalItems: count() })
+								.from(menuCategories)
+								.where(eq(menuCategories.hotelId, hotelId));
+
+							return result?.totalItems ?? 0;
+						},
+						findMembershipByUserId: async (userId) =>
+							await findMembershipByUserId(ctx, userId),
+						listCategoriesByHotelId: async (hotelId, pagination) =>
+							await ctx.db.query.menuCategories.findMany({
+								limit: pagination.limit,
+								offset: pagination.offset,
+								orderBy: (table, { asc }) => [
+									asc(table.sortOrder),
+									asc(table.name),
+								],
+								where: (table, { eq }) => eq(table.hotelId, hotelId),
+							}),
+					},
+					{
+						page: input?.page,
+						pageSize: PAGE_SIZES.staffCategories,
+						userId: ctx.session.user.id,
+					},
+				);
+			} catch (error) {
+				mapCatalogAdminServiceError(error);
+			}
+		}),
+	listCategoryOptions: protectedProcedure.query(async ({ ctx }) => {
+		try {
+			const result = await listCategoriesForStaff(
+				{
+					countCategoriesByHotelId: async (hotelId) => {
+						const [record] = await ctx.db
+							.select({ totalItems: count() })
+							.from(menuCategories)
+							.where(eq(menuCategories.hotelId, hotelId));
+
+						return record?.totalItems ?? 0;
+					},
+					findMembershipByUserId: async (userId) =>
+						await findMembershipByUserId(ctx, userId),
+					listCategoriesByHotelId: async (hotelId, pagination) =>
 						await ctx.db.query.menuCategories.findMany({
+							limit: pagination.limit,
+							offset: pagination.offset,
+							orderBy: (table, { asc }) => [
+								asc(table.sortOrder),
+								asc(table.name),
+							],
 							where: (table, { eq }) => eq(table.hotelId, hotelId),
 						}),
 				},
 				{
-					...input,
+					page: 1,
+					pageSize: PAGE_SIZES.staffCategoryOptions,
 					userId: ctx.session.user.id,
 				},
 			);
+
+			return result.items;
 		} catch (error) {
 			mapCatalogAdminServiceError(error);
 		}
 	}),
-	createMenuItem: protectedProcedure.input(itemPayload).mutation(async ({ ctx, input }) => {
-		try {
-			return await createMenuItem(
-				{
-					createMenuItemRecord: async (item) => {
-						await ctx.db.insert(menuItems).values(item);
+	listMenuItems: protectedProcedure
+		.input(pageInput)
+		.query(async ({ ctx, input }) => {
+			try {
+				return await listMenuItemsForStaff(
+					{
+						countMenuItemsByHotelId: async (hotelId) => {
+							const [result] = await ctx.db
+								.select({ totalItems: count() })
+								.from(menuItems)
+								.where(eq(menuItems.hotelId, hotelId));
+
+							return result?.totalItems ?? 0;
+						},
+						findMembershipByUserId: async (userId) =>
+							await findMembershipByUserId(ctx, userId),
+						listMenuItemsByHotelId: async (hotelId, pagination) =>
+							await ctx.db.query.menuItems.findMany({
+								limit: pagination.limit,
+								offset: pagination.offset,
+								orderBy: (table, { asc }) => [asc(table.name)],
+								where: (table, { eq }) => eq(table.hotelId, hotelId),
+							}),
 					},
-					findCategoryById: async (categoryId) =>
-						(await ctx.db.query.menuCategories.findFirst({
-							where: (table, { eq }) => eq(table.id, categoryId),
-						})) ?? null,
-					findMembershipByUserId: async (userId) => await findMembershipByUserId(ctx, userId),
-				},
-				{
-					...input,
-					userId: ctx.session.user.id,
-				},
-			);
-		} catch (error) {
-			mapCatalogAdminServiceError(error);
-		}
-	}),
-	listCategories: protectedProcedure.query(async ({ ctx }) => {
-		try {
-			return await listCategoriesForStaff(
-				{
-					findMembershipByUserId: async (userId) => await findMembershipByUserId(ctx, userId),
-					listCategoriesByHotelId: async (hotelId) =>
-						await ctx.db.query.menuCategories.findMany({
-							orderBy: (table, { asc }) => [asc(table.sortOrder), asc(table.name)],
-							where: (table, { eq }) => eq(table.hotelId, hotelId),
-						}),
-				},
-				{ userId: ctx.session.user.id },
-			);
-		} catch (error) {
-			mapCatalogAdminServiceError(error);
-		}
-	}),
-	listMenuItems: protectedProcedure.query(async ({ ctx }) => {
-		try {
-			return await listMenuItemsForStaff(
-				{
-					findMembershipByUserId: async (userId) => await findMembershipByUserId(ctx, userId),
-					listMenuItemsByHotelId: async (hotelId) =>
-						await ctx.db.query.menuItems.findMany({
-							orderBy: (table, { asc }) => [asc(table.name)],
-							where: (table, { eq }) => eq(table.hotelId, hotelId),
-						}),
-				},
-				{ userId: ctx.session.user.id },
-			);
-		} catch (error) {
-			mapCatalogAdminServiceError(error);
-		}
-	}),
+					{
+						page: input?.page,
+						pageSize: PAGE_SIZES.staffMenuItems,
+						userId: ctx.session.user.id,
+					},
+				);
+			} catch (error) {
+				mapCatalogAdminServiceError(error);
+			}
+		}),
 	reorderCategories: protectedProcedure
 		.input(
 			z.object({
@@ -159,7 +254,8 @@ export const catalogAdminRouter = {
 			try {
 				return await reorderCategories(
 					{
-						findMembershipByUserId: async (userId) => await findMembershipByUserId(ctx, userId),
+						findMembershipByUserId: async (userId) =>
+							await findMembershipByUserId(ctx, userId),
 						listCategoriesByIds: async (categoryIds) =>
 							categoryIds.length === 0
 								? []
@@ -193,13 +289,17 @@ export const catalogAdminRouter = {
 			try {
 				return await toggleMenuItemAvailability(
 					{
-						findMembershipByUserId: async (userId) => await findMembershipByUserId(ctx, userId),
+						findMembershipByUserId: async (userId) =>
+							await findMembershipByUserId(ctx, userId),
 						findMenuItemById: async (itemId) =>
 							(await ctx.db.query.menuItems.findFirst({
 								where: (table, { eq }) => eq(table.id, itemId),
 							})) ?? null,
 						updateMenuItemRecord: async (itemId, item) => {
-							await ctx.db.update(menuItems).set(item).where(eq(menuItems.id, itemId));
+							await ctx.db
+								.update(menuItems)
+								.set(item)
+								.where(eq(menuItems.id, itemId));
 						},
 					},
 					{
@@ -228,7 +328,8 @@ export const catalogAdminRouter = {
 							(await ctx.db.query.menuCategories.findFirst({
 								where: (table, { eq }) => eq(table.id, categoryId),
 							})) ?? null,
-						findMembershipByUserId: async (userId) => await findMembershipByUserId(ctx, userId),
+						findMembershipByUserId: async (userId) =>
+							await findMembershipByUserId(ctx, userId),
 						updateCategoryRecord: async (categoryId, category) => {
 							await ctx.db
 								.update(menuCategories)
@@ -266,13 +367,17 @@ export const catalogAdminRouter = {
 							(await ctx.db.query.menuCategories.findFirst({
 								where: (table, { eq }) => eq(table.id, categoryId),
 							})) ?? null,
-						findMembershipByUserId: async (userId) => await findMembershipByUserId(ctx, userId),
+						findMembershipByUserId: async (userId) =>
+							await findMembershipByUserId(ctx, userId),
 						findMenuItemById: async (itemId) =>
 							(await ctx.db.query.menuItems.findFirst({
 								where: (table, { eq }) => eq(table.id, itemId),
 							})) ?? null,
 						updateMenuItemRecord: async (itemId, item) => {
-							await ctx.db.update(menuItems).set(item).where(eq(menuItems.id, itemId));
+							await ctx.db
+								.update(menuItems)
+								.set(item)
+								.where(eq(menuItems.id, itemId));
 						},
 					},
 					{

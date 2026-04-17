@@ -1,3 +1,4 @@
+import type { MenuItemView } from "@finchat/api";
 import { Badge } from "@finchat/ui/badge";
 import { Button } from "@finchat/ui/button";
 import {
@@ -11,8 +12,6 @@ import { Input } from "@finchat/ui/input";
 import { Label } from "@finchat/ui/label";
 import { Textarea } from "@finchat/ui/textarea";
 
-import type { MenuItemView } from "@finchat/api";
-
 function formatPrice(priceInCents: number) {
 	return new Intl.NumberFormat("pt-BR", {
 		currency: "BRL",
@@ -22,10 +21,28 @@ function formatPrice(priceInCents: number) {
 
 export function MenuItemCard(props: {
 	item: MenuItemView;
-	onAdd: (input: { menuItemId: string; notes?: string; quantity: number }) => void;
+	onAdd: (input: {
+		menuItemId: string;
+		notes?: string;
+		quantity: number;
+	}) => void;
 }) {
 	return (
-		<Card className="h-full border-primary/15 bg-card/88 shadow-sm shadow-primary/10 backdrop-blur-sm" size="sm">
+		<Card
+			className="h-full border-primary/15 bg-card/88 shadow-primary/10 shadow-sm backdrop-blur-sm"
+			size="sm"
+		>
+			{props.item.imageUrl ? (
+				<div className="border-border/60 border-b p-3">
+					<img
+						alt={props.item.name}
+						className="aspect-square w-full rounded-2xl object-cover"
+						height={200}
+						src={props.item.imageUrl}
+						width={200}
+					/>
+				</div>
+			) : null}
 			<CardHeader className="border-border/60 border-b">
 				<div className="flex items-start justify-between gap-3">
 					<div className="space-y-1">
@@ -69,14 +86,16 @@ export function MenuItemCard(props: {
 						/>
 					</div>
 					<div className="space-y-1">
-						<Label htmlFor={`notes-${props.item.id}`}>Observações do item</Label>
+						<Label htmlFor={`notes-${props.item.id}`}>
+							Observações do item
+						</Label>
 						<Textarea
 							id={`notes-${props.item.id}`}
 							name="notes"
 							placeholder="Ex.: sem cebola, molho à parte"
 						/>
 					</div>
-					<Button className="w-full shadow-sm shadow-primary/20" type="submit">
+					<Button className="w-full shadow-primary/20 shadow-sm" type="submit">
 						Adicionar ao pedido
 					</Button>
 				</form>

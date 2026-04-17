@@ -67,7 +67,10 @@ export function OrderActionButtons(props: {
 			<p className="font-medium text-primary text-sm">Ações operacionais</p>
 			<div className="flex flex-wrap gap-2">
 				{props.status === "pending" ? (
-					<Button disabled={isBusy} onClick={() => acceptMutation.mutate({ orderId: props.orderId })}>
+					<Button
+						disabled={isBusy}
+						onClick={() => acceptMutation.mutate({ orderId: props.orderId })}
+					>
 						Aceitar
 					</Button>
 				) : null}
@@ -83,7 +86,9 @@ export function OrderActionButtons(props: {
 				{props.status === "preparing" ? (
 					<Button
 						disabled={isBusy}
-						onClick={() => outForDeliveryMutation.mutate({ orderId: props.orderId })}
+						onClick={() =>
+							outForDeliveryMutation.mutate({ orderId: props.orderId })
+						}
 						variant="secondary"
 					>
 						Sair para entrega

@@ -1,9 +1,9 @@
+import { orderStatusHistories, orders } from "@finchat/db/schema";
+import { PAGE_SIZES } from "@finchat/utils";
 import type { TRPCRouterRecord } from "@trpc/server";
 import { TRPCError } from "@trpc/server";
-import { and, asc, eq } from "drizzle-orm";
+import { count, eq } from "drizzle-orm";
 import { z } from "zod/v4";
-
-import { orders, orderStatusHistories, staffUserHotels } from "@finchat/db/schema";
 import { mapDomainErrorToUserMessage } from "../errors";
 import {
 	listActiveOrders,
@@ -29,200 +29,259 @@ function mapStaffOrderServiceError(error: unknown): never {
 		}
 
 		if (error.code === "ORDER_TRANSITION_INVALID") {
-			throw new TRPCError({ code: "BAD_REQUEST", message: userMessage.message });
+			throw new TRPCError({
+				code: "BAD_REQUEST",
+				message: userMessage.message,
+			});
 		}
 	}
 
 	const fallback = mapDomainErrorToUserMessage(error, "staff");
-	throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: fallback.message });
+	throw new TRPCError({
+		code: "INTERNAL_SERVER_ERROR",
+		message: fallback.message,
+	});
 }
 
 const orderActionSchema = z.object({
 	orderId: z.string().min(1),
 });
 
+const pageInput = z
+	.object({
+		page: z.number().int().optional(),
+	})
+	.optional();
+
 function logAuditEvent(entry: unknown) {
-	console.info("[order-audit]", JSON.stringify(entry));
+	void entry;
 }
 
 export const staffOrderRouter = {
-	acceptOrder: protectedProcedure.input(orderActionSchema).mutation(async ({ ctx, input }) => {
-		try {
-			return await transitionStaffOrderStatus(
-				{
-					createHistoryEntry: async (history) => {
-						await ctx.db.insert(orderStatusHistories).values(history);
+	acceptOrder: protectedProcedure
+		.input(orderActionSchema)
+		.mutation(async ({ ctx, input }) => {
+			try {
+				return await transitionStaffOrderStatus(
+					{
+						createHistoryEntry: async (history) => {
+							await ctx.db.insert(orderStatusHistories).values(history);
+						},
+						findMembershipByUserId: async (userId) => {
+							const result = await ctx.db.query.staffUserHotels.findFirst({
+								columns: {
+									hotelId: true,
+									role: true,
+									userId: true,
+								},
+								where: (table, { eq }) => eq(table.userId, userId),
+							});
+							return result ?? null;
+						},
+						findOrderById: async (orderId) =>
+							(await ctx.db.query.orders.findFirst({
+								where: (table, { eq }) => eq(table.id, orderId),
+							})) ?? null,
+						logAuditEvent,
+						updateOrder: async (orderId, order) => {
+							await ctx.db
+								.update(orders)
+								.set(order)
+								.where(eq(orders.id, orderId));
+						},
 					},
-					findMembershipByUserId: async (userId) => {
-						const result = await ctx.db.query.staffUserHotels.findFirst({
-							columns: {
-								hotelId: true,
-								role: true,
-								userId: true,
-							},
-							where: (table, { eq }) => eq(table.userId, userId),
-						});
-						return result ?? null;
+					{
+						nextStatus: "accepted",
+						orderId: input.orderId,
+						userId: ctx.session.user.id,
 					},
-					findOrderById: async (orderId) =>
-						(await ctx.db.query.orders.findFirst({
-							where: (table, { eq }) => eq(table.id, orderId),
-						})) ?? null,
-					logAuditEvent,
-					updateOrder: async (orderId, order) => {
-						await ctx.db.update(orders).set(order).where(eq(orders.id, orderId));
-					},
-				},
-				{
-					nextStatus: "accepted",
-					orderId: input.orderId,
-					userId: ctx.session.user.id,
-				},
-			);
-		} catch (error) {
-			mapStaffOrderServiceError(error);
-		}
-	}),
-	cancelOrder: protectedProcedure.input(orderActionSchema).mutation(async ({ ctx, input }) => {
-		try {
-			return await transitionStaffOrderStatus(
-				{
-					createHistoryEntry: async (history) => {
-						await ctx.db.insert(orderStatusHistories).values(history);
-					},
-					findMembershipByUserId: async (userId) => {
-						const result = await ctx.db.query.staffUserHotels.findFirst({
-							columns: {
-								hotelId: true,
-								role: true,
-								userId: true,
-							},
-							where: (table, { eq }) => eq(table.userId, userId),
-						});
-						return result ?? null;
-					},
-					findOrderById: async (orderId) =>
-						(await ctx.db.query.orders.findFirst({
-							where: (table, { eq }) => eq(table.id, orderId),
-						})) ?? null,
-					logAuditEvent,
-					updateOrder: async (orderId, order) => {
-						await ctx.db.update(orders).set(order).where(eq(orders.id, orderId));
-					},
-				},
-				{
-					nextStatus: "cancelled",
-					orderId: input.orderId,
-					userId: ctx.session.user.id,
-				},
-			);
-		} catch (error) {
-			mapStaffOrderServiceError(error);
-		}
-	}),
-	getOrderDetails: protectedProcedure.input(orderActionSchema).query(async ({ ctx, input }) => {
-		try {
-			const membership = await ctx.db.query.staffUserHotels.findFirst({
-				columns: {
-					hotelId: true,
-					role: true,
-					userId: true,
-				},
-				where: (table, { eq }) => eq(table.userId, ctx.session.user.id),
-			});
-
-			if (!membership) {
-				throw new OrderServiceError(
-					"STAFF_MEMBERSHIP_REQUIRED",
-					"User is not assigned to this hotel",
 				);
+			} catch (error) {
+				mapStaffOrderServiceError(error);
 			}
-
-			const order = await ctx.db.query.orders.findFirst({
-				where: (table, { and, eq }) =>
-					and(eq(table.id, input.orderId), eq(table.hotelId, membership.hotelId)),
-				with: {
-					items: true,
-					statusHistory: {
-						orderBy: (table, { asc }) => [asc(table.changedAt)],
+		}),
+	cancelOrder: protectedProcedure
+		.input(orderActionSchema)
+		.mutation(async ({ ctx, input }) => {
+			try {
+				return await transitionStaffOrderStatus(
+					{
+						createHistoryEntry: async (history) => {
+							await ctx.db.insert(orderStatusHistories).values(history);
+						},
+						findMembershipByUserId: async (userId) => {
+							const result = await ctx.db.query.staffUserHotels.findFirst({
+								columns: {
+									hotelId: true,
+									role: true,
+									userId: true,
+								},
+								where: (table, { eq }) => eq(table.userId, userId),
+							});
+							return result ?? null;
+						},
+						findOrderById: async (orderId) =>
+							(await ctx.db.query.orders.findFirst({
+								where: (table, { eq }) => eq(table.id, orderId),
+							})) ?? null,
+						logAuditEvent,
+						updateOrder: async (orderId, order) => {
+							await ctx.db
+								.update(orders)
+								.set(order)
+								.where(eq(orders.id, orderId));
+						},
 					},
-				},
-			});
-
-			if (!order) {
-				throw new OrderServiceError("ORDER_NOT_FOUND", "Order was not found");
+					{
+						nextStatus: "cancelled",
+						orderId: input.orderId,
+						userId: ctx.session.user.id,
+					},
+				);
+			} catch (error) {
+				mapStaffOrderServiceError(error);
 			}
+		}),
+	getOrderDetails: protectedProcedure
+		.input(orderActionSchema)
+		.query(async ({ ctx, input }) => {
+			try {
+				const membership = await ctx.db.query.staffUserHotels.findFirst({
+					columns: {
+						hotelId: true,
+						role: true,
+						userId: true,
+					},
+					where: (table, { eq }) => eq(table.userId, ctx.session.user.id),
+				});
 
-			return order;
-		} catch (error) {
-			mapStaffOrderServiceError(error);
-		}
-	}),
-	listActiveOrders: protectedProcedure.query(async ({ ctx }) => {
-		try {
-			return await listActiveOrders(
-				{
-					findMembershipByUserId: async (userId) => {
-						const result = await ctx.db.query.staffUserHotels.findFirst({
+				if (!membership) {
+					throw new OrderServiceError(
+						"STAFF_MEMBERSHIP_REQUIRED",
+						"User is not assigned to this hotel",
+					);
+				}
+
+				const order = await ctx.db.query.orders.findFirst({
+					where: (table, { and, eq }) =>
+						and(
+							eq(table.id, input.orderId),
+							eq(table.hotelId, membership.hotelId),
+						),
+					with: {
+						items: true,
+						room: {
 							columns: {
-								hotelId: true,
-								role: true,
-								userId: true,
+								label: true,
 							},
-							where: (table, { eq }) => eq(table.userId, userId),
-						});
-						return result ?? null;
+						},
+						statusHistory: {
+							orderBy: (table, { asc }) => [asc(table.changedAt)],
+						},
 					},
-					listOrdersByHotelId: async (hotelId) =>
-						await ctx.db
-							.select()
-							.from(orders)
-							.where(eq(orders.hotelId, hotelId))
-							.orderBy(asc(orders.placedAt)),
-				},
-				{ userId: ctx.session.user.id },
-			);
-		} catch (error) {
-			mapStaffOrderServiceError(error);
-		}
-	}),
-	markOrderDelivered: protectedProcedure.input(orderActionSchema).mutation(async ({ ctx, input }) => {
-		try {
-			return await transitionStaffOrderStatus(
-				{
-					createHistoryEntry: async (history) => {
-						await ctx.db.insert(orderStatusHistories).values(history);
+				});
+
+				if (!order) {
+					throw new OrderServiceError("ORDER_NOT_FOUND", "Order was not found");
+				}
+
+				return order;
+			} catch (error) {
+				mapStaffOrderServiceError(error);
+			}
+		}),
+	listActiveOrders: protectedProcedure
+		.input(pageInput)
+		.query(async ({ ctx, input }) => {
+			try {
+				return await listActiveOrders(
+					{
+						countOrdersByHotelId: async (hotelId) => {
+							const [result] = await ctx.db
+								.select({ totalItems: count() })
+								.from(orders)
+								.where(eq(orders.hotelId, hotelId));
+
+							return result?.totalItems ?? 0;
+						},
+						findMembershipByUserId: async (userId) => {
+							const result = await ctx.db.query.staffUserHotels.findFirst({
+								columns: {
+									hotelId: true,
+									role: true,
+									userId: true,
+								},
+								where: (table, { eq }) => eq(table.userId, userId),
+							});
+							return result ?? null;
+						},
+						listOrdersByHotelId: async (hotelId, pagination) =>
+							await ctx.db.query.orders.findMany({
+								limit: pagination.limit,
+								offset: pagination.offset,
+								orderBy: (table, { asc }) => [asc(table.placedAt)],
+								where: (table, { eq }) => eq(table.hotelId, hotelId),
+								with: {
+									room: {
+										columns: {
+											label: true,
+										},
+									},
+								},
+							}),
 					},
-					findMembershipByUserId: async (userId) => {
-						const result = await ctx.db.query.staffUserHotels.findFirst({
-							columns: {
-								hotelId: true,
-								role: true,
-								userId: true,
-							},
-							where: (table, { eq }) => eq(table.userId, userId),
-						});
-						return result ?? null;
+					{
+						page: input?.page,
+						pageSize: PAGE_SIZES.staffOperationalOrders,
+						userId: ctx.session.user.id,
 					},
-					findOrderById: async (orderId) =>
-						(await ctx.db.query.orders.findFirst({
-							where: (table, { eq }) => eq(table.id, orderId),
-						})) ?? null,
-					logAuditEvent,
-					updateOrder: async (orderId, order) => {
-						await ctx.db.update(orders).set(order).where(eq(orders.id, orderId));
+				);
+			} catch (error) {
+				mapStaffOrderServiceError(error);
+			}
+		}),
+	markOrderDelivered: protectedProcedure
+		.input(orderActionSchema)
+		.mutation(async ({ ctx, input }) => {
+			try {
+				return await transitionStaffOrderStatus(
+					{
+						createHistoryEntry: async (history) => {
+							await ctx.db.insert(orderStatusHistories).values(history);
+						},
+						findMembershipByUserId: async (userId) => {
+							const result = await ctx.db.query.staffUserHotels.findFirst({
+								columns: {
+									hotelId: true,
+									role: true,
+									userId: true,
+								},
+								where: (table, { eq }) => eq(table.userId, userId),
+							});
+							return result ?? null;
+						},
+						findOrderById: async (orderId) =>
+							(await ctx.db.query.orders.findFirst({
+								where: (table, { eq }) => eq(table.id, orderId),
+							})) ?? null,
+						logAuditEvent,
+						updateOrder: async (orderId, order) => {
+							await ctx.db
+								.update(orders)
+								.set(order)
+								.where(eq(orders.id, orderId));
+						},
 					},
-				},
-				{
-					nextStatus: "delivered",
-					orderId: input.orderId,
-					userId: ctx.session.user.id,
-				},
-			);
-		} catch (error) {
-			mapStaffOrderServiceError(error);
-		}
-	}),
+					{
+						nextStatus: "delivered",
+						orderId: input.orderId,
+						userId: ctx.session.user.id,
+					},
+				);
+			} catch (error) {
+				mapStaffOrderServiceError(error);
+			}
+		}),
 	markOrderOutForDelivery: protectedProcedure
 		.input(orderActionSchema)
 		.mutation(async ({ ctx, input }) => {
@@ -249,7 +308,10 @@ export const staffOrderRouter = {
 							})) ?? null,
 						logAuditEvent,
 						updateOrder: async (orderId, order) => {
-							await ctx.db.update(orders).set(order).where(eq(orders.id, orderId));
+							await ctx.db
+								.update(orders)
+								.set(order)
+								.where(eq(orders.id, orderId));
 						},
 					},
 					{
@@ -262,41 +324,46 @@ export const staffOrderRouter = {
 				mapStaffOrderServiceError(error);
 			}
 		}),
-	markOrderPreparing: protectedProcedure.input(orderActionSchema).mutation(async ({ ctx, input }) => {
-		try {
-			return await transitionStaffOrderStatus(
-				{
-					createHistoryEntry: async (history) => {
-						await ctx.db.insert(orderStatusHistories).values(history);
+	markOrderPreparing: protectedProcedure
+		.input(orderActionSchema)
+		.mutation(async ({ ctx, input }) => {
+			try {
+				return await transitionStaffOrderStatus(
+					{
+						createHistoryEntry: async (history) => {
+							await ctx.db.insert(orderStatusHistories).values(history);
+						},
+						findMembershipByUserId: async (userId) => {
+							const result = await ctx.db.query.staffUserHotels.findFirst({
+								columns: {
+									hotelId: true,
+									role: true,
+									userId: true,
+								},
+								where: (table, { eq }) => eq(table.userId, userId),
+							});
+							return result ?? null;
+						},
+						findOrderById: async (orderId) =>
+							(await ctx.db.query.orders.findFirst({
+								where: (table, { eq }) => eq(table.id, orderId),
+							})) ?? null,
+						logAuditEvent,
+						updateOrder: async (orderId, order) => {
+							await ctx.db
+								.update(orders)
+								.set(order)
+								.where(eq(orders.id, orderId));
+						},
 					},
-					findMembershipByUserId: async (userId) => {
-						const result = await ctx.db.query.staffUserHotels.findFirst({
-							columns: {
-								hotelId: true,
-								role: true,
-								userId: true,
-							},
-							where: (table, { eq }) => eq(table.userId, userId),
-						});
-						return result ?? null;
+					{
+						nextStatus: "preparing",
+						orderId: input.orderId,
+						userId: ctx.session.user.id,
 					},
-					findOrderById: async (orderId) =>
-						(await ctx.db.query.orders.findFirst({
-							where: (table, { eq }) => eq(table.id, orderId),
-						})) ?? null,
-					logAuditEvent,
-					updateOrder: async (orderId, order) => {
-						await ctx.db.update(orders).set(order).where(eq(orders.id, orderId));
-					},
-				},
-				{
-					nextStatus: "preparing",
-					orderId: input.orderId,
-					userId: ctx.session.user.id,
-				},
-			);
-		} catch (error) {
-			mapStaffOrderServiceError(error);
-		}
-	}),
+				);
+			} catch (error) {
+				mapStaffOrderServiceError(error);
+			}
+		}),
 } satisfies TRPCRouterRecord;

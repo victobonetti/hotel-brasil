@@ -4,6 +4,8 @@ export function PageShell(props: {
 	children: React.ReactNode;
 	className?: string;
 	containerClassName?: string;
+	sidebar?: React.ReactNode;
+	sidebarClassName?: string;
 }) {
 	return (
 		<main
@@ -18,7 +20,16 @@ export function PageShell(props: {
 					props.containerClassName,
 				)}
 			>
-				{props.children}
+				{props.sidebar ? (
+					<div className="grid gap-8 lg:grid-cols-[280px_minmax(0,1fr)] lg:items-start">
+						<aside className={cn("lg:sticky lg:top-8", props.sidebarClassName)}>
+							{props.sidebar}
+						</aside>
+						<div className="min-w-0">{props.children}</div>
+					</div>
+				) : (
+					props.children
+				)}
 			</div>
 		</main>
 	);

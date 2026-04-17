@@ -1,25 +1,25 @@
-import {
-	CatalogAdminServiceError,
-} from "./services/catalog-admin-service";
+import { CatalogAdminServiceError } from "./services/catalog-admin-service";
 import { GuestSessionServiceError } from "./services/guest-session-service";
 import { MenuServiceError } from "./services/menu-service";
 import { OrderServiceError } from "./services/order-service";
+import { RoomAdminServiceError } from "./services/room-admin-service";
 
 export type UserFacingAudience = "guest" | "staff";
 
-export type UserFacingErrorMessage = {
+export interface UserFacingErrorMessage {
 	code: string;
 	message: string;
 	retryable: boolean;
 	title: string;
-};
+}
 
 function getErrorCode(error: unknown) {
 	if (
 		error instanceof CatalogAdminServiceError ||
 		error instanceof GuestSessionServiceError ||
 		error instanceof MenuServiceError ||
-		error instanceof OrderServiceError
+		error instanceof OrderServiceError ||
+		error instanceof RoomAdminServiceError
 	) {
 		return error.code;
 	}
@@ -128,9 +128,24 @@ export function mapDomainErrorToUserMessage(
 			return {
 				code,
 				message:
-					"Só administradores e gerentes podem editar o catálogo deste hotel.",
+					"Só administradores e gerentes podem gerenciar recursos administrativos deste hotel.",
 				retryable: false,
 				title: "Permissão insuficiente",
+			};
+		case "ROOM_LABEL_CONFLICT":
+			return {
+				code,
+				message: "Já existe um quarto com esse nome neste hotel.",
+				retryable: true,
+				title: "Quarto duplicado",
+			};
+		case "ROOM_NOT_FOUND":
+			return {
+				code,
+				message:
+					"O quarto solicitado não foi encontrado ou não pertence ao seu hotel.",
+				retryable: false,
+				title: "Quarto não encontrado",
 			};
 		case "TENANT_MISMATCH":
 			return {
@@ -145,7 +160,8 @@ export function mapDomainErrorToUserMessage(
 		case "INVALID_PRICE":
 			return {
 				code,
-				message: "O preço informado é inválido. Revise o valor e tente novamente.",
+				message:
+					"O preço informado é inválido. Revise o valor e tente novamente.",
 				retryable: true,
 				title: "Preço inválido",
 			};
@@ -170,4 +186,3 @@ export function mapDomainErrorToUserMessage(
 			};
 	}
 }
-

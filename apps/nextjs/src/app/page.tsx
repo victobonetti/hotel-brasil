@@ -1,10 +1,5 @@
 import { Badge } from "@finchat/ui/badge";
-import {
-	Card,
-	CardDescription,
-	CardHeader,
-	CardTitle,
-} from "@finchat/ui/card";
+import { Card, CardDescription, CardHeader, CardTitle } from "@finchat/ui/card";
 import { Suspense } from "react";
 import { AuthShowcase } from "./_components/auth-showcase";
 import { PageShell } from "./_components/page-shell";
@@ -22,9 +17,9 @@ export default function HomePage() {
 							Operação de hotel com experiência premium para hóspedes e equipe.
 						</h1>
 						<p className="max-w-2xl text-base text-muted-foreground md:text-lg">
-							O FinChat conecta menu digital, criação de pedidos, rastreamento em
-							tempo real e painel operacional em uma experiência mais clara, rápida
-							e elegante.
+							O FinChat conecta menu digital, criação de pedidos, rastreamento
+							em tempo real e painel operacional em uma experiência mais clara,
+							rápida e elegante.
 						</p>
 					</div>
 					<div className="grid gap-4 sm:grid-cols-2">
@@ -32,7 +27,8 @@ export default function HomePage() {
 							<CardHeader>
 								<CardTitle>Fluxo do hóspede</CardTitle>
 								<CardDescription>
-									QR do quarto, cardápio mobile, pedido guiado e tracking ao vivo.
+									QR do quarto, cardápio mobile, pedido guiado e tracking ao
+									vivo.
 								</CardDescription>
 							</CardHeader>
 						</Card>
@@ -40,7 +36,8 @@ export default function HomePage() {
 							<CardHeader>
 								<CardTitle>Fluxo do staff</CardTitle>
 								<CardDescription>
-									Fila operacional, catálogo administrável e atualizações de status.
+									Fila operacional, catálogo administrável e atualizações de
+									status.
 								</CardDescription>
 							</CardHeader>
 						</Card>

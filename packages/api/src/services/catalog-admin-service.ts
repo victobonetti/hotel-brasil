@@ -1,18 +1,18 @@
 import { randomUUID } from "node:crypto";
-
+import { buildPaginationMetadata, type PaginatedResult } from "@finchat/utils";
 import { assertUserCanManageHotel } from "../domain/order";
 import type { StaffHotelMembership } from "../services/order-service";
 
-export type CatalogCategoryRecord = {
+export interface CatalogCategoryRecord {
 	active: boolean;
 	description: string | null;
 	hotelId: string;
 	id: string;
 	name: string;
 	sortOrder: number;
-};
+}
 
-export type CatalogMenuItemRecord = {
+export interface CatalogMenuItemRecord {
 	available: boolean;
 	categoryId: string;
 	description: string | null;
@@ -22,7 +22,7 @@ export type CatalogMenuItemRecord = {
 	name: string;
 	preparationTimeMinutes: number | null;
 	priceInCents: number;
-};
+}
 
 type CatalogAdminRole = "admin" | "manager";
 
@@ -38,6 +38,7 @@ export class CatalogAdminServiceError extends Error {
 	constructor(
 		public readonly code:
 			| "CATEGORY_NOT_FOUND"
+			| "INVALID_IMAGE"
 			| "INVALID_PRICE"
 			| "ITEM_NOT_FOUND"
 			| "STAFF_MEMBERSHIP_REQUIRED"
@@ -66,12 +67,19 @@ function toCatalogAdminServiceError(error: unknown): never {
 			throw new CatalogAdminServiceError("UNAUTHORIZED_ROLE", error.message);
 		}
 
-		if (error.message.includes("another hotel") || error.message.includes("same hotel")) {
+		if (
+			error.message.includes("another hotel") ||
+			error.message.includes("same hotel")
+		) {
 			throw new CatalogAdminServiceError("TENANT_MISMATCH", error.message);
 		}
 
 		if (error.message.includes("price")) {
 			throw new CatalogAdminServiceError("INVALID_PRICE", error.message);
+		}
+
+		if (error.message.includes("image")) {
+			throw new CatalogAdminServiceError("INVALID_IMAGE", error.message);
 		}
 	}
 
@@ -84,7 +92,38 @@ function assertNonNegativePrice(priceInCents: number) {
 	}
 }
 
-function assertSameHotel(resourceHotelId: string, hotelId: string, entity: string) {
+const MAX_IMAGE_DATA_URL_LENGTH = 200_000;
+
+function normalizeImageUrl(imageUrl?: string | null) {
+	if (imageUrl === undefined) {
+		return;
+	}
+
+	if (imageUrl === null) {
+		return null;
+	}
+
+	const normalizedImageUrl = imageUrl.trim();
+	if (normalizedImageUrl.length === 0) {
+		return null;
+	}
+
+	if (!normalizedImageUrl.startsWith("data:image/")) {
+		throw new Error("Menu item image must be a valid data image url");
+	}
+
+	if (normalizedImageUrl.length > MAX_IMAGE_DATA_URL_LENGTH) {
+		throw new Error("Menu item image exceeds the maximum allowed size");
+	}
+
+	return normalizedImageUrl;
+}
+
+function assertSameHotel(
+	resourceHotelId: string,
+	hotelId: string,
+	entity: string,
+) {
 	if (resourceHotelId !== hotelId) {
 		throw new Error(`${entity} must belong to the same hotel`);
 	}
@@ -106,15 +145,17 @@ function ensureCatalogAccess(
 
 export async function listCategoriesForStaff(
 	deps: {
+		countCategoriesByHotelId: (hotelId: string) => Promise<number> | number;
 		findMembershipByUserId: (
 			userId: string,
 		) => Promise<StaffHotelMembership | null> | StaffHotelMembership | null;
 		listCategoriesByHotelId: (
 			hotelId: string,
-		) => Promise<CatalogCategoryRecord[]> | CatalogCategoryRecord[];
+			input: { limit: number; offset: number },
+		) => Promise<Array<CatalogCategoryRecord>> | Array<CatalogCategoryRecord>;
 	},
-	input: { userId: string },
-) {
+	input: { page?: number; pageSize: number; userId: string },
+): Promise<PaginatedResult<CatalogCategoryRecord>> {
 	const membership = await deps.findMembershipByUserId(input.userId);
 	let access: StaffHotelMembership;
 	try {
@@ -123,20 +164,35 @@ export async function listCategoriesForStaff(
 		toCatalogAdminServiceError(error);
 	}
 
-	return await deps.listCategoriesByHotelId(access.hotelId);
+	const totalItems = await deps.countCategoriesByHotelId(access.hotelId);
+	const pagination = buildPaginationMetadata({
+		page: input.page,
+		pageSize: input.pageSize,
+		totalItems,
+	});
+
+	return {
+		items: await deps.listCategoriesByHotelId(access.hotelId, {
+			limit: pagination.pageSize,
+			offset: (pagination.page - 1) * pagination.pageSize,
+		}),
+		pagination,
+	};
 }
 
 export async function listMenuItemsForStaff(
 	deps: {
+		countMenuItemsByHotelId: (hotelId: string) => Promise<number> | number;
 		findMembershipByUserId: (
 			userId: string,
 		) => Promise<StaffHotelMembership | null> | StaffHotelMembership | null;
 		listMenuItemsByHotelId: (
 			hotelId: string,
-		) => Promise<CatalogMenuItemRecord[]> | CatalogMenuItemRecord[];
+			input: { limit: number; offset: number },
+		) => Promise<Array<CatalogMenuItemRecord>> | Array<CatalogMenuItemRecord>;
 	},
-	input: { userId: string },
-) {
+	input: { page?: number; pageSize: number; userId: string },
+): Promise<PaginatedResult<CatalogMenuItemRecord>> {
 	const membership = await deps.findMembershipByUserId(input.userId);
 	let access: StaffHotelMembership;
 	try {
@@ -145,7 +201,20 @@ export async function listMenuItemsForStaff(
 		toCatalogAdminServiceError(error);
 	}
 
-	return await deps.listMenuItemsByHotelId(access.hotelId);
+	const totalItems = await deps.countMenuItemsByHotelId(access.hotelId);
+	const pagination = buildPaginationMetadata({
+		page: input.page,
+		pageSize: input.pageSize,
+		totalItems,
+	});
+
+	return {
+		items: await deps.listMenuItemsByHotelId(access.hotelId, {
+			limit: pagination.pageSize,
+			offset: (pagination.page - 1) * pagination.pageSize,
+		}),
+		pagination,
+	};
 }
 
 export async function createCategory(
@@ -158,7 +227,7 @@ export async function createCategory(
 		) => Promise<StaffHotelMembership | null> | StaffHotelMembership | null;
 		listCategoriesByHotelId: (
 			hotelId: string,
-		) => Promise<CatalogCategoryRecord[]> | CatalogCategoryRecord[];
+		) => Promise<Array<CatalogCategoryRecord>> | Array<CatalogCategoryRecord>;
 	},
 	input: {
 		active?: boolean;
@@ -213,7 +282,10 @@ export async function updateCategory(
 ) {
 	const category = await deps.findCategoryById(input.categoryId);
 	if (!category) {
-		throw new CatalogAdminServiceError("CATEGORY_NOT_FOUND", "Category was not found");
+		throw new CatalogAdminServiceError(
+			"CATEGORY_NOT_FOUND",
+			"Category was not found",
+		);
 	}
 
 	const membership = await deps.findMembershipByUserId(input.userId);
@@ -244,15 +316,15 @@ export async function reorderCategories(
 			userId: string,
 		) => Promise<StaffHotelMembership | null> | StaffHotelMembership | null;
 		listCategoriesByIds: (
-			categoryIds: string[],
-		) => Promise<CatalogCategoryRecord[]> | CatalogCategoryRecord[];
+			categoryIds: Array<string>,
+		) => Promise<Array<CatalogCategoryRecord>> | Array<CatalogCategoryRecord>;
 		updateCategoryRecord: (
 			categoryId: string,
 			category: Partial<CatalogCategoryRecord>,
 		) => Promise<void> | void;
 	},
 	input: {
-		categoryIds: string[];
+		categoryIds: Array<string>;
 		userId: string;
 	},
 ) {
@@ -280,23 +352,26 @@ export async function reorderCategories(
 		);
 	}
 
+	const startingSortOrder = Math.min(
+		...categories.map((category) => category.sortOrder),
+	);
 	await Promise.all(
 		input.categoryIds.map((categoryId, index) =>
-			deps.updateCategoryRecord(categoryId, { sortOrder: index }),
+			deps.updateCategoryRecord(categoryId, {
+				sortOrder: startingSortOrder + index,
+			}),
 		),
 	);
 
 	return input.categoryIds.map((categoryId, index) => ({
 		categoryId,
-		sortOrder: index,
+		sortOrder: startingSortOrder + index,
 	}));
 }
 
 export async function createMenuItem(
 	deps: {
-		createMenuItemRecord: (
-			item: CatalogMenuItemRecord,
-		) => Promise<void> | void;
+		createMenuItemRecord: (item: CatalogMenuItemRecord) => Promise<void> | void;
 		findCategoryById: (
 			categoryId: string,
 		) => Promise<CatalogCategoryRecord | null> | CatalogCategoryRecord | null;
@@ -317,16 +392,21 @@ export async function createMenuItem(
 ) {
 	const membership = await deps.findMembershipByUserId(input.userId);
 	let access: StaffHotelMembership;
+	let normalizedImageUrl: string | null | undefined;
 	try {
 		access = ensureCatalogAccess(input.userId, membership);
 		assertNonNegativePrice(input.priceInCents);
+		normalizedImageUrl = normalizeImageUrl(input.imageUrl);
 	} catch (error) {
 		toCatalogAdminServiceError(error);
 	}
 
 	const category = await deps.findCategoryById(input.categoryId);
 	if (!category) {
-		throw new CatalogAdminServiceError("CATEGORY_NOT_FOUND", "Category was not found");
+		throw new CatalogAdminServiceError(
+			"CATEGORY_NOT_FOUND",
+			"Category was not found",
+		);
 	}
 
 	try {
@@ -341,7 +421,7 @@ export async function createMenuItem(
 		description: input.description ?? null,
 		hotelId: access.hotelId,
 		id: randomUUID(),
-		imageUrl: input.imageUrl ?? null,
+		imageUrl: normalizedImageUrl ?? null,
 		name: input.name,
 		preparationTimeMinutes: input.preparationTimeMinutes ?? null,
 		priceInCents: input.priceInCents,
@@ -381,16 +461,24 @@ export async function updateMenuItem(
 ) {
 	const item = await deps.findMenuItemById(input.itemId);
 	if (!item) {
-		throw new CatalogAdminServiceError("ITEM_NOT_FOUND", "Menu item was not found");
+		throw new CatalogAdminServiceError(
+			"ITEM_NOT_FOUND",
+			"Menu item was not found",
+		);
 	}
 
 	const membership = await deps.findMembershipByUserId(input.userId);
+	let nextImageUrl: string | null | undefined;
 	try {
 		ensureCatalogAccess(input.userId, membership);
 		assertUserCanManageHotel(input.userId, membership, item.hotelId);
 		if (input.priceInCents !== undefined) {
 			assertNonNegativePrice(input.priceInCents);
 		}
+		nextImageUrl =
+			input.imageUrl === undefined
+				? item.imageUrl
+				: normalizeImageUrl(input.imageUrl);
 	} catch (error) {
 		toCatalogAdminServiceError(error);
 	}
@@ -398,7 +486,10 @@ export async function updateMenuItem(
 	if (input.categoryId) {
 		const category = await deps.findCategoryById(input.categoryId);
 		if (!category) {
-			throw new CatalogAdminServiceError("CATEGORY_NOT_FOUND", "Category was not found");
+			throw new CatalogAdminServiceError(
+				"CATEGORY_NOT_FOUND",
+				"Category was not found",
+			);
 		}
 
 		try {
@@ -412,7 +503,7 @@ export async function updateMenuItem(
 		available: input.available ?? item.available,
 		categoryId: input.categoryId ?? item.categoryId,
 		description: input.description ?? item.description,
-		imageUrl: input.imageUrl ?? item.imageUrl,
+		imageUrl: nextImageUrl,
 		name: input.name ?? item.name,
 		preparationTimeMinutes:
 			input.preparationTimeMinutes ?? item.preparationTimeMinutes,
@@ -424,7 +515,7 @@ export async function updateMenuItem(
 		available: input.available ?? item.available,
 		categoryId: input.categoryId ?? item.categoryId,
 		description: input.description ?? item.description,
-		imageUrl: input.imageUrl ?? item.imageUrl,
+		imageUrl: nextImageUrl,
 		name: input.name ?? item.name,
 		preparationTimeMinutes:
 			input.preparationTimeMinutes ?? item.preparationTimeMinutes,
@@ -452,7 +543,10 @@ export async function toggleMenuItemAvailability(
 ) {
 	const item = await deps.findMenuItemById(input.itemId);
 	if (!item) {
-		throw new CatalogAdminServiceError("ITEM_NOT_FOUND", "Menu item was not found");
+		throw new CatalogAdminServiceError(
+			"ITEM_NOT_FOUND",
+			"Menu item was not found",
+		);
 	}
 
 	const membership = await deps.findMembershipByUserId(input.userId);

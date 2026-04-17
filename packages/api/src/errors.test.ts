@@ -41,7 +41,9 @@ describe("mapDomainErrorToUserMessage", () => {
 	});
 
 	test("falls back safely for unknown errors", () => {
-		expect(mapDomainErrorToUserMessage(new Error("boom"), "guest")).toMatchObject({
+		expect(
+			mapDomainErrorToUserMessage(new Error("boom"), "guest"),
+		).toMatchObject({
 			code: "INTERNAL_ERROR",
 			title: "Erro inesperado",
 		});

@@ -10,6 +10,7 @@ import {
 } from "@finchat/ui/card";
 import { Input } from "@finchat/ui/input";
 import { Label } from "@finchat/ui/label";
+import { cn } from "@finchat/ui/lib/utils";
 import {
 	Select,
 	SelectContent,
@@ -19,84 +20,243 @@ import {
 } from "@finchat/ui/select";
 import { Textarea } from "@finchat/ui/textarea";
 import { useMutation, useQuery } from "@tanstack/react-query";
+import type { Route } from "next";
 import Link from "next/link";
-import { useState } from "react";
-
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { useEffect, useState } from "react";
+import {
+	ITEM_IMAGE_SIZE,
+	processMenuItemImage,
+} from "~/app/_components/item-image";
 import { PageShell, SectionHeader } from "~/app/_components/page-shell";
+import { PaginationControls } from "~/app/_components/pagination-controls";
+import {
+	buildPageSearch,
+	parsePageParam,
+	shouldSyncPageParam,
+} from "~/app/_components/pagination-state";
+import { formatPriceLabel, PriceField } from "~/app/_components/price-field";
+import { StaffNav } from "~/app/_components/staff-nav";
+import {
+	ClockIcon,
+	FolderIcon,
+	ImageIcon,
+	PlusIcon,
+	RefreshIcon,
+	TagIcon,
+	ToggleOffIcon,
+	ToggleOnIcon,
+	TrashIcon,
+} from "~/app/_components/ui-icons";
 import { useTRPC } from "~/trpc/react";
 import { StaffHotelGuard } from "../../../orders/_components/staff-hotel-guard";
+import { getMenuItemLoadingState } from "./staff-menu-items-state";
 
-function formatPrice(priceInCents: number) {
-	return new Intl.NumberFormat("pt-BR", {
-		currency: "BRL",
-		style: "currency",
-	}).format(priceInCents / 100);
+function ItemImagePreview(props: { alt: string; src?: string | null }) {
+	if (!props.src) {
+		return (
+			<div className="flex aspect-square w-24 items-center justify-center rounded-2xl border border-primary/20 border-dashed bg-primary/[0.03] text-center text-muted-foreground text-xs">
+				Sem imagem
+			</div>
+		);
+	}
+
+	return (
+		<img
+			alt={props.alt}
+			className="aspect-square w-24 rounded-2xl border border-primary/10 object-cover shadow-primary/10 shadow-sm"
+			height={ITEM_IMAGE_SIZE}
+			src={props.src}
+			width={ITEM_IMAGE_SIZE}
+		/>
+	);
 }
 
 export function StaffMenuItemsPage() {
 	const trpc = useTRPC();
+	const pathname = usePathname();
+	const router = useRouter();
+	const searchParams = useSearchParams();
 	const [name, setName] = useState("");
 	const [description, setDescription] = useState("");
 	const [categoryId, setCategoryId] = useState("");
-	const [priceInCents, setPriceInCents] = useState("0");
+	const [priceInCents, setPriceInCents] = useState(0);
 	const [preparationTimeMinutes, setPreparationTimeMinutes] = useState("15");
+	const [imageUrl, setImageUrl] = useState<string | null>(null);
+	const [formError, setFormError] = useState<string | null>(null);
+	const [itemActionError, setItemActionError] = useState<string | null>(null);
+	const [pendingItemId, setPendingItemId] = useState<string | null>(null);
+	const currentPage = parsePageParam(searchParams.get("page") ?? undefined);
 
-	const categoriesQuery = useQuery(trpc.catalogAdmin.listCategories.queryOptions());
-	const itemsQuery = useQuery(trpc.catalogAdmin.listMenuItems.queryOptions());
+	const categoryOptionsQuery = useQuery(
+		trpc.catalogAdmin.listCategoryOptions.queryOptions(),
+	);
+	const itemsQuery = useQuery(
+		trpc.catalogAdmin.listMenuItems.queryOptions({
+			page: currentPage,
+		}),
+	);
 	const createItemMutation = useMutation(
 		trpc.catalogAdmin.createMenuItem.mutationOptions({
+			onError: (error) => {
+				setFormError(error.message);
+			},
 			onSuccess: () => {
 				void itemsQuery.refetch();
 				setName("");
 				setDescription("");
 				setCategoryId("");
-				setPriceInCents("0");
+				setPriceInCents(0);
 				setPreparationTimeMinutes("15");
+				setImageUrl(null);
+				setFormError(null);
 			},
 		}),
 	);
 	const toggleItemMutation = useMutation(
 		trpc.catalogAdmin.toggleMenuItemAvailability.mutationOptions({
-			onSuccess: () => void itemsQuery.refetch(),
+			onError: (error) => {
+				setItemActionError(error.message);
+			},
+			onSettled: () => {
+				setPendingItemId(null);
+			},
+			onSuccess: () => {
+				void itemsQuery.refetch();
+				setItemActionError(null);
+			},
+		}),
+	);
+	const updateItemMutation = useMutation(
+		trpc.catalogAdmin.updateMenuItem.mutationOptions({
+			onError: (error) => {
+				setItemActionError(error.message);
+			},
+			onSettled: () => {
+				setPendingItemId(null);
+			},
+			onSuccess: () => {
+				void itemsQuery.refetch();
+				setItemActionError(null);
+			},
 		}),
 	);
 
-	const state = categoriesQuery.isLoading || itemsQuery.isLoading
-		? "loading"
-		: categoriesQuery.error?.data?.code === "UNAUTHORIZED" ||
-			  itemsQuery.error?.data?.code === "UNAUTHORIZED"
-			? "needs-auth"
-			: categoriesQuery.error || itemsQuery.error
-				? "unauthorized"
-				: undefined;
+	const state =
+		categoryOptionsQuery.isLoading || itemsQuery.isLoading
+			? "loading"
+			: categoryOptionsQuery.error?.data?.code === "UNAUTHORIZED" ||
+					itemsQuery.error?.data?.code === "UNAUTHORIZED"
+				? "needs-auth"
+				: categoryOptionsQuery.error || itemsQuery.error
+					? "unauthorized"
+					: undefined;
+	const items = itemsQuery.data?.items ?? [];
+	const pagination = itemsQuery.data?.pagination;
+
+	useEffect(() => {
+		if (!pagination || !shouldSyncPageParam(currentPage, pagination)) {
+			return;
+		}
+
+		const nextSearch = buildPageSearch(
+			new URLSearchParams(searchParams.toString()),
+			"page",
+			pagination.page,
+		);
+		router.replace(
+			(nextSearch.length > 0 ? `${pathname}?${nextSearch}` : pathname) as Route,
+			{
+				scroll: false,
+			},
+		);
+	}, [currentPage, pagination, pathname, router, searchParams]);
+
+	const handleCreateImageChange = async (
+		event: React.ChangeEvent<HTMLInputElement>,
+	) => {
+		const file = event.target.files?.[0];
+		event.target.value = "";
+
+		if (!file) {
+			return;
+		}
+
+		try {
+			setFormError(null);
+			setImageUrl(await processMenuItemImage(file));
+		} catch (error) {
+			setFormError(
+				error instanceof Error
+					? error.message
+					: "Nao foi possivel processar a imagem.",
+			);
+		}
+	};
+
+	const handleExistingItemImageChange = async (
+		itemId: string,
+		event: React.ChangeEvent<HTMLInputElement>,
+	) => {
+		const file = event.target.files?.[0];
+		event.target.value = "";
+
+		if (!file) {
+			return;
+		}
+
+		try {
+			setPendingItemId(itemId);
+			setItemActionError(null);
+			const processedImage = await processMenuItemImage(file);
+			updateItemMutation.mutate({
+				imageUrl: processedImage,
+				itemId,
+			});
+		} catch (error) {
+			setPendingItemId(null);
+			setItemActionError(
+				error instanceof Error
+					? error.message
+					: "Nao foi possivel processar a imagem.",
+			);
+		}
+	};
 
 	return (
-		<PageShell containerClassName="max-w-6xl gap-8">
+		<PageShell containerClassName="max-w-6xl gap-8" sidebar={<StaffNav />}>
 			<SectionHeader
-				badge="Administração do catálogo"
-				description="Adicione itens, organize preços e mantenha a disponibilidade do menu sempre alinhada com a operação."
-				title="Itens do cardápio"
+				badge="Administracao do catalogo"
+				description="Adicione itens, imagens, precos e disponibilidade mantendo o menu alinhado com a operacao."
+				title="Itens do cardapio"
 			/>
 
 			<StaffHotelGuard
-				errorMessage={categoriesQuery.error?.message ?? itemsQuery.error?.message}
+				errorMessage={
+					categoryOptionsQuery.error?.message ?? itemsQuery.error?.message
+				}
 				state={state}
 			>
 				<div className="grid gap-6 lg:grid-cols-[0.78fr_1.22fr]">
-					<Card className="border-primary/15 bg-card/88 shadow-sm shadow-primary/10">
+					<Card className="border-primary/15 bg-card/88 shadow-primary/10 shadow-sm">
 						<CardHeader>
 							<CardTitle>Novo item</CardTitle>
 							<CardDescription>
-								Adicione um item com categoria, preço e tempo de preparo.
+								Adicione nome, descricao, preco, tempo de preparo e uma imagem
+								leve de 200x200.
 							</CardDescription>
 						</CardHeader>
 						<CardContent className="space-y-4">
 							<div className="space-y-2">
 								<Label htmlFor="item-name">Nome</Label>
-								<Input id="item-name" onChange={(e) => setName(e.target.value)} value={name} />
+								<Input
+									id="item-name"
+									onChange={(e) => setName(e.target.value)}
+									value={name}
+								/>
 							</div>
 							<div className="space-y-2">
-								<Label htmlFor="item-description">Descrição</Label>
+								<Label htmlFor="item-description">Descricao</Label>
 								<Textarea
 									id="item-description"
 									onChange={(e) => setDescription(e.target.value)}
@@ -114,7 +274,7 @@ export function StaffMenuItemsPage() {
 									</SelectTrigger>
 									<SelectContent>
 										<SelectItem value="">Selecione uma categoria</SelectItem>
-										{categoriesQuery.data?.map((category) => (
+										{categoryOptionsQuery.data?.map((category) => (
 											<SelectItem key={category.id} value={category.id}>
 												{category.name}
 											</SelectItem>
@@ -124,13 +284,16 @@ export function StaffMenuItemsPage() {
 							</div>
 							<div className="grid gap-4 md:grid-cols-2">
 								<div className="space-y-2">
-									<Label htmlFor="item-price">Preço em centavos</Label>
-									<Input
+									<Label htmlFor="item-price">Preco</Label>
+									<PriceField
 										id="item-price"
-										onChange={(e) => setPriceInCents(e.target.value)}
-										type="number"
-										value={priceInCents}
+										onChange={setPriceInCents}
+										valueInCents={priceInCents}
 									/>
+									<p className="text-muted-foreground text-xs">
+										<TagIcon className="mr-1 inline size-3.5" />
+										Valor final: {formatPriceLabel(priceInCents)}
+									</p>
 								</div>
 								<div className="space-y-2">
 									<Label htmlFor="item-prep-time">Preparo (min)</Label>
@@ -142,6 +305,53 @@ export function StaffMenuItemsPage() {
 									/>
 								</div>
 							</div>
+							<div className="space-y-3">
+								<Label htmlFor="item-image">Imagem do item</Label>
+								<div className="flex flex-wrap items-start gap-4 rounded-2xl border border-primary/10 bg-primary/[0.03] p-4">
+									<ItemImagePreview alt="Preview do novo item" src={imageUrl} />
+									<div className="min-w-[220px] flex-1 space-y-3">
+										<Input
+											accept="image/*"
+											className="sr-only"
+											id="item-image"
+											onChange={handleCreateImageChange}
+											type="file"
+										/>
+										<p className="text-muted-foreground text-xs">
+											A imagem sera recortada para 200x200 e comprimida antes de
+											salvar.
+										</p>
+										<div className="flex flex-wrap gap-2">
+											<Button
+												render={
+													<label
+														className="cursor-pointer"
+														htmlFor="item-image"
+													/>
+												}
+												size="sm"
+												variant={imageUrl ? "outline" : "default"}
+											>
+												<ImageIcon className="size-4" />
+												{imageUrl ? "Trocar imagem" : "Enviar imagem"}
+											</Button>
+											{imageUrl ? (
+												<Button
+													onClick={() => setImageUrl(null)}
+													size="sm"
+													variant="outline"
+												>
+													<TrashIcon className="size-4" />
+													Remover imagem
+												</Button>
+											) : null}
+										</div>
+									</div>
+								</div>
+							</div>
+							{formError ? (
+								<p className="text-destructive text-sm">{formError}</p>
+							) : null}
 							<div className="flex flex-wrap gap-3">
 								<Button
 									disabled={
@@ -153,64 +363,148 @@ export function StaffMenuItemsPage() {
 										createItemMutation.mutate({
 											categoryId,
 											description: description.trim() || undefined,
+											imageUrl: imageUrl ?? undefined,
 											name: name.trim(),
 											preparationTimeMinutes: Number(preparationTimeMinutes),
-											priceInCents: Number(priceInCents),
+											priceInCents,
 										})
 									}
 								>
+									<PlusIcon className="size-4" />
 									Criar item
 								</Button>
 								<Button render={<Link href="/staff/menu" />} variant="outline">
-									Voltar às categorias
+									<RefreshIcon className="size-4" />
+									Voltar as categorias
 								</Button>
 							</div>
 						</CardContent>
 					</Card>
 
-					<Card className="border-primary/15 bg-card/88 shadow-sm shadow-primary/10">
+					<Card className="border-primary/15 bg-card/88 shadow-primary/10 shadow-sm">
 						<CardHeader>
 							<CardTitle>Itens existentes</CardTitle>
 							<CardDescription>
-								Controle disponibilidade e revise o catálogo ativo do hotel.
+								Controle disponibilidade, visualize a imagem atual e troque ou
+								remova a capa do item.
 							</CardDescription>
 						</CardHeader>
 						<CardContent className="space-y-3">
-							{itemsQuery.data?.map((item) => (
-								<div
-									className="flex flex-col gap-3 rounded-2xl border border-primary/10 bg-primary/[0.03] p-4"
-									key={item.id}
-								>
-									<div className="flex flex-wrap items-start justify-between gap-3">
-										<div className="space-y-1">
-											<p className="font-medium">{item.name}</p>
-											{item.description ? (
-												<p className="text-muted-foreground text-sm">
-													{item.description}
-												</p>
-											) : null}
+							{itemActionError ? (
+								<p className="text-destructive text-sm">{itemActionError}</p>
+							) : null}
+							{items.map((item) => {
+								const loadingState = getMenuItemLoadingState(
+									pendingItemId,
+									item.id,
+								);
+
+								return (
+									<div
+										className={cn(
+											"relative flex flex-col gap-4 rounded-2xl border border-primary/10 bg-primary/[0.03] p-4 transition-opacity",
+											loadingState.itemClassName,
+										)}
+										key={item.id}
+									>
+										{loadingState.shouldShowOverlay ? (
+											<div className="absolute inset-0 z-10 flex items-center justify-center rounded-2xl bg-background/55 backdrop-blur-[1px]">
+												<div className="rounded-full border border-primary/20 bg-card px-3 py-1 font-medium text-primary text-xs shadow-sm">
+													Carregando...
+												</div>
+											</div>
+										) : null}
+										<div className="flex flex-wrap items-start justify-between gap-3">
+											<div className="flex min-w-0 items-start gap-3">
+												<ItemImagePreview alt={item.name} src={item.imageUrl} />
+												<div className="space-y-1">
+													<p className="flex items-center gap-2 font-medium">
+														<FolderIcon className="size-4 text-primary" />
+														{item.name}
+													</p>
+													{item.description ? (
+														<p className="text-muted-foreground text-sm">
+															{item.description}
+														</p>
+													) : null}
+													<p className="text-muted-foreground text-sm">
+														<TagIcon className="mr-1 inline size-3.5" />
+														{formatPriceLabel(item.priceInCents)}
+														<span className="mx-2">-</span>
+														<ClockIcon className="mr-1 inline size-3.5" />
+														{item.preparationTimeMinutes ?? 15} min
+													</p>
+												</div>
+											</div>
+											<Button
+												onClick={() => {
+													setPendingItemId(item.id);
+													toggleItemMutation.mutate({
+														itemId: item.id,
+													});
+												}}
+												size="sm"
+												variant={item.available ? "secondary" : "outline"}
+											>
+												{item.available ? (
+													<ToggleOffIcon className="size-4" />
+												) : (
+													<ToggleOnIcon className="size-4" />
+												)}
+												{item.available ? "Desativar" : "Ativar"}
+											</Button>
 										</div>
-										<Button
-											onClick={() =>
-												toggleItemMutation.mutate({
-													itemId: item.id,
-												})
-											}
-											size="sm"
-											variant={item.available ? "secondary" : "outline"}
-										>
-											{item.available ? "Desativar" : "Ativar"}
-										</Button>
+										<div className="flex flex-wrap items-center gap-3 rounded-2xl border border-primary/10 bg-background/70 p-3">
+											<Input
+												accept="image/*"
+												className="sr-only"
+												id={`item-image-${item.id}`}
+												onChange={(event) =>
+													handleExistingItemImageChange(item.id, event)
+												}
+												type="file"
+											/>
+											<Button
+												render={
+													<label
+														className="cursor-pointer"
+														htmlFor={`item-image-${item.id}`}
+													/>
+												}
+												size="sm"
+												variant="outline"
+											>
+												<ImageIcon className="size-4" />
+												{item.imageUrl ? "Trocar imagem" : "Enviar imagem"}
+											</Button>
+											<Button
+												disabled={
+													!item.imageUrl || updateItemMutation.isPending
+												}
+												onClick={() => {
+													setPendingItemId(item.id);
+													updateItemMutation.mutate({
+														imageUrl: "",
+														itemId: item.id,
+													});
+												}}
+												size="sm"
+												variant="outline"
+											>
+												<TrashIcon className="size-4" />
+												Remover imagem
+											</Button>
+										</div>
 									</div>
-									<p className="text-muted-foreground text-sm">
-										{formatPrice(item.priceInCents)} • {item.preparationTimeMinutes ?? 15} min
-									</p>
+								);
+							})}
+							{items.length === 0 ? (
+								<div className="rounded-2xl border border-primary/20 border-dashed bg-primary/[0.03] px-5 py-6 text-muted-foreground text-sm">
+									Adicione o primeiro item para comecar a compor o cardapio.
 								</div>
-							))}
-							{(itemsQuery.data?.length ?? 0) === 0 ? (
-								<div className="rounded-2xl border border-dashed border-primary/20 bg-primary/[0.03] px-5 py-6 text-muted-foreground text-sm">
-									Adicione o primeiro item para começar a compor o cardápio.
-								</div>
+							) : null}
+							{pagination ? (
+								<PaginationControls pagination={pagination} />
 							) : null}
 						</CardContent>
 					</Card>

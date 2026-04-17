@@ -18,7 +18,7 @@ export function StaffHotelGuard(props: {
 }) {
 	if (props.state === "loading") {
 		return (
-			<Card className="border-dashed border-primary/20 bg-card/85">
+			<Card className="border-primary/20 border-dashed bg-card/85">
 				<CardHeader>
 					<CardTitle>Carregando painel operacional</CardTitle>
 					<CardDescription>
@@ -39,7 +39,9 @@ export function StaffHotelGuard(props: {
 					</CardDescription>
 				</CardHeader>
 				<CardContent>
-					<Button onClick={() => (window.location.href = "/")}>Ir para login</Button>
+					<Button onClick={() => (window.location.href = "/")}>
+						Ir para login
+					</Button>
 				</CardContent>
 			</Card>
 		);

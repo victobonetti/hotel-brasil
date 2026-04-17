@@ -1,21 +1,24 @@
-export type GuestSessionSummary = {
+import { type PaginationMetadata, paginateItems } from "@finchat/utils";
+
+export interface GuestSessionSummary {
 	expiresAt: Date;
 	hotelId: string;
 	id: string;
 	roomId: string;
+	roomLabel?: string | null;
 	token: string;
-};
+}
 
-export type MenuCategorySummary = {
+export interface MenuCategorySummary {
 	active: boolean;
 	description: string | null;
 	hotelId: string;
 	id: string;
 	name: string;
 	sortOrder: number;
-};
+}
 
-export type MenuItemSummary = {
+export interface MenuItemSummary {
 	available: boolean;
 	categoryId: string;
 	description: string | null;
@@ -25,62 +28,65 @@ export type MenuItemSummary = {
 	name: string;
 	preparationTimeMinutes: number | null;
 	priceInCents: number;
-};
+}
 
-export type MenuCategoryWithItems = {
+export interface MenuCategoryWithItems {
 	description: string | null;
 	id: string;
-	items: MenuItemView[];
+	items: Array<MenuItemView>;
 	name: string;
 	sortOrder: number;
-};
+}
 
-export type MenuItemView = {
+export interface MenuItemView {
 	description: string | null;
 	id: string;
 	imageUrl: string | null;
 	name: string;
 	preparationTimeMinutes: number | null;
 	priceInCents: number;
-};
+}
 
-export type GuestMenuView = {
-	categories: MenuCategoryWithItems[];
+export interface GuestMenuView {
+	categories: Array<MenuCategoryWithItems>;
 	guestSession: {
 		expiresAt: Date;
 		hotelId: string;
 		id: string;
 		roomId: string;
+		roomLabel?: string | null;
 		token: string;
 	};
-};
+	pagination: PaginationMetadata;
+}
 
-type GetMenuForGuestSessionDeps = {
+interface GetMenuForGuestSessionDeps {
 	findGuestSessionByToken: (
 		token: string,
 	) => Promise<GuestSessionSummary | null> | GuestSessionSummary | null;
 	listCategoriesByHotel: (
 		hotelId: string,
-	) => Promise<MenuCategorySummary[]> | MenuCategorySummary[];
+	) => Promise<Array<MenuCategorySummary>> | Array<MenuCategorySummary>;
 	listItemsByHotel: (
 		hotelId: string,
-	) => Promise<MenuItemSummary[]> | MenuItemSummary[];
+	) => Promise<Array<MenuItemSummary>> | Array<MenuItemSummary>;
 	now?: () => Date;
-};
+}
 
 export class MenuServiceError extends Error {
+	readonly code: "GUEST_SESSION_EXPIRED" | "GUEST_SESSION_NOT_FOUND";
+
 	constructor(
-		public readonly code:
-			| "GUEST_SESSION_EXPIRED"
-			| "GUEST_SESSION_NOT_FOUND",
+		code: "GUEST_SESSION_EXPIRED" | "GUEST_SESSION_NOT_FOUND",
 		message: string,
 	) {
 		super(message);
+		this.code = code;
 		this.name = "MenuServiceError";
 	}
 }
 
-function sortCategories(categories: MenuCategorySummary[]) {
+function sortCategories(categories: Array<MenuCategorySummary>) {
 	return [...categories].sort((left, right) => {
 		if (left.sortOrder !== right.sortOrder) {
 			return left.sortOrder - right.sortOrder;
@@ -90,21 +96,23 @@ function sortCategories(categories: MenuCategorySummary[]) {
 	});
 }
 
-function sortItems(items: MenuItemSummary[]) {
+function sortItems(items: Array<MenuItemSummary>) {
 	return [...items].sort((left, right) => left.name.localeCompare(right.name));
 }
 
 export function listCategoriesByHotel(
-	categories: MenuCategorySummary[],
+	categories: Array<MenuCategorySummary>,
 	hotelId: string,
 ) {
 	return sortCategories(
-		categories.filter((category) => category.hotelId === hotelId && category.active),
+		categories.filter(
+			(category) => category.hotelId === hotelId && category.active,
+		),
 	);
 }
 
 export function listAvailableItems(
-	items: MenuItemSummary[],
+	items: Array<MenuItemSummary>,
 	hotelId: string,
 	validCategoryIds?: Iterable<string>,
 ) {
@@ -127,9 +135,11 @@ export function listAvailableItems(
 
 export async function getMenuForGuestSession(
 	deps: GetMenuForGuestSessionDeps,
-	input: { guestSessionToken: string },
+	input: { guestSessionToken: string; page?: number; pageSize: number },
 ): Promise<GuestMenuView> {
-	const guestSession = await deps.findGuestSessionByToken(input.guestSessionToken);
+	const guestSession = await deps.findGuestSessionByToken(
+		input.guestSessionToken,
+	);
 	if (!guestSession) {
 		throw new MenuServiceError(
 			"GUEST_SESSION_NOT_FOUND",
@@ -155,7 +165,7 @@ export async function getMenuForGuestSession(
 		categories.map((category) => category.id),
 	);
 
-	const itemsByCategoryId = new Map<string, MenuItemView[]>();
+	const itemsByCategoryId = new Map<string, Array<MenuItemView>>();
 	for (const item of items) {
 		const categoryItems = itemsByCategoryId.get(item.categoryId) ?? [];
 		categoryItems.push({
@@ -169,20 +179,30 @@ export async function getMenuForGuestSession(
 		itemsByCategoryId.set(item.categoryId, categoryItems);
 	}
 
-	return {
-		categories: categories.map((category) => ({
+	const paginatedCategories = paginateItems(
+		categories.map((category) => ({
 			description: category.description,
 			id: category.id,
 			items: itemsByCategoryId.get(category.id) ?? [],
 			name: category.name,
 			sortOrder: category.sortOrder,
 		})),
+		{
+			page: input.page,
+			pageSize: input.pageSize,
+		},
+	);
+
+	return {
+		categories: paginatedCategories.items,
 		guestSession: {
 			expiresAt: guestSession.expiresAt,
 			hotelId: guestSession.hotelId,
 			id: guestSession.id,
 			roomId: guestSession.roomId,
+			roomLabel: guestSession.roomLabel ?? null,
 			token: guestSession.token,
 		},
+		pagination: paginatedCategories.pagination,
 	};
 }
