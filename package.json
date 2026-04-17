@@ -2,6 +2,7 @@
 	"devDependencies": {
 		"@biomejs/biome": "catalog:",
 		"@turbo/gen": "catalog:",
+		"baseline-browser-mapping": "^2.10.19",
 		"dotenv-cli": "catalog:",
 		"turbo": "catalog:",
 		"typescript": "catalog:"
