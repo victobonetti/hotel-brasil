@@ -2,7 +2,7 @@ import { cn } from "@finchat/ui/lib/utils";
 import { Toaster } from "@finchat/ui/sonner";
 import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
-import { ThemeProvider } from "next-themes";
+import { ThemeProvider } from "~/app/_components/theme-provider";
 
 import { TRPCReactProvider } from "~/trpc/react";
 

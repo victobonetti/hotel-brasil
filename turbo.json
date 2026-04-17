@@ -1,6 +1,12 @@
 {
 	"$schema": "https://turborepo.com/schema.json",
-	"globalEnv": ["DATABASE_URL", "AUTH_SECRET", "PORT"],
+	"globalEnv": [
+		"DATABASE_URL",
+		"AUTH_SECRET",
+		"PORT",
+		"AUTH_GOOGLE_CLIENT_ID",
+		"AUTH_GOOGLE_CLIENT_SECRET"
+	],
 	"globalPassThroughEnv": [
 		"NODE_ENV",
 		"CI",
