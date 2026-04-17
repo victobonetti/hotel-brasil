@@ -1,8 +1,9 @@
 import { parsePageParam } from "~/app/_components/pagination-state";
+import { Suspense } from "react";
 import { HydrateClient, prefetch, trpc } from "~/trpc/server";
 import { GuestMenuPage } from "./_components/guest-menu-page";
 
-export default async function GuestMenuRoute(props: {
+async function GuestMenuData(props: {
 	params: Promise<{ token: string }>;
 	searchParams?: Promise<Record<string, string | Array<string> | undefined>>;
 }) {
@@ -23,5 +24,16 @@ export default async function GuestMenuRoute(props: {
 		<HydrateClient>
 			<GuestMenuPage guestSessionToken={token} />
 		</HydrateClient>
+	);
+}
+
+export default function GuestMenuRoute(props: {
+	params: Promise<{ token: string }>;
+	searchParams?: Promise<Record<string, string | Array<string> | undefined>>;
+}) {
+	return (
+		<Suspense>
+			<GuestMenuData {...props} />
+		</Suspense>
 	);
 }

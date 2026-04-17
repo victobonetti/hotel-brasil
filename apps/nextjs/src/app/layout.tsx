@@ -14,10 +14,7 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-	themeColor: [
-		{ color: "white", media: "(prefers-color-scheme: light)" },
-		{ color: "black", media: "(prefers-color-scheme: dark)" },
-	],
+	themeColor: "#000000",
 };
 
 const geistSans = Geist({

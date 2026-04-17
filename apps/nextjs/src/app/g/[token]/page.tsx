@@ -1,9 +1,10 @@
+import { Suspense } from "react";
 import { appRouter, createTRPCContext } from "@finchat/api";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { auth } from "~/auth/server";
 
-export default async function GuestSessionEntryPage(props: {
+async function GuestSessionData(props: {
 	params: Promise<{ token: string }>;
 }) {
 	const { token } = await props.params;
@@ -18,4 +19,14 @@ export default async function GuestSessionEntryPage(props: {
 		});
 
 	redirect(`/g/${guestSession.token}/menu`);
+}
+
+export default function GuestSessionEntryRoute(props: {
+	params: Promise<{ token: string }>;
+}) {
+	return (
+		<Suspense>
+			<GuestSessionData {...props} />
+		</Suspense>
+	);
 }
