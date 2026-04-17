@@ -1,8 +1,8 @@
 {
 	"dependencies": {
-		"@neondatabase/serverless": "catalog:",
 		"drizzle-orm": "catalog:",
 		"drizzle-zod": "catalog:",
+		"postgres": "^3.4.7",
 		"zod": "catalog:"
 	},
 	"devDependencies": {
@@ -10,7 +10,6 @@
 		"@types/node": "catalog:",
 		"dotenv-cli": "catalog:",
 		"drizzle-kit": "catalog:",
-		"postgres": "^3.4.7",
 		"typescript": "catalog:"
 	},
 	"exports": {

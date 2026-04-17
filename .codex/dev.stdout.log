@@ -1,0 +1,37 @@
+• Packages in scope: @finchat/api, @finchat/auth, @finchat/db, @finchat/nextjs, @finchat/tailwind-config, @finchat/tsconfig, @finchat/ui, @finchat/utils
+• Running dev, studio in 8 packages
+• Remote caching disabled
+@finchat/db:studio: cache bypass, force executing e5510c5862595fe1
+@finchat/nextjs:dev: cache bypass, force executing a36efa24bf7d6b61
+@finchat/db:dev: cache bypass, force executing 53cabc99973e465e
+@finchat/db:studio: $ bun wait-for-db && bun with-env drizzle-kit studio
+@finchat/nextjs:dev: $ bun next dev
+@finchat/db:dev: $ trap 'docker compose stop' EXIT; docker compose up --build
+@finchat/db:dev: bun: command not found: trap
+@finchat/db:studio: $ while ! nc -z localhost 5432; do sleep 1; done
+@finchat/db:studio: bun: command not found: while
+@finchat/db:studio: bun: command not found: do
+@finchat/db:studio: bun: command not found: done
+@finchat/db:studio: error: script "wait-for-db" exited with code 1
+@finchat/db:studio: error: script "studio" exited with code 1
+@finchat/db:dev: unable to get image 'ghcr.io/neondatabase/wsproxy:latest': error during connect: Get "http://%2F%2F.%2Fpipe%2FdockerDesktopLinuxEngine/v1.48/images/ghcr.io/neondatabase/wsproxy:latest/json": open //./pipe/dockerDesktopLinuxEngine: The system cannot find the file specified.
+@finchat/db:dev: error: script "dev" exited with code 1
+@finchat/nextjs:dev:  ⚠ Port 3000 is in use by process 23720, using available port 3001 instead.
+@finchat/nextjs:dev: [baseline-browser-mapping] The data in this module is over two months old.  To ensure accurate Baseline data, please update: `npm i baseline-browser-mapping@latest -D`
+@finchat/nextjs:dev:    ▲ Next.js 16.0.9 (Turbopack, Cache Components)
+@finchat/nextjs:dev:    - Local:         http://localhost:3001
+@finchat/nextjs:dev:    - Network:       http://54.232.189.113:3001
+@finchat/nextjs:dev:    - Environments: .env
+@finchat/nextjs:dev: 
+@finchat/nextjs:dev:  ✓ Starting...
+@finchat/nextjs:dev:  ⨯ Unable to acquire lock at C:\Users\victo\Desktop\hotel-brasil\finchat\apps\nextjs\.next\dev\lock, is another instance of next dev running?
+@finchat/nextjs:dev:    Suggestion: If you intended to restart next dev, terminate the other process, and then try again.
+@finchat/nextjs:dev: [baseline-browser-mapping] The data in this module is over two months old.  To ensure accurate Baseline data, please update: `npm i baseline-browser-mapping@latest -D`
+@finchat/nextjs:dev: [?25h
+@finchat/nextjs:dev: error: script "dev" exited with code 1
+
+ Tasks:    0 successful, 3 total
+Cached:    0 cached, 3 total
+  Time:    4.482s 
+Failed:    @finchat/db#dev, @finchat/db#studio, @finchat/nextjs#dev
+

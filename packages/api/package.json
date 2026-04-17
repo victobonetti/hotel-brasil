@@ -2,7 +2,9 @@
 	"dependencies": {
 		"@finchat/auth": "workspace:*",
 		"@finchat/db": "workspace:*",
+		"@finchat/utils": "workspace:*",
 		"@trpc/server": "catalog:",
+		"drizzle-orm": "catalog:",
 		"superjson": "catalog:",
 		"zod": "catalog:"
 	},
@@ -18,6 +20,7 @@
 	"scripts": {
 		"build": "tsc",
 		"clean": "git clean -xdf .cache .turbo dist node_modules",
+		"test": "bun test",
 		"tsc": "tsc --noEmit --emitDeclarationOnly false"
 	},
 	"type": "module"
