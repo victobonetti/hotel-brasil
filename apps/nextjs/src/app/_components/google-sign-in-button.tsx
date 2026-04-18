@@ -5,7 +5,11 @@ import { startTransition, useState } from "react";
 
 import { authClient } from "~/auth/client";
 
-export function GoogleSignInButton() {
+export function GoogleSignInButton(props?: {
+	className?: string;
+	label?: string;
+	size?: "default" | "lg" | "sm";
+}) {
 	const [errorMessage, setErrorMessage] = useState<string | null>(null);
 	const [isPending, setIsPending] = useState(false);
 
@@ -33,13 +37,15 @@ export function GoogleSignInButton() {
 	return (
 		<div className="space-y-3">
 			<Button
-				className="w-full"
+				className={props?.className ?? "w-full"}
 				disabled={isPending}
 				onClick={handleSignIn}
-				size="lg"
+				size={props?.size ?? "lg"}
 				type="button"
 			>
-				{isPending ? "Redirecionando..." : "Entrar com Google"}
+				{isPending
+					? "Redirecionando..."
+					: (props?.label ?? "Entrar com Google")}
 			</Button>
 			{errorMessage ? (
 				<p className="text-destructive text-sm">{errorMessage}</p>

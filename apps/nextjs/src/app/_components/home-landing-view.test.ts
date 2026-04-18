@@ -12,11 +12,11 @@ describe("home landing view", () => {
 			}),
 		);
 
-		expect(html).toContain("Room service digital para hoteis");
-		expect(html).toContain("Uma landing pensada para vender a operacao");
-		expect(html).toContain("Do QR no quarto ao pedido entregue");
+		expect(html).toContain("Room service para hoteis que querem operar melhor");
+		expect(html).toContain("O pedido sai do quarto com contexto");
 		expect(html).toContain("Painel do hotel");
-		expect(html).toContain("Como funciona");
-		expect(html).toContain("Resultados que a operacao sente");
+		expect(html).toContain("Ver a operacao");
+		expect(html).toContain("Como a operacao flui");
+		expect(html).toContain("O que muda no dia a dia");
 	});
 });
