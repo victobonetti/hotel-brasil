@@ -1,5 +1,11 @@
 import { menuCategories, menuItems } from "@nowait24/db/schema";
 import { PAGE_SIZES } from "@nowait24/utils";
+import {
+	getS3CompatibleStorageConfig,
+	isManagedStorageKey,
+	S3CompatibleStorage,
+} from "@nowait24/utils/storage";
+import { env } from "@nowait24/utils/env";
 import type { TRPCRouterRecord } from "@trpc/server";
 import { TRPCError } from "@trpc/server";
 import { count, eq, inArray } from "drizzle-orm";
@@ -62,6 +68,20 @@ async function findMembershipByUserId(ctx: { db: any }, userId: string) {
 	return membership ?? null;
 }
 
+function getStorage() {
+	const config = getS3CompatibleStorageConfig({
+		accessKeyId: env.STORAGE_ACCESS_KEY_ID,
+		bucket: env.STORAGE_BUCKET,
+		endpoint: env.STORAGE_ENDPOINT,
+		forcePathStyle: env.STORAGE_FORCE_PATH_STYLE,
+		publicBaseUrl: env.STORAGE_PUBLIC_BASE_URL,
+		region: env.STORAGE_REGION,
+		secretAccessKey: env.STORAGE_SECRET_ACCESS_KEY,
+	});
+
+	return config ? new S3CompatibleStorage(config) : null;
+}
+
 const categoryPayload = z.object({
 	active: z.boolean().optional(),
 	description: z.string().optional(),
@@ -73,6 +93,7 @@ const itemPayload = z.object({
 	available: z.boolean().optional(),
 	categoryId: z.string().min(1),
 	description: z.string().optional(),
+	imageStorageKey: z.string().optional(),
 	imageUrl: z.string().optional(),
 	name: z.string().min(1),
 	preparationTimeMinutes: z.number().int().nonnegative().optional(),
@@ -352,6 +373,7 @@ export const catalogAdminRouter = {
 				available: z.boolean().optional(),
 				categoryId: z.string().optional(),
 				description: z.string().optional(),
+				imageStorageKey: z.string().optional(),
 				imageUrl: z.string().optional(),
 				itemId: z.string().min(1),
 				name: z.string().optional(),
@@ -361,7 +383,11 @@ export const catalogAdminRouter = {
 		)
 		.mutation(async ({ ctx, input }) => {
 			try {
-				return await updateMenuItem(
+				const existingItem = await ctx.db.query.menuItems.findFirst({
+					where: (table, { eq }) => eq(table.id, input.itemId),
+				});
+
+				const updatedItem = await updateMenuItem(
 					{
 						findCategoryById: async (categoryId) =>
 							(await ctx.db.query.menuCategories.findFirst({
@@ -385,6 +411,24 @@ export const catalogAdminRouter = {
 						userId: ctx.session.user.id,
 					},
 				);
+
+				if (
+					existingItem?.imageStorageKey &&
+					existingItem.imageStorageKey !== updatedItem.imageStorageKey &&
+					isManagedStorageKey(
+						existingItem.imageStorageKey,
+						env.STORAGE_MENU_ITEMS_PREFIX,
+					)
+				) {
+					const storage = getStorage();
+					if (storage) {
+						void storage.delete(existingItem.imageStorageKey).catch((error) => {
+							console.error("Failed to delete stale menu item image", error);
+						});
+					}
+				}
+
+				return updatedItem;
 			} catch (error) {
 				mapCatalogAdminServiceError(error);
 			}

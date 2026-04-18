@@ -1,6 +1,6 @@
 {
 	"compilerOptions": {},
-	"exclude": ["node_modules"],
+	"exclude": ["node_modules", "src/**/*.test.ts"],
 	"extends": "@nowait24/tsconfig/base.json",
 	"include": ["*.ts", "src"]
 }

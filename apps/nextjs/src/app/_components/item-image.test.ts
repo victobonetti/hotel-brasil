@@ -3,6 +3,8 @@ import { describe, expect, test } from "bun:test";
 import {
 	getCenteredSquareCrop,
 	ITEM_IMAGE_SIZE,
+	processedImageDataUrlToFile,
+	uploadProcessedMenuItemImage,
 	validateProcessedImageDataUrl,
 } from "./item-image";
 
@@ -30,5 +32,63 @@ describe("item-image helpers", () => {
 		expect(() => validateProcessedImageDataUrl("not-an-image")).toThrow(
 			"Arquivo de imagem invalido.",
 		);
+	});
+
+	test("converts a processed data url to a file", async () => {
+		const file = processedImageDataUrlToFile("data:image/webp;base64,Zm9v");
+
+		expect(file.type).toBe("image/webp");
+		expect(file.name).toBe("menu-item-image.webp");
+		expect(Buffer.from(await file.arrayBuffer()).toString("utf8")).toBe("foo");
+	});
+
+	test("uploads the processed image through the app route", async () => {
+		const originalFetch = globalThis.fetch;
+		globalThis.fetch = async () =>
+			new Response(
+				JSON.stringify({
+					key: "menu-items/hotel-1/item.webp",
+					url: "https://cdn.example.com/menu-items/hotel-1/item.webp",
+				}),
+				{ status: 200 },
+			);
+
+		try {
+			await expect(
+				uploadProcessedMenuItemImage(
+					new File([Buffer.from("image")], "item.webp", {
+						type: "image/webp",
+					}),
+				),
+			).resolves.toEqual({
+				key: "menu-items/hotel-1/item.webp",
+				url: "https://cdn.example.com/menu-items/hotel-1/item.webp",
+			});
+		} finally {
+			globalThis.fetch = originalFetch;
+		}
+	});
+
+	test("surfaces a friendly upload error", async () => {
+		const originalFetch = globalThis.fetch;
+		globalThis.fetch = async () =>
+			new Response(
+				JSON.stringify({
+					error: "Storage indisponivel.",
+				}),
+				{ status: 503 },
+			);
+
+		try {
+			await expect(
+				uploadProcessedMenuItemImage(
+					new File([Buffer.from("image")], "item.webp", {
+						type: "image/webp",
+					}),
+				),
+			).rejects.toThrow("Storage indisponivel.");
+		} finally {
+			globalThis.fetch = originalFetch;
+		}
 	});
 });

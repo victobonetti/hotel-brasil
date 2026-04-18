@@ -217,18 +217,66 @@ export function StaffRoomsPage() {
 		<PageShell containerClassName="max-w-6xl gap-8" sidebar={<StaffNav />}>
 			<SectionHeader
 				badge="Administracao dos quartos"
-				description="Cadastre quartos, mantenha os tokens atualizados e copie os links publicos usados pelo fluxo do hospede."
+				description="Cadastre quartos e mantenha os acessos publicos organizados para que a equipe consiga agir rapido quando um link precisar de ajuste."
+				supportingPanel={
+					<div className="rounded-[2rem] border border-primary/15 bg-card/84 p-6 shadow-primary/10 shadow-sm">
+						<p className="font-medium text-primary text-xs uppercase tracking-[0.18em]">
+							Quando usar esta tela
+						</p>
+						<div className="mt-3 space-y-3 text-muted-foreground text-sm leading-6">
+							<p>Cadastre um quarto novo antes de entregar o acesso.</p>
+							<p>
+								Regenere o token se um link antigo nao puder mais ser usado.
+							</p>
+							<p>Abra o QR Code quando precisar imprimir ou compartilhar.</p>
+						</div>
+					</div>
+				}
 				title="Quartos e tokens de acesso"
 			/>
 
 			<StaffHotelGuard errorMessage={roomsQuery.error?.message} state={state}>
+				<div className="grid gap-3 md:grid-cols-3">
+					<div className="rounded-[1.75rem] border border-primary/15 bg-card/88 p-5 shadow-primary/10 shadow-sm">
+						<p className="font-medium text-primary text-sm">
+							Quartos cadastrados
+						</p>
+						<p className="mt-2 font-semibold text-3xl">
+							{pagination?.totalItems ?? 0}
+						</p>
+						<p className="mt-2 text-muted-foreground text-sm">
+							Base de acessos controlada pela equipe.
+						</p>
+					</div>
+					<div className="rounded-[1.75rem] border border-primary/15 bg-card/88 p-5 shadow-primary/10 shadow-sm">
+						<p className="font-medium text-primary text-sm">Quartos ativos</p>
+						<p className="mt-2 font-semibold text-3xl">
+							{rooms.filter((room) => room.active).length}
+						</p>
+						<p className="mt-2 text-muted-foreground text-sm">
+							Acessos publicos liberados agora.
+						</p>
+					</div>
+					<div className="rounded-[1.75rem] border border-primary/15 bg-card/88 p-5 shadow-primary/10 shadow-sm">
+						<p className="font-medium text-primary text-sm">
+							Sem andar definido
+						</p>
+						<p className="mt-2 font-semibold text-3xl">
+							{rooms.filter((room) => room.floor === null).length}
+						</p>
+						<p className="mt-2 text-muted-foreground text-sm">
+							Quartos que ainda podem ganhar contexto adicional.
+						</p>
+					</div>
+				</div>
+
 				<div className="grid gap-6 lg:grid-cols-[0.72fr_1.28fr]">
 					<Card className="border-primary/15 bg-card/88 shadow-primary/10 shadow-sm">
 						<CardHeader>
-							<CardTitle>Novo quarto</CardTitle>
+							<CardTitle>Adicionar quarto</CardTitle>
 							<CardDescription>
-								Crie quartos com um token opaco pronto para ser usado no link
-								publico do hospede.
+								Cadastre a identificacao basica e o sistema gera o acesso
+								publico.
 							</CardDescription>
 						</CardHeader>
 						<CardContent className="space-y-4">
@@ -273,10 +321,10 @@ export function StaffRoomsPage() {
 
 					<Card className="border-primary/15 bg-card/88 shadow-primary/10 shadow-sm">
 						<CardHeader>
-							<CardTitle>Quartos cadastrados</CardTitle>
+							<CardTitle>Acessos existentes</CardTitle>
 							<CardDescription>
-								Edite o quarto, ative ou desative o acesso, gere o QR Code e
-								regenere o token quando precisar trocar o link publico.
+								Revise dados do quarto, status do acesso e materiais de
+								compartilhamento em um so lugar.
 							</CardDescription>
 						</CardHeader>
 						<CardContent className="space-y-4">
@@ -291,7 +339,7 @@ export function StaffRoomsPage() {
 
 								return (
 									<div
-										className="space-y-4 rounded-2xl border border-primary/10 bg-primary/[0.03] p-4"
+										className="space-y-4 rounded-[1.75rem] border border-primary/10 bg-primary/[0.03] p-4"
 										key={room.id}
 									>
 										<div className="flex flex-wrap items-start justify-between gap-3">
@@ -304,7 +352,7 @@ export function StaffRoomsPage() {
 													{formatFloorLabel(room.floor)}
 												</p>
 												<p className="text-muted-foreground text-xs">
-													Status: {room.active ? "Ativo" : "Inativo"}
+													Acesso {room.active ? "ativo" : "inativo"}
 												</p>
 											</div>
 											<Button

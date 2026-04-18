@@ -6,17 +6,17 @@ describe("getStaffNavItems", () => {
 	test("lists the main staff destinations", () => {
 		expect(getStaffNavItems()).toEqual([
 			{
-				description: "Fila ativa e andamento dos pedidos do hotel.",
+				description: "Acompanhe a fila e avance cada pedido com clareza.",
 				href: "/staff/orders",
 				label: "Pedidos",
 			},
 			{
-				description: "Categorias, itens, disponibilidade e precos do cardapio.",
+				description: "Organize categorias e itens sem perder o contexto.",
 				href: "/staff/menu",
-				label: "Gerenciar cardapio",
+				label: "Cardapio",
 			},
 			{
-				description: "Quartos, tokens e links publicos de acesso.",
+				description: "Mantenha quartos e acessos publicos prontos para uso.",
 				href: "/staff/rooms",
 				label: "Quartos",
 			},

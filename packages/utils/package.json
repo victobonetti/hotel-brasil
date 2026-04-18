@@ -1,5 +1,6 @@
 {
 	"dependencies": {
+		"@aws-sdk/client-s3": "^3.750.0",
 		"@t3-oss/env-nextjs": "catalog:",
 		"zod": "catalog:"
 	},
@@ -11,7 +12,8 @@
 	"exports": {
 		".": "./src/index.ts",
 		"./env": "./src/env.ts",
-		"./pagination": "./src/pagination.ts"
+		"./pagination": "./src/pagination.ts",
+		"./storage": "./src/storage.ts"
 	},
 	"name": "@nowait24/utils",
 	"private": true,

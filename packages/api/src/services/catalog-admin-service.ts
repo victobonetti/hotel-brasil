@@ -18,6 +18,7 @@ export interface CatalogMenuItemRecord {
 	description: string | null;
 	hotelId: string;
 	id: string;
+	imageStorageKey: string | null;
 	imageUrl: string | null;
 	name: string;
 	preparationTimeMinutes: number | null;
@@ -92,8 +93,6 @@ function assertNonNegativePrice(priceInCents: number) {
 	}
 }
 
-const MAX_IMAGE_DATA_URL_LENGTH = 200_000;
-
 function normalizeImageUrl(imageUrl?: string | null) {
 	if (imageUrl === undefined) {
 		return;
@@ -108,15 +107,38 @@ function normalizeImageUrl(imageUrl?: string | null) {
 		return null;
 	}
 
-	if (!normalizedImageUrl.startsWith("data:image/")) {
-		throw new Error("Menu item image must be a valid data image url");
+	if (normalizedImageUrl.startsWith("data:image/")) {
+		return normalizedImageUrl;
 	}
 
-	if (normalizedImageUrl.length > MAX_IMAGE_DATA_URL_LENGTH) {
-		throw new Error("Menu item image exceeds the maximum allowed size");
+	try {
+		const parsedUrl = new URL(normalizedImageUrl);
+		if (
+			parsedUrl.protocol !== "http:" &&
+			parsedUrl.protocol !== "https:"
+		) {
+			throw new Error("Menu item image must be a valid public image url");
+		}
+	} catch {
+		throw new Error("Menu item image must be a valid public image url");
 	}
 
 	return normalizedImageUrl;
+}
+
+function normalizeImageStorageKey(imageStorageKey?: string | null) {
+	if (imageStorageKey === undefined) {
+		return;
+	}
+
+	if (imageStorageKey === null) {
+		return null;
+	}
+
+	const normalizedImageStorageKey = imageStorageKey.trim();
+	return normalizedImageStorageKey.length === 0
+		? null
+		: normalizedImageStorageKey;
 }
 
 function assertSameHotel(
@@ -383,6 +405,7 @@ export async function createMenuItem(
 		available?: boolean;
 		categoryId: string;
 		description?: string;
+		imageStorageKey?: string;
 		imageUrl?: string;
 		name: string;
 		preparationTimeMinutes?: number;
@@ -393,10 +416,12 @@ export async function createMenuItem(
 	const membership = await deps.findMembershipByUserId(input.userId);
 	let access: StaffHotelMembership;
 	let normalizedImageUrl: string | null | undefined;
+	let normalizedImageStorageKey: string | null | undefined;
 	try {
 		access = ensureCatalogAccess(input.userId, membership);
 		assertNonNegativePrice(input.priceInCents);
 		normalizedImageUrl = normalizeImageUrl(input.imageUrl);
+		normalizedImageStorageKey = normalizeImageStorageKey(input.imageStorageKey);
 	} catch (error) {
 		toCatalogAdminServiceError(error);
 	}
@@ -421,6 +446,7 @@ export async function createMenuItem(
 		description: input.description ?? null,
 		hotelId: access.hotelId,
 		id: randomUUID(),
+		imageStorageKey: normalizedImageStorageKey ?? null,
 		imageUrl: normalizedImageUrl ?? null,
 		name: input.name,
 		preparationTimeMinutes: input.preparationTimeMinutes ?? null,
@@ -451,6 +477,7 @@ export async function updateMenuItem(
 		available?: boolean;
 		categoryId?: string;
 		description?: string;
+		imageStorageKey?: string;
 		imageUrl?: string;
 		itemId: string;
 		name?: string;
@@ -469,6 +496,7 @@ export async function updateMenuItem(
 
 	const membership = await deps.findMembershipByUserId(input.userId);
 	let nextImageUrl: string | null | undefined;
+	let nextImageStorageKey: string | null | undefined;
 	try {
 		ensureCatalogAccess(input.userId, membership);
 		assertUserCanManageHotel(input.userId, membership, item.hotelId);
@@ -479,6 +507,10 @@ export async function updateMenuItem(
 			input.imageUrl === undefined
 				? item.imageUrl
 				: normalizeImageUrl(input.imageUrl);
+		nextImageStorageKey =
+			input.imageStorageKey === undefined
+				? item.imageStorageKey
+				: normalizeImageStorageKey(input.imageStorageKey);
 	} catch (error) {
 		toCatalogAdminServiceError(error);
 	}
@@ -503,6 +535,7 @@ export async function updateMenuItem(
 		available: input.available ?? item.available,
 		categoryId: input.categoryId ?? item.categoryId,
 		description: input.description ?? item.description,
+		imageStorageKey: nextImageStorageKey,
 		imageUrl: nextImageUrl,
 		name: input.name ?? item.name,
 		preparationTimeMinutes:
@@ -515,6 +548,7 @@ export async function updateMenuItem(
 		available: input.available ?? item.available,
 		categoryId: input.categoryId ?? item.categoryId,
 		description: input.description ?? item.description,
+		imageStorageKey: nextImageStorageKey,
 		imageUrl: nextImageUrl,
 		name: input.name ?? item.name,
 		preparationTimeMinutes:

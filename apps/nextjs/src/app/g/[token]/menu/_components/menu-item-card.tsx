@@ -15,7 +15,7 @@ export function MenuItemCard(props: {
 	onSelect: (item: MenuItemView) => void;
 }) {
 	return (
-		<Card className="group overflow-hidden rounded-[28px] border-white/60 bg-white/90 shadow-[0_24px_70px_-34px_rgba(15,23,42,0.28)] backdrop-blur transition-transform duration-200 hover:-translate-y-1">
+		<Card className="group overflow-hidden rounded-[28px] border-white/60 bg-white/92 shadow-[0_24px_70px_-34px_rgba(15,23,42,0.24)] backdrop-blur transition-transform duration-200 hover:-translate-y-1">
 			<button
 				className="block w-full text-left"
 				onClick={() => props.onSelect(props.item)}
@@ -43,12 +43,26 @@ export function MenuItemCard(props: {
 					</Badge>
 				</div>
 				<CardContent className="space-y-2 p-4">
-					<p className="font-semibold text-[17px] text-slate-950 leading-tight">
-						{props.item.name}
+					<div className="flex items-start justify-between gap-3">
+						<p className="font-semibold text-[17px] text-slate-950 leading-tight">
+							{props.item.name}
+						</p>
+						<span className="shrink-0 rounded-full bg-[#fff3f1] px-2.5 py-1 font-medium text-[#b42318] text-xs">
+							{props.item.preparationTimeMinutes ?? 15} min
+						</span>
+					</div>
+					<p className="line-clamp-2 text-muted-foreground text-sm">
+						{props.item.description ??
+							"Toque para escolher quantidade e observacoes."}
 					</p>
-					<p className="text-muted-foreground text-sm">
-						Toque para escolher quantidade e observacoes.
-					</p>
+					<div className="flex items-center justify-between gap-3 pt-1">
+						<p className="text-muted-foreground text-xs uppercase tracking-[0.22em]">
+							Personalizar
+						</p>
+						<p className="font-medium text-[#b42318] text-sm">
+							Adicionar ao pedido
+						</p>
+					</div>
 				</CardContent>
 			</button>
 		</Card>

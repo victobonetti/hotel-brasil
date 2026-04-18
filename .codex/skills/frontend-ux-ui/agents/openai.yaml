@@ -1,0 +1,4 @@
+interface:
+  display_name: "Frontend UX/UI"
+  short_description: "Design sharper, task-focused product interfaces"
+  default_prompt: "Use $frontend-ux-ui to improve this screen's layout, hierarchy, copy, and interaction flow."

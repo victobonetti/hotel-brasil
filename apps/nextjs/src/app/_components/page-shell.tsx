@@ -36,25 +36,35 @@ export function PageShell(props: {
 }
 
 export function SectionHeader(props: {
+	actions?: React.ReactNode;
 	badge?: string;
 	description: string;
+	supportingPanel?: React.ReactNode;
 	title: string;
 }) {
 	return (
-		<header className="space-y-4">
-			{props.badge ? (
-				<div className="inline-flex w-fit rounded-full border border-primary/20 bg-primary/10 px-3 py-1 font-medium text-primary text-sm">
-					{props.badge}
+		<header className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_320px] xl:items-start">
+			<div className="rounded-[2rem] border border-primary/15 bg-card/80 p-6 shadow-primary/10 shadow-sm backdrop-blur-sm md:p-8">
+				<div className="space-y-4">
+					{props.badge ? (
+						<div className="inline-flex w-fit rounded-full border border-primary/20 bg-primary/10 px-3 py-1 font-medium text-primary text-sm">
+							{props.badge}
+						</div>
+					) : null}
+					<div className="space-y-2">
+						<h1 className="max-w-4xl font-semibold text-4xl tracking-tight md:text-5xl">
+							{props.title}
+						</h1>
+						<p className="max-w-3xl text-base text-muted-foreground md:text-lg">
+							{props.description}
+						</p>
+					</div>
+					{props.actions ? (
+						<div className="flex flex-wrap gap-3">{props.actions}</div>
+					) : null}
 				</div>
-			) : null}
-			<div className="space-y-2">
-				<h1 className="max-w-4xl font-semibold text-4xl tracking-tight md:text-5xl">
-					{props.title}
-				</h1>
-				<p className="max-w-3xl text-base text-muted-foreground md:text-lg">
-					{props.description}
-				</p>
 			</div>
+			{props.supportingPanel ? props.supportingPanel : null}
 		</header>
 	);
 }

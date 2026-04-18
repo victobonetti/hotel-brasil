@@ -47,8 +47,15 @@ describe("GuestOrdersPageView", () => {
 			}),
 		);
 
-		expect(html.indexOf("Em andamento")).toBeLessThan(
-			html.indexOf("Historico"),
+		expect(html).toContain("Acompanhe seus pedidos");
+		expect(
+			html.indexOf(
+				'Em andamento</h2><p class="text-muted-foreground text-sm">Pedidos que ainda estao sendo preparados, confirmados ou a caminho.</p>',
+			),
+		).toBeLessThan(
+			html.indexOf(
+				'Historico</h2><p class="text-muted-foreground text-sm">Pedidos entregues ou cancelados durante esta sessao do hospede.</p>',
+			),
 		);
 		expect(html).toContain("Acompanhar");
 		expect(html).toContain("Ver detalhes");
@@ -71,5 +78,6 @@ describe("GuestOrdersPageView", () => {
 
 		expect(html).toContain("Nenhum pedido em andamento.");
 		expect(html).toContain("Nenhum pedido no historico desta sessao.");
+		expect(html).toContain("Fazer novo pedido");
 	});
 });

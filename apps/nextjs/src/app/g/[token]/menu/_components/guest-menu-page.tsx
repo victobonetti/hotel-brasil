@@ -26,7 +26,6 @@ import { Textarea } from "@nowait24/ui/textarea";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import type { Route } from "next";
 import Image from "next/image";
-import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 
@@ -40,8 +39,8 @@ import {
 } from "~/app/_components/pagination-state";
 import { useTRPC } from "~/trpc/react";
 import { CategorySection } from "./category-section";
-import { getGuestMenuHeroContent } from "./guest-menu-display";
 import { GuestMenuActions } from "./guest-menu-actions";
+import { getGuestMenuHeroContent } from "./guest-menu-display";
 import { GuestSessionGuard } from "./guest-session-guard";
 
 function formatSessionExpiry(expiresAt: Date) {
@@ -175,7 +174,7 @@ export function GuestMenuPage(props: { guestSessionToken: string }) {
 				},
 				{
 					label: "No pedido",
-					value: `${totalItems} item(ns)`,
+					value: totalItems > 0 ? `${totalItems} item(ns)` : "Nada adicionado",
 				},
 			]
 		: [];
@@ -183,7 +182,7 @@ export function GuestMenuPage(props: { guestSessionToken: string }) {
 	return (
 		<PageShell
 			className="bg-[radial-gradient(circle_at_top,_rgba(234,29,44,0.18),_transparent_30%),linear-gradient(180deg,_#fff8f6_0%,_#fff_55%,_#fff4ef_100%)]"
-			containerClassName="max-w-6xl gap-5 px-4 pb-32 pt-5 md:px-6 md:pb-16"
+			containerClassName="max-w-6xl gap-4 px-4 pb-32 pt-4 md:px-6 md:pb-16"
 		>
 			<GuestSessionGuard
 				errorMessage={
@@ -194,9 +193,9 @@ export function GuestMenuPage(props: { guestSessionToken: string }) {
 				<div className="space-y-5">
 					<GuestMenuActions guestSessionToken={props.guestSessionToken} />
 
-					<section className="overflow-hidden rounded-[32px] bg-gradient-to-br from-[#ea1d2c] via-[#ff5a36] to-[#ff9f43] p-5 text-white shadow-[0_30px_90px_-36px_rgba(234,29,44,0.75)] md:p-7">
+					<section className="overflow-hidden rounded-[32px] bg-gradient-to-br from-[#ea1d2c] via-[#ff5a36] to-[#ff9f43] p-5 text-white shadow-[0_30px_90px_-36px_rgba(234,29,44,0.75)] md:p-6">
 						<div className="space-y-5">
-							<div className="flex flex-wrap items-start justify-between gap-4">
+							<div className="grid gap-4 lg:grid-cols-[1.2fr_0.8fr] lg:items-start">
 								<div className="space-y-3">
 									<div className="inline-flex rounded-full bg-white/18 px-3 py-1 font-medium text-sm backdrop-blur">
 										{heroContent.eyebrow}
@@ -211,18 +210,15 @@ export function GuestMenuPage(props: { guestSessionToken: string }) {
 										</p>
 									</div>
 								</div>
-								<div className="rounded-[28px] bg-black/15 px-4 py-3 backdrop-blur-sm">
+								<div className="rounded-[28px] bg-black/15 p-4 backdrop-blur-sm">
 									<p className="text-white/70 text-xs uppercase tracking-[0.24em]">
-										Resumo
+										Como funciona
 									</p>
-									<p className="mt-1 font-semibold text-lg">
-										{totalItems > 0
-											? `${totalItems} item(ns)`
-											: "Monte seu pedido"}
-									</p>
-									<p className="mt-1 text-sm text-white/76">
-										{formatPrice(totalValueInCents)}
-									</p>
+									<div className="mt-3 space-y-3 text-sm text-white/86">
+										<p>1. Escolha os itens no cardapio.</p>
+										<p>2. Revise quantidade e observacoes.</p>
+										<p>3. Confirme e acompanhe o status do pedido.</p>
+									</div>
 								</div>
 							</div>
 
@@ -244,16 +240,18 @@ export function GuestMenuPage(props: { guestSessionToken: string }) {
 						</div>
 					</section>
 
-					<div className="grid gap-4 lg:grid-cols-[0.92fr_1.08fr] lg:items-start">
-						<Card className="overflow-hidden rounded-[28px] border-white/60 bg-white/88 shadow-[0_20px_70px_-30px_rgba(234,29,44,0.25)] backdrop-blur lg:sticky lg:top-5">
-							<CardHeader className="border-white/70 border-b bg-white/70">
+					<div className="grid gap-4 lg:grid-cols-[0.94fr_1.06fr] lg:items-start">
+						<Card className="order-2 overflow-hidden rounded-[28px] border-white/60 bg-white/90 shadow-[0_20px_70px_-30px_rgba(234,29,44,0.2)] backdrop-blur lg:sticky lg:top-5 lg:order-1">
+							<CardHeader className="border-white/70 border-b bg-white/78">
 								<div className="space-y-4">
 									<div className="flex items-start justify-between gap-3">
 										<div className="space-y-1">
-											<CardTitle className="text-lg">Seu pedido</CardTitle>
+											<CardTitle className="text-lg">
+												Revise seu pedido
+											</CardTitle>
 											<CardDescription>
-												Revise os itens antes de confirmar o envio para o
-												quarto.
+												Tudo o que voce escolher aparece aqui para revisao antes
+												do envio.
 											</CardDescription>
 										</div>
 										<Badge className="rounded-full border-0 bg-[#fff3f1] px-3 py-1 text-[#b42318] shadow-none hover:bg-[#fff3f1]">
@@ -333,9 +331,14 @@ export function GuestMenuPage(props: { guestSessionToken: string }) {
 										))}
 									</div>
 								) : (
-									<div className="rounded-[24px] border border-[#f4d6d2] border-dashed bg-[#fffaf9] px-5 py-6 text-muted-foreground text-sm">
-										Nenhum item adicionado ainda. Toque nos cards abaixo para
-										montar o pedido.
+									<div className="rounded-[24px] border border-[#f4d6d2] border-dashed bg-[#fffaf9] px-5 py-6">
+										<p className="font-medium text-slate-950">
+											Seu pedido ainda esta vazio.
+										</p>
+										<p className="mt-2 text-muted-foreground text-sm">
+											Comece escolhendo uma categoria abaixo. Cada item pode ser
+											personalizado antes de entrar no pedido.
+										</p>
 									</div>
 								)}
 
@@ -356,10 +359,10 @@ export function GuestMenuPage(props: { guestSessionToken: string }) {
 									<div className="flex items-center justify-between gap-3">
 										<div>
 											<p className="text-white/70 text-xs uppercase tracking-[0.24em]">
-												Envio do pedido
+												Confirmacao
 											</p>
 											<p className="mt-1 font-medium text-sm">
-												Finalize quando tudo estiver do seu jeito.
+												Envie quando estiver tudo certo para o quarto.
 											</p>
 										</div>
 										<p className="font-semibold text-xl">
@@ -394,7 +397,29 @@ export function GuestMenuPage(props: { guestSessionToken: string }) {
 							</CardContent>
 						</Card>
 
-						<div className="space-y-8">
+						<div className="order-1 space-y-5 lg:order-2">
+							<section className="rounded-[28px] border border-white/65 bg-white/72 p-4 shadow-[0_18px_50px_-38px_rgba(15,23,42,0.28)] backdrop-blur sm:p-5">
+								<div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+									<div className="space-y-2">
+										<div className="inline-flex rounded-full bg-[#fff1ee] px-3 py-1 font-medium text-[#b42318] text-xs uppercase tracking-[0.22em]">
+											Cardapio
+										</div>
+										<div className="space-y-1">
+											<h2 className="font-semibold text-2xl text-slate-950 tracking-tight">
+												Escolha por categoria
+											</h2>
+											<p className="max-w-2xl text-muted-foreground text-sm sm:text-base">
+												Toque em um item para ver detalhes, ajustar quantidade e
+												incluir observacoes.
+											</p>
+										</div>
+									</div>
+									<div className="rounded-full border border-[#f0d5d2] bg-[#fffaf9] px-3 py-2 font-medium text-[#b42318] text-sm shadow-sm">
+										{menuQuery.data?.pagination.totalItems ?? 0} categoria(s)
+									</div>
+								</div>
+							</section>
+
 							{menuQuery.data?.categories.map((category) => (
 								<CategorySection
 									category={category}
@@ -409,16 +434,16 @@ export function GuestMenuPage(props: { guestSessionToken: string }) {
 					</div>
 				</div>
 
-				<div className="fixed inset-x-0 bottom-0 z-20 border-[#f0d7d3] border-t bg-white/92 px-4 py-4 shadow-[0_-18px_48px_-32px_rgba(15,23,42,0.3)] backdrop-blur md:hidden">
+				<div className="fixed inset-x-0 bottom-0 z-20 border-[#f0d7d3] border-t bg-white/94 px-4 py-4 shadow-[0_-18px_48px_-32px_rgba(15,23,42,0.3)] backdrop-blur md:hidden">
 					<div className="mx-auto flex max-w-6xl items-center gap-3">
 						<div className="min-w-0 flex-1">
 							<p className="text-muted-foreground text-xs uppercase tracking-[0.24em]">
-								Seu pedido
+								Revisao rapida
 							</p>
 							<p className="truncate font-semibold text-lg text-slate-950">
 								{totalItems > 0
 									? `${totalItems} item(ns) | ${formatPrice(totalValueInCents)}`
-									: "Escolha seus itens"}
+									: "Escolha itens para montar o pedido"}
 							</p>
 						</div>
 						<Button
@@ -433,7 +458,7 @@ export function GuestMenuPage(props: { guestSessionToken: string }) {
 							}
 							type="button"
 						>
-							{createOrderMutation.isPending ? "Enviando..." : "Finalizar"}
+							{createOrderMutation.isPending ? "Enviando..." : "Enviar"}
 						</Button>
 					</div>
 				</div>

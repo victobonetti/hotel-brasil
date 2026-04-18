@@ -30,6 +30,66 @@ export function validateProcessedImageDataUrl(dataUrl: string) {
 	return dataUrl;
 }
 
+export function processedImageDataUrlToFile(
+	dataUrl: string,
+	fileName = "menu-item-image.webp",
+) {
+	const validatedDataUrl = validateProcessedImageDataUrl(dataUrl);
+	const [metadata, encodedPayload] = validatedDataUrl.split(",", 2);
+
+	if (!metadata || !encodedPayload) {
+		throw new Error("Arquivo de imagem invalido.");
+	}
+
+	const mimeType = metadata.match(/^data:(.+);base64$/)?.[1];
+	if (!mimeType) {
+		throw new Error("Arquivo de imagem invalido.");
+	}
+
+	const binary = atob(encodedPayload);
+	const bytes = new Uint8Array(binary.length);
+
+	for (const [index, character] of Array.from(binary).entries()) {
+		bytes[index] = character.charCodeAt(0);
+	}
+
+	return new File([bytes], fileName, { type: mimeType });
+}
+
+export async function uploadProcessedMenuItemImage(file: File) {
+	const formData = new FormData();
+	formData.append("file", file);
+
+	const response = await fetch("/api/storage/menu-images", {
+		body: formData,
+		method: "POST",
+	});
+
+	type UploadMenuItemImageResponse = {
+		error?: string;
+		key?: string;
+		url?: string;
+	};
+
+	let payload: UploadMenuItemImageResponse | null = null;
+	try {
+		payload = (await response.json()) as UploadMenuItemImageResponse;
+	} catch {
+		payload = null;
+	}
+
+	if (!response.ok || !payload?.key || !payload.url) {
+		throw new Error(
+			payload?.error ?? "Nao foi possivel enviar a imagem agora.",
+		);
+	}
+
+	return {
+		key: payload.key,
+		url: payload.url,
+	};
+}
+
 function readFileAsDataUrl(file: File) {
 	return new Promise<string>((resolve, reject) => {
 		const reader = new FileReader();

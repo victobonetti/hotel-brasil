@@ -26,7 +26,9 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import {
 	ITEM_IMAGE_SIZE,
+	processedImageDataUrlToFile,
 	processMenuItemImage,
+	uploadProcessedMenuItemImage,
 } from "~/app/_components/item-image";
 import { PageShell, SectionHeader } from "~/app/_components/page-shell";
 import { PaginationControls } from "~/app/_components/pagination-controls";
@@ -85,6 +87,7 @@ export function StaffMenuItemsPage() {
 	const [imageUrl, setImageUrl] = useState<string | null>(null);
 	const [formError, setFormError] = useState<string | null>(null);
 	const [itemActionError, setItemActionError] = useState<string | null>(null);
+	const [isSubmittingCreateItem, setIsSubmittingCreateItem] = useState(false);
 	const [pendingItemId, setPendingItemId] = useState<string | null>(null);
 	const currentPage = parsePageParam(searchParams.get("page") ?? undefined);
 
@@ -142,15 +145,17 @@ export function StaffMenuItemsPage() {
 		}),
 	);
 
-	const state =
-		categoryOptionsQuery.isLoading || itemsQuery.isLoading
-			? "loading"
-			: categoryOptionsQuery.error?.data?.code === "UNAUTHORIZED" ||
-					itemsQuery.error?.data?.code === "UNAUTHORIZED"
-				? "needs-auth"
-				: categoryOptionsQuery.error || itemsQuery.error
-					? "unauthorized"
-					: undefined;
+	let state: "loading" | "needs-auth" | "unauthorized" | undefined;
+	if (categoryOptionsQuery.isLoading || itemsQuery.isLoading) {
+		state = "loading";
+	} else if (
+		categoryOptionsQuery.error?.data?.code === "UNAUTHORIZED" ||
+		itemsQuery.error?.data?.code === "UNAUTHORIZED"
+	) {
+		state = "needs-auth";
+	} else if (categoryOptionsQuery.error || itemsQuery.error) {
+		state = "unauthorized";
+	}
 	const items = itemsQuery.data?.items ?? [];
 	const pagination = itemsQuery.data?.pagination;
 
@@ -194,6 +199,37 @@ export function StaffMenuItemsPage() {
 		}
 	};
 
+	const handleCreateItem = async () => {
+		try {
+			setIsSubmittingCreateItem(true);
+			setFormError(null);
+
+			const uploadedImage = imageUrl
+				? await uploadProcessedMenuItemImage(
+						processedImageDataUrlToFile(imageUrl),
+					)
+				: null;
+
+			await createItemMutation.mutateAsync({
+				categoryId,
+				description: description.trim() || undefined,
+				imageStorageKey: uploadedImage?.key,
+				imageUrl: uploadedImage?.url,
+				name: name.trim(),
+				preparationTimeMinutes: Number(preparationTimeMinutes),
+				priceInCents,
+			});
+		} catch (error) {
+			setFormError(
+				error instanceof Error
+					? error.message
+					: "Nao foi possivel salvar o item agora.",
+			);
+		} finally {
+			setIsSubmittingCreateItem(false);
+		}
+	};
+
 	const handleExistingItemImageChange = async (
 		itemId: string,
 		event: React.ChangeEvent<HTMLInputElement>,
@@ -209,8 +245,12 @@ export function StaffMenuItemsPage() {
 			setPendingItemId(itemId);
 			setItemActionError(null);
 			const processedImage = await processMenuItemImage(file);
-			updateItemMutation.mutate({
-				imageUrl: processedImage,
+			const uploadedImage = await uploadProcessedMenuItemImage(
+				processedImageDataUrlToFile(processedImage),
+			);
+			await updateItemMutation.mutateAsync({
+				imageStorageKey: uploadedImage.key,
+				imageUrl: uploadedImage.url,
 				itemId,
 			});
 		} catch (error) {
@@ -226,8 +266,26 @@ export function StaffMenuItemsPage() {
 	return (
 		<PageShell containerClassName="max-w-6xl gap-8" sidebar={<StaffNav />}>
 			<SectionHeader
+				actions={
+					<Button render={<Link href="/staff/menu" />} variant="outline">
+						<RefreshIcon className="size-4" />
+						Voltar para categorias
+					</Button>
+				}
 				badge="Administracao do catalogo"
-				description="Adicione itens, imagens, precos e disponibilidade mantendo o menu alinhado com a operacao."
+				description="Cadastre itens com preco, tempo e imagem em um fluxo direto, mantendo a disponibilidade sempre clara para a equipe."
+				supportingPanel={
+					<div className="rounded-[2rem] border border-primary/15 bg-card/84 p-6 shadow-primary/10 shadow-sm">
+						<p className="font-medium text-primary text-xs uppercase tracking-[0.18em]">
+							O que manter consistente
+						</p>
+						<div className="mt-3 space-y-3 text-muted-foreground text-sm leading-6">
+							<p>Use nomes curtos e faceis de escanear.</p>
+							<p>Mantenha imagens leves e objetivas.</p>
+							<p>Revise disponibilidade sempre que algo sair da operacao.</p>
+						</div>
+					</div>
+				}
 				title="Itens do cardapio"
 			/>
 
@@ -237,13 +295,47 @@ export function StaffMenuItemsPage() {
 				}
 				state={state}
 			>
+				<div className="grid gap-3 md:grid-cols-3">
+					<div className="rounded-[1.75rem] border border-primary/15 bg-card/88 p-5 shadow-primary/10 shadow-sm">
+						<p className="font-medium text-primary text-sm">Itens listados</p>
+						<p className="mt-2 font-semibold text-3xl">
+							{pagination?.totalItems ?? 0}
+						</p>
+						<p className="mt-2 text-muted-foreground text-sm">
+							Itens cadastrados nesta pagina administrativa.
+						</p>
+					</div>
+					<div className="rounded-[1.75rem] border border-primary/15 bg-card/88 p-5 shadow-primary/10 shadow-sm">
+						<p className="font-medium text-primary text-sm">
+							Disponiveis agora
+						</p>
+						<p className="mt-2 font-semibold text-3xl">
+							{items.filter((item) => item.available).length}
+						</p>
+						<p className="mt-2 text-muted-foreground text-sm">
+							Itens prontos para aparecer no cardapio do hospede.
+						</p>
+					</div>
+					<div className="rounded-[1.75rem] border border-primary/15 bg-card/88 p-5 shadow-primary/10 shadow-sm">
+						<p className="font-medium text-primary text-sm">
+							Categorias prontas
+						</p>
+						<p className="mt-2 font-semibold text-3xl">
+							{categoryOptionsQuery.data?.length ?? 0}
+						</p>
+						<p className="mt-2 text-muted-foreground text-sm">
+							Grupos disponiveis para receber novos itens.
+						</p>
+					</div>
+				</div>
+
 				<div className="grid gap-6 lg:grid-cols-[0.78fr_1.22fr]">
 					<Card className="border-primary/15 bg-card/88 shadow-primary/10 shadow-sm">
 						<CardHeader>
-							<CardTitle>Novo item</CardTitle>
+							<CardTitle>Adicionar item</CardTitle>
 							<CardDescription>
-								Adicione nome, descricao, preco, tempo de preparo e uma imagem
-								leve de 200x200.
+								Preencha o basico primeiro e complemente com imagem quando fizer
+								sentido.
 							</CardDescription>
 						</CardHeader>
 						<CardContent className="space-y-4">
@@ -327,7 +419,11 @@ export function StaffMenuItemsPage() {
 													<label
 														className="cursor-pointer"
 														htmlFor="item-image"
-													/>
+													>
+														<span className="sr-only">
+															Selecionar imagem do item
+														</span>
+													</label>
 												}
 												size="sm"
 												variant={imageUrl ? "outline" : "default"}
@@ -357,18 +453,10 @@ export function StaffMenuItemsPage() {
 									disabled={
 										name.trim().length === 0 ||
 										categoryId.length === 0 ||
-										createItemMutation.isPending
+										createItemMutation.isPending ||
+										isSubmittingCreateItem
 									}
-									onClick={() =>
-										createItemMutation.mutate({
-											categoryId,
-											description: description.trim() || undefined,
-											imageUrl: imageUrl ?? undefined,
-											name: name.trim(),
-											preparationTimeMinutes: Number(preparationTimeMinutes),
-											priceInCents,
-										})
-									}
+									onClick={handleCreateItem}
 								>
 									<PlusIcon className="size-4" />
 									Criar item
@@ -383,10 +471,10 @@ export function StaffMenuItemsPage() {
 
 					<Card className="border-primary/15 bg-card/88 shadow-primary/10 shadow-sm">
 						<CardHeader>
-							<CardTitle>Itens existentes</CardTitle>
+							<CardTitle>Itens cadastrados</CardTitle>
 							<CardDescription>
-								Controle disponibilidade, visualize a imagem atual e troque ou
-								remova a capa do item.
+								Revise disponibilidade, capa e informacoes principais sem sair
+								da lista.
 							</CardDescription>
 						</CardHeader>
 						<CardContent className="space-y-3">
@@ -469,7 +557,11 @@ export function StaffMenuItemsPage() {
 													<label
 														className="cursor-pointer"
 														htmlFor={`item-image-${item.id}`}
-													/>
+													>
+														<span className="sr-only">
+															Selecionar imagem para {item.name}
+														</span>
+													</label>
 												}
 												size="sm"
 												variant="outline"
@@ -483,7 +575,8 @@ export function StaffMenuItemsPage() {
 												}
 												onClick={() => {
 													setPendingItemId(item.id);
-													updateItemMutation.mutate({
+													void updateItemMutation.mutate({
+														imageStorageKey: "",
 														imageUrl: "",
 														itemId: item.id,
 													});

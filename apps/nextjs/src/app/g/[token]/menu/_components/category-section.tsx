@@ -11,12 +11,11 @@ import {
 	parsePageParam,
 	shouldSyncPageParam,
 } from "~/app/_components/pagination-state";
-
-import { MenuItemCard } from "./menu-item-card";
 import {
 	buildCategoryItemsPageParam,
 	paginateCategoryItems,
 } from "./category-section-state";
+import { MenuItemCard } from "./menu-item-card";
 
 export function CategorySection(props: {
 	category: MenuCategoryWithItems;
@@ -27,7 +26,10 @@ export function CategorySection(props: {
 	const searchParams = useSearchParams();
 	const pageParam = buildCategoryItemsPageParam(props.category.id);
 	const currentPage = parsePageParam(searchParams.get(pageParam) ?? undefined);
-	const paginatedItems = paginateCategoryItems(props.category.items, currentPage);
+	const paginatedItems = paginateCategoryItems(
+		props.category.items,
+		currentPage,
+	);
 
 	useEffect(() => {
 		if (!shouldSyncPageParam(currentPage, paginatedItems.pagination)) {
@@ -55,8 +57,8 @@ export function CategorySection(props: {
 	]);
 
 	return (
-		<section className="space-y-4">
-			<div className="flex items-end justify-between gap-3">
+		<section className="space-y-4 rounded-[28px] border border-white/65 bg-white/58 p-4 shadow-[0_16px_50px_-38px_rgba(15,23,42,0.28)] backdrop-blur sm:p-5">
+			<div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
 				<div className="space-y-2">
 					<div className="inline-flex rounded-full bg-[#fff1ee] px-3 py-1 font-medium text-[#b42318] text-xs uppercase tracking-[0.22em]">
 						Categoria
@@ -72,7 +74,7 @@ export function CategorySection(props: {
 						) : null}
 					</div>
 				</div>
-				<div className="rounded-full border border-[#f0d5d2] bg-white/90 px-3 py-1 font-medium text-[#b42318] text-xs shadow-sm">
+				<div className="self-start rounded-full border border-[#f0d5d2] bg-white/90 px-3 py-1 font-medium text-[#b42318] text-xs shadow-sm">
 					{props.category.items.length} item(ns)
 				</div>
 			</div>

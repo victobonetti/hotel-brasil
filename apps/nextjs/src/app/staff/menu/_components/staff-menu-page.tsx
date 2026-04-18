@@ -99,8 +99,29 @@ export function StaffMenuPage() {
 	return (
 		<PageShell containerClassName="max-w-6xl gap-8" sidebar={<StaffNav />}>
 			<SectionHeader
+				actions={
+					<Button
+						render={<Link href="/staff/menu/items" />}
+						variant="secondary"
+					>
+						<PackageIcon className="size-4" />
+						Abrir itens do cardapio
+					</Button>
+				}
 				badge="Administracao do catalogo"
-				description="Organize as categorias do cardapio com uma estrutura mais clara para hospedes e equipe."
+				description="Defina a estrutura do cardapio de forma simples: crie categorias, ajuste a ordem e deixe claro o que esta visivel para o hospede."
+				supportingPanel={
+					<div className="rounded-[2rem] border border-primary/15 bg-card/84 p-6 shadow-primary/10 shadow-sm">
+						<p className="font-medium text-primary text-xs uppercase tracking-[0.18em]">
+							Fluxo recomendado
+						</p>
+						<div className="mt-3 space-y-3 text-muted-foreground text-sm leading-6">
+							<p>Primeiro organize as categorias principais.</p>
+							<p>Depois cadastre os itens dentro de cada grupo.</p>
+							<p>Por fim, esconda o que nao deve aparecer para o hospede.</p>
+						</div>
+					</div>
+				}
 				title="Categorias do cardapio"
 			/>
 
@@ -108,12 +129,51 @@ export function StaffMenuPage() {
 				errorMessage={categoriesQuery.error?.message}
 				state={state}
 			>
+				<div className="grid gap-3 md:grid-cols-3">
+					<div className="rounded-[1.75rem] border border-primary/15 bg-card/88 p-5 shadow-primary/10 shadow-sm">
+						<p className="font-medium text-primary text-sm">
+							Categorias totais
+						</p>
+						<p className="mt-2 font-semibold text-3xl">
+							{pagination?.totalItems ?? 0}
+						</p>
+						<p className="mt-2 text-muted-foreground text-sm">
+							Estrutura exibida para organizar o cardapio.
+						</p>
+					</div>
+					<div className="rounded-[1.75rem] border border-primary/15 bg-card/88 p-5 shadow-primary/10 shadow-sm">
+						<p className="font-medium text-primary text-sm">
+							Categorias ativas
+						</p>
+						<p className="mt-2 font-semibold text-3xl">
+							{categories.filter((category) => category.active).length}
+						</p>
+						<p className="mt-2 text-muted-foreground text-sm">
+							Grupos visiveis para hospedes neste momento.
+						</p>
+					</div>
+					<div className="rounded-[1.75rem] border border-primary/15 bg-card/88 p-5 shadow-primary/10 shadow-sm">
+						<p className="font-medium text-primary text-sm">Proximo passo</p>
+						<p className="mt-2 font-semibold text-lg">
+							{categories.length === 0
+								? "Criar a primeira categoria"
+								: "Revisar itens"}
+						</p>
+						<p className="mt-2 text-muted-foreground text-sm">
+							{categories.length === 0
+								? "Comece pela estrutura principal do cardapio."
+								: "Com a estrutura pronta, ajuste os itens de cada grupo."}
+						</p>
+					</div>
+				</div>
+
 				<div className="grid gap-6 lg:grid-cols-[0.7fr_1.3fr]">
 					<Card className="border-primary/15 bg-card/88 shadow-primary/10 shadow-sm">
 						<CardHeader>
-							<CardTitle>Nova categoria</CardTitle>
+							<CardTitle>Adicionar categoria</CardTitle>
 							<CardDescription>
-								Adicione uma nova secao ao cardapio do hotel.
+								Crie um grupo claro para os hospedes encontrarem os itens com
+								facilidade.
 							</CardDescription>
 						</CardHeader>
 						<CardContent className="space-y-4">
@@ -144,16 +204,17 @@ export function StaffMenuPage() {
 								variant="outline"
 							>
 								<PackageIcon className="size-4" />
-								Gerenciar itens
+								Ir para itens
 							</Button>
 						</CardContent>
 					</Card>
 
 					<Card className="border-primary/15 bg-card/88 shadow-primary/10 shadow-sm">
 						<CardHeader>
-							<CardTitle>Ordem e edicao</CardTitle>
+							<CardTitle>Estrutura atual</CardTitle>
 							<CardDescription>
-								Mantenha a estrutura do menu organizada para hospedes e equipe.
+								Ajuste a ordem e a visibilidade sem perder a leitura do
+								conjunto.
 							</CardDescription>
 						</CardHeader>
 						<CardContent className="space-y-3">

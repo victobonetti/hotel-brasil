@@ -29,6 +29,7 @@ describe("createCategory", () => {
 						description: null,
 						hotelId: "hotel-1",
 						id: "cat-1",
+						imageStorageKey: null,
 						name: "Breakfast",
 						sortOrder: 0,
 					},
@@ -124,19 +125,25 @@ describe("createMenuItem", () => {
 				}),
 				findMembershipByUserId: () => membership,
 			},
-			{
-				categoryId: "cat-1",
-				name: "Burger",
-				priceInCents: 4200,
-				userId: "user-1",
-			},
-		);
+				{
+					categoryId: "cat-1",
+					imageStorageKey: "menu-items/hotel-1/burger.webp",
+					imageUrl: "https://cdn.example.com/menu-items/hotel-1/burger.webp",
+					name: "Burger",
+					priceInCents: 4200,
+					userId: "user-1",
+				},
+			);
 
 		expect(item.hotelId).toBe("hotel-1");
+		expect(item.imageStorageKey).toBe("menu-items/hotel-1/burger.webp");
+		expect(item.imageUrl).toBe(
+			"https://cdn.example.com/menu-items/hotel-1/burger.webp",
+		);
 		expect(item.priceInCents).toBe(4200);
 	});
 
-	test("stores a processed image data url when provided", async () => {
+	test("stores a legacy data url when provided", async () => {
 		const item = await createMenuItem(
 			{
 				createMenuItemRecord: () => undefined,
@@ -151,12 +158,12 @@ describe("createMenuItem", () => {
 				findMembershipByUserId: () => membership,
 			},
 			{
-				categoryId: "cat-1",
-				imageUrl: "data:image/webp;base64,Zm9v",
-				name: "Burger",
-				priceInCents: 4200,
-				userId: "user-1",
-			},
+					categoryId: "cat-1",
+					imageUrl: "data:image/webp;base64,Zm9v",
+					name: "Burger",
+					priceInCents: 4200,
+					userId: "user-1",
+				},
 		);
 
 		expect(item.imageUrl).toBe("data:image/webp;base64,Zm9v");
@@ -187,7 +194,7 @@ describe("createMenuItem", () => {
 		).rejects.toMatchObject({ code: "INVALID_PRICE" });
 	});
 
-	test("rejects oversized image payloads", async () => {
+	test("rejects invalid public image urls", async () => {
 		await expect(
 			createMenuItem(
 				{
@@ -204,7 +211,7 @@ describe("createMenuItem", () => {
 				},
 				{
 					categoryId: "cat-1",
-					imageUrl: `data:image/webp;base64,${"a".repeat(250_000)}`,
+					imageUrl: "ftp://cdn.example.com/item.webp",
 					name: "Burger",
 					priceInCents: 4200,
 					userId: "user-1",
@@ -283,6 +290,7 @@ describe("listMenuItemsForStaff", () => {
 			description: null,
 			hotelId: "hotel-1",
 			id: `item-${index + 1}`,
+			imageStorageKey: null,
 			imageUrl: null,
 			name: `Item ${index + 1}`,
 			preparationTimeMinutes: 10,
@@ -343,6 +351,7 @@ describe("updateMenuItem", () => {
 					description: null,
 					hotelId: "hotel-1",
 					id: "item-1",
+					imageStorageKey: null,
 					imageUrl: null,
 					name: "Burger",
 					preparationTimeMinutes: 10,
@@ -362,7 +371,7 @@ describe("updateMenuItem", () => {
 		expect(item.priceInCents).toBe(4500);
 	});
 
-	test("updates item image when a processed data url is provided", async () => {
+	test("updates item image and storage key when a public url is provided", async () => {
 		const item = await updateMenuItem(
 			{
 				findCategoryById: () => ({
@@ -380,6 +389,7 @@ describe("updateMenuItem", () => {
 					description: null,
 					hotelId: "hotel-1",
 					id: "item-1",
+					imageStorageKey: null,
 					imageUrl: null,
 					name: "Burger",
 					preparationTimeMinutes: 10,
@@ -388,13 +398,17 @@ describe("updateMenuItem", () => {
 				updateMenuItemRecord: () => undefined,
 			},
 			{
-				imageUrl: "data:image/webp;base64,Zm9v",
+				imageStorageKey: "menu-items/hotel-1/item.webp",
+				imageUrl: "https://cdn.example.com/menu-items/hotel-1/item.webp",
 				itemId: "item-1",
 				userId: "user-1",
 			},
 		);
 
-		expect(item.imageUrl).toBe("data:image/webp;base64,Zm9v");
+		expect(item.imageStorageKey).toBe("menu-items/hotel-1/item.webp");
+		expect(item.imageUrl).toBe(
+			"https://cdn.example.com/menu-items/hotel-1/item.webp",
+		);
 	});
 
 	test("removes item image when an empty string is provided", async () => {
@@ -415,7 +429,8 @@ describe("updateMenuItem", () => {
 					description: null,
 					hotelId: "hotel-1",
 					id: "item-1",
-					imageUrl: "data:image/webp;base64,Zm9v",
+					imageStorageKey: "menu-items/hotel-1/item.webp",
+					imageUrl: "https://cdn.example.com/menu-items/hotel-1/item.webp",
 					name: "Burger",
 					preparationTimeMinutes: 10,
 					priceInCents: 4200,
@@ -423,6 +438,7 @@ describe("updateMenuItem", () => {
 				updateMenuItemRecord: () => undefined,
 			},
 			{
+				imageStorageKey: "",
 				imageUrl: "",
 				itemId: "item-1",
 				userId: "user-1",
@@ -430,6 +446,7 @@ describe("updateMenuItem", () => {
 		);
 
 		expect(item.imageUrl).toBeNull();
+		expect(item.imageStorageKey).toBeNull();
 	});
 });
 
@@ -444,6 +461,7 @@ describe("toggleMenuItemAvailability", () => {
 					description: null,
 					hotelId: "hotel-1",
 					id: "item-1",
+					imageStorageKey: null,
 					imageUrl: null,
 					name: "Burger",
 					preparationTimeMinutes: 10,

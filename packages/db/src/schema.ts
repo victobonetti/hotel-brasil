@@ -94,6 +94,7 @@ export const menuItems = pgTable(
 			.notNull()
 			.references(() => hotels.id, { onDelete: "cascade" }),
 		id: text().primaryKey(),
+		imageStorageKey: text(),
 		imageUrl: text(),
 		name: text().notNull(),
 		preparationTimeMinutes: integer(),
