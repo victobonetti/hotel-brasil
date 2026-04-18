@@ -10,16 +10,16 @@ export function getGuestMenuHeroContent(
 	if (totalItems > 0) {
 		return {
 			description:
-				"Seu pedido ja esta quase pronto. Revise os itens, ajuste observacoes e envie quando quiser.",
-			eyebrow: "Pedido em montagem",
-			title: "Falta pouco para enviar ao seu quarto",
+				"Seu pedido ja esta quase pronto. Revise quantidades, ajuste observacoes e envie para o quarto quando estiver tudo certo.",
+			eyebrow: "Bandeja em montagem",
+			title: "Seu pedido esta pronto para seguir",
 		};
 	}
 
 	return {
 		description:
-			"Veja o cardapio com calma, adicione o que quiser e confirme tudo em poucos toques.",
-		eyebrow: "Cardapio no quarto",
-		title: "Escolha seu pedido sem complicacao",
+			"Descubra o menu do hotel com calma, monte seu pedido em poucos toques e acompanhe tudo sem sair da pagina.",
+		eyebrow: "Seu room service",
+		title: "Escolha com calma, confirme quando quiser",
 	};
 }

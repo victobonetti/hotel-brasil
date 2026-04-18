@@ -1,4 +1,5 @@
 import { db } from "@nowait24/db/client";
+import { env } from "@nowait24/utils/env";
 import {
 	getS3CompatibleStorageConfig,
 	S3CompatibleStorage,
@@ -6,14 +7,11 @@ import {
 import { NextResponse } from "next/server";
 
 import { auth } from "~/auth/server";
-import { env } from "@nowait24/utils/env";
 import {
 	assertCatalogManager,
 	buildMenuImageStorageKey,
 	toMenuImageUploadBuffer,
 } from "./helpers";
-
-export const runtime = "nodejs";
 
 export async function POST(request: Request) {
 	const session = await auth.api.getSession({
@@ -36,7 +34,7 @@ export async function POST(request: Request) {
 		where: (table, { eq }) => eq(table.userId, session.user.id),
 	});
 
-	let resolvedMembership;
+	let resolvedMembership: ReturnType<typeof assertCatalogManager>;
 	try {
 		resolvedMembership = assertCatalogManager(membership ?? null);
 	} catch (error) {

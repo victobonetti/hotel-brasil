@@ -6,6 +6,7 @@ import {
 	AlertDialogCancel,
 	AlertDialogContent,
 	AlertDialogDescription,
+	AlertDialogFooter,
 	AlertDialogHeader,
 	AlertDialogTitle,
 } from "@nowait24/ui/alert-dialog";
@@ -35,9 +36,14 @@ import {
 } from "~/app/_components/pagination-state";
 import { StaffNav } from "~/app/_components/staff-nav";
 import {
-	PackageIcon,
+	BedIcon,
+	BuildingIcon,
+	CopyIcon,
+	LinkIcon,
 	PlusIcon,
+	QrCodeIcon,
 	RefreshIcon,
+	SaveIcon,
 	ToggleOffIcon,
 	ToggleOnIcon,
 } from "~/app/_components/ui-icons";
@@ -73,6 +79,7 @@ export function StaffRoomsPage() {
 	const [formError, setFormError] = useState<string | null>(null);
 	const [actionError, setActionError] = useState<string | null>(null);
 	const [drafts, setDrafts] = useState<Record<string, DraftRoomState>>({});
+	const [selectedRoomId, setSelectedRoomId] = useState<string | null>(null);
 	const [qrPreview, setQrPreview] = useState<RoomQrPreview | null>(null);
 	const [qrPreviewError, setQrPreviewError] = useState<string | null>(null);
 	const currentPage = parsePageParam(searchParams.get("page") ?? undefined);
@@ -113,6 +120,7 @@ export function StaffRoomsPage() {
 			},
 			onSuccess: async () => {
 				setActionError(null);
+				setSelectedRoomId(null);
 				await roomsQuery.refetch();
 			},
 		}),
@@ -132,6 +140,17 @@ export function StaffRoomsPage() {
 
 	const rooms = roomsQuery.data?.items ?? [];
 	const pagination = roomsQuery.data?.pagination;
+	const selectedRoom =
+		selectedRoomId === null
+			? null
+			: (rooms.find((room) => room.id === selectedRoomId) ?? null);
+	const selectedRoomDraft =
+		selectedRoom === null
+			? null
+			: (drafts[selectedRoom.id] ?? {
+					floor: selectedRoom.floor?.toString() ?? "",
+					label: selectedRoom.label,
+				});
 
 	useEffect(() => {
 		if (!pagination || !shouldSyncPageParam(currentPage, pagination)) {
@@ -214,70 +233,55 @@ export function StaffRoomsPage() {
 	}
 
 	return (
-		<PageShell containerClassName="max-w-6xl gap-8" sidebar={<StaffNav />}>
+		<PageShell containerClassName="max-w-6xl gap-6" sidebar={<StaffNav />}>
 			<SectionHeader
-				badge="Administracao dos quartos"
-				description="Cadastre quartos e mantenha os acessos publicos organizados para que a equipe consiga agir rapido quando um link precisar de ajuste."
+				badge="Quartos"
+				description="Acesso dos quartos."
 				supportingPanel={
-					<div className="rounded-[2rem] border border-primary/15 bg-card/84 p-6 shadow-primary/10 shadow-sm">
-						<p className="font-medium text-primary text-xs uppercase tracking-[0.18em]">
-							Quando usar esta tela
-						</p>
-						<div className="mt-3 space-y-3 text-muted-foreground text-sm leading-6">
-							<p>Cadastre um quarto novo antes de entregar o acesso.</p>
-							<p>
-								Regenere o token se um link antigo nao puder mais ser usado.
-							</p>
-							<p>Abra o QR Code quando precisar imprimir ou compartilhar.</p>
-						</div>
+					<div className="flex items-center gap-2 text-muted-foreground text-sm">
+						<BedIcon className="size-4" />
+						<span>{pagination?.totalItems ?? 0} ativos no painel</span>
 					</div>
 				}
-				title="Quartos e tokens de acesso"
+				title="Quartos"
 			/>
 
 			<StaffHotelGuard errorMessage={roomsQuery.error?.message} state={state}>
 				<div className="grid gap-3 md:grid-cols-3">
-					<div className="rounded-[1.75rem] border border-primary/15 bg-card/88 p-5 shadow-primary/10 shadow-sm">
-						<p className="font-medium text-primary text-sm">
-							Quartos cadastrados
-						</p>
-						<p className="mt-2 font-semibold text-3xl">
+					<div className="rounded-[1.4rem] border border-border/70 bg-card/90 p-5 shadow-sm">
+						<div className="flex items-center gap-2 text-muted-foreground text-sm">
+							<BedIcon className="size-4" />
+							<span>Quartos</span>
+						</div>
+						<p className="mt-3 font-semibold text-3xl">
 							{pagination?.totalItems ?? 0}
 						</p>
-						<p className="mt-2 text-muted-foreground text-sm">
-							Base de acessos controlada pela equipe.
-						</p>
 					</div>
-					<div className="rounded-[1.75rem] border border-primary/15 bg-card/88 p-5 shadow-primary/10 shadow-sm">
-						<p className="font-medium text-primary text-sm">Quartos ativos</p>
-						<p className="mt-2 font-semibold text-3xl">
+					<div className="rounded-[1.4rem] border border-border/70 bg-card/90 p-5 shadow-sm">
+						<div className="flex items-center gap-2 text-muted-foreground text-sm">
+							<ToggleOnIcon className="size-4" />
+							<span>Ativos</span>
+						</div>
+						<p className="mt-3 font-semibold text-3xl">
 							{rooms.filter((room) => room.active).length}
 						</p>
-						<p className="mt-2 text-muted-foreground text-sm">
-							Acessos publicos liberados agora.
-						</p>
 					</div>
-					<div className="rounded-[1.75rem] border border-primary/15 bg-card/88 p-5 shadow-primary/10 shadow-sm">
-						<p className="font-medium text-primary text-sm">
-							Sem andar definido
-						</p>
-						<p className="mt-2 font-semibold text-3xl">
+					<div className="rounded-[1.4rem] border border-border/70 bg-card/90 p-5 shadow-sm">
+						<div className="flex items-center gap-2 text-muted-foreground text-sm">
+							<BuildingIcon className="size-4" />
+							<span>Sem andar</span>
+						</div>
+						<p className="mt-3 font-semibold text-3xl">
 							{rooms.filter((room) => room.floor === null).length}
-						</p>
-						<p className="mt-2 text-muted-foreground text-sm">
-							Quartos que ainda podem ganhar contexto adicional.
 						</p>
 					</div>
 				</div>
 
-				<div className="grid gap-6 lg:grid-cols-[0.72fr_1.28fr]">
-					<Card className="border-primary/15 bg-card/88 shadow-primary/10 shadow-sm">
+				<div className="grid gap-6 lg:grid-cols-[18rem_minmax(0,1fr)]">
+					<Card className="border-border/70 bg-card/90 shadow-sm lg:sticky lg:top-6 lg:h-fit">
 						<CardHeader>
-							<CardTitle>Adicionar quarto</CardTitle>
-							<CardDescription>
-								Cadastre a identificacao basica e o sistema gera o acesso
-								publico.
-							</CardDescription>
+							<CardTitle>Criar</CardTitle>
+							<CardDescription>Link e QR prontos na hora.</CardDescription>
 						</CardHeader>
 						<CardContent className="space-y-4">
 							<div className="space-y-2">
@@ -303,6 +307,7 @@ export function StaffRoomsPage() {
 								<p className="text-destructive text-sm">{formError}</p>
 							) : null}
 							<Button
+								className="w-full"
 								disabled={
 									newLabel.trim().length === 0 || createRoomMutation.isPending
 								}
@@ -314,55 +319,86 @@ export function StaffRoomsPage() {
 								}
 							>
 								<PlusIcon className="size-4" />
-								Criar quarto
+								Salvar quarto
 							</Button>
 						</CardContent>
 					</Card>
 
-					<Card className="border-primary/15 bg-card/88 shadow-primary/10 shadow-sm">
+					<Card className="border-border/70 bg-card/90 shadow-sm">
 						<CardHeader>
-							<CardTitle>Acessos existentes</CardTitle>
+							<CardTitle>Painel</CardTitle>
 							<CardDescription>
-								Revise dados do quarto, status do acesso e materiais de
-								compartilhamento em um so lugar.
+								Status, link e QR em um fluxo so.
 							</CardDescription>
 						</CardHeader>
 						<CardContent className="space-y-4">
 							{actionError ? (
 								<p className="text-destructive text-sm">{actionError}</p>
 							) : null}
-							{rooms.map((room) => {
-								const draft = drafts[room.id] ?? {
-									floor: room.floor?.toString() ?? "",
-									label: room.label,
-								};
-
-								return (
-									<div
-										className="space-y-4 rounded-[1.75rem] border border-primary/10 bg-primary/[0.03] p-4"
-										key={room.id}
-									>
-										<div className="flex flex-wrap items-start justify-between gap-3">
+							{rooms.map((room) => (
+								<div
+									className="rounded-[1.6rem] border border-border/70 bg-background/80 p-4 md:p-5"
+									key={room.id}
+								>
+									<div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+										<div className="flex items-center gap-3">
+											<div className="flex size-10 items-center justify-center rounded-2xl bg-primary/[0.08] text-primary">
+												<BedIcon className="size-4" />
+											</div>
 											<div className="space-y-1">
-												<p className="flex items-center gap-2 font-medium">
-													<PackageIcon className="size-4 text-primary" />
+												<p className="font-semibold text-lg leading-none">
 													Quarto {room.label}
 												</p>
-												<p className="text-muted-foreground text-sm">
-													{formatFloorLabel(room.floor)}
-												</p>
-												<p className="text-muted-foreground text-xs">
-													Acesso {room.active ? "ativo" : "inativo"}
-												</p>
+												<div className="flex flex-wrap items-center gap-2 text-muted-foreground text-xs">
+													<div
+														className="inline-flex items-center gap-1.5 rounded-full bg-muted px-2.5 py-1"
+														title={formatFloorLabel(room.floor)}
+													>
+														<BuildingIcon className="size-3.5" />
+														<span>{room.floor ?? "-"}</span>
+													</div>
+													<div
+														className="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs ring-1 ring-inset"
+														title={
+															room.active ? "Acesso ativo" : "Acesso inativo"
+														}
+													>
+														{room.active ? (
+															<>
+																<ToggleOnIcon className="size-3.5 text-primary" />
+																<span>Ativo</span>
+															</>
+														) : (
+															<>
+																<ToggleOffIcon className="size-3.5" />
+																<span>Pausado</span>
+															</>
+														)}
+													</div>
+												</div>
 											</div>
+										</div>
+
+										<div className="flex items-center gap-2 self-start">
 											<Button
+												onClick={() => setSelectedRoomId(room.id)}
+												size="sm"
+												variant="outline"
+											>
+												Detalhes
+											</Button>
+											<Button
+												aria-label={
+													room.active ? "Desativar quarto" : "Ativar quarto"
+												}
 												onClick={() =>
 													updateRoomMutation.mutate({
 														active: !room.active,
 														roomId: room.id,
 													})
 												}
-												size="sm"
+												size="icon-sm"
+												title={room.active ? "Desativar" : "Ativar"}
 												variant={room.active ? "secondary" : "outline"}
 											>
 												{room.active ? (
@@ -370,115 +406,14 @@ export function StaffRoomsPage() {
 												) : (
 													<ToggleOnIcon className="size-4" />
 												)}
-												{room.active ? "Desativar" : "Ativar"}
-											</Button>
-										</div>
-
-										<div className="grid gap-4 md:grid-cols-2">
-											<div className="space-y-2">
-												<Label htmlFor={`room-label-${room.id}`}>
-													Identificacao
-												</Label>
-												<Input
-													id={`room-label-${room.id}`}
-													onChange={(event) =>
-														setDrafts((currentDrafts) => ({
-															...currentDrafts,
-															[room.id]: {
-																...draft,
-																label: event.target.value,
-															},
-														}))
-													}
-													value={draft.label}
-												/>
-											</div>
-											<div className="space-y-2">
-												<Label htmlFor={`room-floor-${room.id}`}>Andar</Label>
-												<Input
-													id={`room-floor-${room.id}`}
-													onChange={(event) =>
-														setDrafts((currentDrafts) => ({
-															...currentDrafts,
-															[room.id]: {
-																...draft,
-																floor: event.target.value,
-															},
-														}))
-													}
-													placeholder="Opcional"
-													type="number"
-													value={draft.floor}
-												/>
-											</div>
-										</div>
-
-										<div className="space-y-2 rounded-2xl border border-primary/10 bg-background/80 p-3">
-											<p className="font-medium text-sm">Token atual</p>
-											<p className="break-all font-mono text-muted-foreground text-xs">
-												{room.qrCodeToken}
-											</p>
-											<p className="break-all text-muted-foreground text-xs">
-												{typeof window === "undefined"
-													? `/g/${room.qrCodeToken}`
-													: buildRoomPublicUrl(
-															window.location.origin,
-															room.qrCodeToken,
-														)}
-											</p>
-										</div>
-
-										<div className="flex flex-wrap gap-2">
-											<Button
-												onClick={() =>
-													updateRoomMutation.mutate({
-														floor: parseFloorValue(draft.floor),
-														label: draft.label.trim(),
-														roomId: room.id,
-													})
-												}
-												size="sm"
-											>
-												<RefreshIcon className="size-4" />
-												Salvar alteracoes
-											</Button>
-											<Button
-												onClick={() =>
-													regenerateTokenMutation.mutate({ roomId: room.id })
-												}
-												size="sm"
-												variant="outline"
-											>
-												<RefreshIcon className="size-4" />
-												Regenerar token
-											</Button>
-											<Button
-												onClick={() => void copyRoomUrl(room.qrCodeToken)}
-												size="sm"
-												variant="outline"
-											>
-												Copiar link publico
-											</Button>
-											<Button
-												onClick={() =>
-													void openRoomQrPreview({
-														label: room.label,
-														qrCodeToken: room.qrCodeToken,
-													})
-												}
-												size="sm"
-												variant="outline"
-											>
-												Gerar QR Code
 											</Button>
 										</div>
 									</div>
-								);
-							})}
+								</div>
+							))}
 							{rooms.length === 0 ? (
-								<div className="rounded-2xl border border-primary/20 border-dashed bg-primary/[0.03] px-5 py-6 text-muted-foreground text-sm">
-									Cadastre o primeiro quarto para gerar links de acesso do
-									hospede.
+								<div className="rounded-[1.25rem] border border-border/70 border-dashed bg-background/60 px-5 py-6 text-muted-foreground text-sm">
+									Nenhum quarto ainda.
 								</div>
 							) : null}
 							{pagination ? (
@@ -488,6 +423,196 @@ export function StaffRoomsPage() {
 					</Card>
 				</div>
 			</StaffHotelGuard>
+
+			<AlertDialog
+				onOpenChange={(open) => {
+					if (!open) {
+						setSelectedRoomId(null);
+						setActionError(null);
+					}
+				}}
+				open={selectedRoom !== null}
+			>
+				<AlertDialogContent className="max-w-xl rounded-[30px] border-white/70 bg-white p-0 sm:max-w-xl">
+					{selectedRoom && selectedRoomDraft ? (
+						<div className="space-y-0">
+							<div className="border-border/60 border-b px-5 py-5">
+								<AlertDialogHeader className="items-start text-left">
+									<AlertDialogTitle>
+										Quarto {selectedRoom.label}
+									</AlertDialogTitle>
+									<AlertDialogDescription className="text-left">
+										Edite os dados e gerencie o acesso deste quarto.
+									</AlertDialogDescription>
+								</AlertDialogHeader>
+							</div>
+							<div className="space-y-5 p-5">
+								<div className="flex flex-wrap items-center gap-2 text-muted-foreground text-xs">
+									<div
+										className="inline-flex items-center gap-1.5 rounded-full bg-muted px-2.5 py-1"
+										title={formatFloorLabel(selectedRoom.floor)}
+									>
+										<BuildingIcon className="size-3.5" />
+										<span>{selectedRoom.floor ?? "-"}</span>
+									</div>
+									<div
+										className="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs ring-1 ring-inset"
+										title={
+											selectedRoom.active ? "Acesso ativo" : "Acesso inativo"
+										}
+									>
+										{selectedRoom.active ? (
+											<>
+												<ToggleOnIcon className="size-3.5 text-primary" />
+												<span>Ativo</span>
+											</>
+										) : (
+											<>
+												<ToggleOffIcon className="size-3.5" />
+												<span>Pausado</span>
+											</>
+										)}
+									</div>
+								</div>
+
+								<div className="grid gap-3 md:grid-cols-[minmax(0,1.4fr)_minmax(0,0.8fr)]">
+									<div className="space-y-2">
+										<Label htmlFor={`room-label-${selectedRoom.id}`}>
+											Quarto
+										</Label>
+										<Input
+											id={`room-label-${selectedRoom.id}`}
+											onChange={(event) =>
+												setDrafts((currentDrafts) => ({
+													...currentDrafts,
+													[selectedRoom.id]: {
+														...selectedRoomDraft,
+														label: event.target.value,
+													},
+												}))
+											}
+											value={selectedRoomDraft.label}
+										/>
+									</div>
+									<div className="space-y-2">
+										<Label htmlFor={`room-floor-${selectedRoom.id}`}>
+											Andar
+										</Label>
+										<Input
+											id={`room-floor-${selectedRoom.id}`}
+											onChange={(event) =>
+												setDrafts((currentDrafts) => ({
+													...currentDrafts,
+													[selectedRoom.id]: {
+														...selectedRoomDraft,
+														floor: event.target.value,
+													},
+												}))
+											}
+											placeholder="Opcional"
+											type="number"
+											value={selectedRoomDraft.floor}
+										/>
+									</div>
+								</div>
+
+								<div className="rounded-[1.2rem] border border-border/70 bg-card px-4 py-3">
+									<div className="flex items-center gap-2">
+										<div className="flex size-9 items-center justify-center rounded-xl bg-muted text-muted-foreground">
+											<LinkIcon className="size-4" />
+										</div>
+										<div className="min-w-0 flex-1">
+											<p className="text-[11px] text-muted-foreground uppercase tracking-[0.2em]">
+												Acesso
+											</p>
+											<p className="truncate text-sm">
+												{typeof window === "undefined"
+													? `/g/${selectedRoom.qrCodeToken}`
+													: buildRoomPublicUrl(
+															window.location.origin,
+															selectedRoom.qrCodeToken,
+														)}
+											</p>
+										</div>
+									</div>
+								</div>
+
+								{actionError ? (
+									<p className="text-destructive text-sm">{actionError}</p>
+								) : null}
+
+								<div className="grid gap-2 sm:grid-cols-2">
+									<Button
+										onClick={() =>
+											regenerateTokenMutation.mutate({
+												roomId: selectedRoom.id,
+											})
+										}
+										variant="outline"
+									>
+										<RefreshIcon className="size-4" />
+										Regenerar token
+									</Button>
+									<Button
+										onClick={() => void copyRoomUrl(selectedRoom.qrCodeToken)}
+										variant="outline"
+									>
+										<CopyIcon className="size-4" />
+										Copiar link
+									</Button>
+									<Button
+										onClick={() =>
+											updateRoomMutation.mutate({
+												active: !selectedRoom.active,
+												roomId: selectedRoom.id,
+											})
+										}
+										variant="outline"
+									>
+										{selectedRoom.active ? (
+											<ToggleOffIcon className="size-4" />
+										) : (
+											<ToggleOnIcon className="size-4" />
+										)}
+										{selectedRoom.active ? "Desativar acesso" : "Ativar acesso"}
+									</Button>
+									<Button
+										onClick={() =>
+											void openRoomQrPreview({
+												label: selectedRoom.label,
+												qrCodeToken: selectedRoom.qrCodeToken,
+											})
+										}
+										variant="outline"
+									>
+										<QrCodeIcon className="size-4" />
+										Abrir QR
+									</Button>
+								</div>
+
+								<AlertDialogFooter className="pt-2">
+									<AlertDialogCancel className="rounded-full">
+										Fechar
+									</AlertDialogCancel>
+									<AlertDialogAction
+										className="rounded-full"
+										onClick={() =>
+											updateRoomMutation.mutate({
+												floor: parseFloorValue(selectedRoomDraft.floor),
+												label: selectedRoomDraft.label.trim(),
+												roomId: selectedRoom.id,
+											})
+										}
+									>
+										<SaveIcon className="size-4" />
+										Salvar
+									</AlertDialogAction>
+								</AlertDialogFooter>
+							</div>
+						</div>
+					) : null}
+				</AlertDialogContent>
+			</AlertDialog>
 
 			<AlertDialog
 				onOpenChange={(open) => {

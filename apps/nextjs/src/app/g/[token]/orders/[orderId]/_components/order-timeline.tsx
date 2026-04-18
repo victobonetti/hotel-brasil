@@ -1,4 +1,4 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@nowait24/ui/card";
+import { Card, CardContent } from "@nowait24/ui/card";
 
 import { OrderStatusBadge } from "./order-status-badge";
 
@@ -24,49 +24,50 @@ function formatDate(date: Date) {
 
 export function OrderTimeline(props: { history: Array<HistoryItem> }) {
 	return (
-		<Card className="overflow-hidden rounded-[28px] border-white/60 bg-white/88 shadow-[0_20px_70px_-30px_rgba(15,23,42,0.28)] backdrop-blur">
-			<CardHeader className="border-white/70 border-b bg-white/70">
-				<div className="flex items-center gap-2">
-					<div className="flex size-9 items-center justify-center rounded-full bg-slate-100 text-slate-700">
-						<span className="text-sm">12</span>
+		<Card className="overflow-hidden rounded-[32px] border-[#efe0da] bg-[#fffdfb] shadow-[0_28px_60px_-44px_rgba(86,59,52,0.3)]">
+			<CardContent className="space-y-5 p-4">
+				<div className="space-y-2 rounded-[28px] bg-[#fff7f3] p-4">
+					<div className="inline-flex rounded-full bg-white px-3 py-1 font-medium text-[#b15a45] text-[11px] uppercase tracking-[0.2em]">
+						Atualizacoes
 					</div>
-					<div>
-						<CardTitle className="text-lg">Atualizacoes do pedido</CardTitle>
-						<p className="text-muted-foreground text-sm">
-							Cada movimentacao aparece aqui em ordem cronologica.
+					<div className="space-y-1">
+						<p className="font-semibold text-[#2c1b19] text-xl">
+							Cada etapa aparece aqui
+						</p>
+						<p className="text-[#7d6660] text-sm leading-6">
+							Voce acompanha a evolucao do pedido em ordem cronologica, sem
+							precisar atualizar manualmente.
 						</p>
 					</div>
 				</div>
-			</CardHeader>
-			<CardContent className="space-y-4 pt-5">
-				{props.history.map((entry, index) => (
-					<div className="flex items-start gap-3" key={entry.id}>
-						<div className="mt-1.5 flex flex-col items-center">
-							<div className="size-3 rounded-full bg-[#ea1d2c] shadow-[0_0_0_6px_rgba(234,29,44,0.12)]" />
-							{index < props.history.length - 1 ? (
-								<div className="mt-1 h-full min-h-14 w-px bg-[#f0d5d2]" />
-							) : null}
-						</div>
-						<div className="flex-1 space-y-2 rounded-[24px] border border-[#f0d5d2] bg-[#fffaf9] px-4 py-4">
-							<div className="flex flex-wrap items-center justify-between gap-2">
-								<OrderStatusBadge status={entry.toStatus} />
-								<span className="text-muted-foreground text-sm">
-									{formatDate(entry.changedAt)}
-								</span>
+
+				<div className="space-y-4">
+					{props.history.map((entry, index) => (
+						<div className="flex items-start gap-3" key={entry.id}>
+							<div className="mt-1 flex flex-col items-center">
+								<div className="size-3 rounded-full bg-[#de5a43] shadow-[0_0_0_6px_rgba(222,90,67,0.12)]" />
+								{index < props.history.length - 1 ? (
+									<div className="mt-1 h-full min-h-14 w-px bg-[#eed9d3]" />
+								) : null}
 							</div>
-							<p className="font-medium text-slate-900 text-sm">
-								Etapa {index + 1} concluida
-							</p>
-							{entry.reason ? (
-								<p className="text-muted-foreground text-sm">{entry.reason}</p>
-							) : (
-								<p className="text-muted-foreground text-sm">
-									Status atualizado automaticamente pela operacao do hotel.
+							<div className="flex-1 space-y-3 rounded-[26px] border border-[#efe0da] bg-white p-4">
+								<div className="flex flex-wrap items-center justify-between gap-2">
+									<OrderStatusBadge status={entry.toStatus} />
+									<span className="text-[#8b7069] text-sm">
+										{formatDate(entry.changedAt)}
+									</span>
+								</div>
+								<p className="font-medium text-[#2c1b19] text-sm">
+									Etapa {index + 1} concluida
 								</p>
-							)}
+								<p className="text-[#7d6660] text-sm leading-6">
+									{entry.reason ||
+										"Status atualizado automaticamente pela operacao do hotel."}
+								</p>
+							</div>
 						</div>
-					</div>
-				))}
+					))}
+				</div>
 			</CardContent>
 		</Card>
 	);

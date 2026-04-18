@@ -130,7 +130,7 @@ export function OrderTrackingPage(props: {
 	if (trackingQuery.isLoading) {
 		return (
 			<main className="mx-auto flex min-h-screen max-w-5xl items-center px-4 py-10">
-				<Card className="w-full rounded-[28px] border-primary/20 border-dashed bg-card/88">
+				<Card className="w-full rounded-[28px] border-[#eadad4] border-dashed bg-[#fffaf7]">
 					<CardHeader>
 						<CardTitle>Carregando pedido</CardTitle>
 						<CardDescription>
@@ -145,7 +145,7 @@ export function OrderTrackingPage(props: {
 	if (trackingQuery.error || !trackingQuery.data) {
 		return (
 			<main className="mx-auto flex min-h-screen max-w-5xl items-center px-4 py-10">
-				<Card className="w-full rounded-[28px] border-destructive/20 bg-destructive/5">
+				<Card className="w-full rounded-[28px] border-[#ebd6d2] bg-[#fff5f2]">
 					<CardHeader>
 						<CardTitle>Pedido indisponivel</CardTitle>
 						<CardDescription>
@@ -177,12 +177,10 @@ export function OrderTrackingPage(props: {
 	const trackingSteps = buildTrackingSteps(trackingQuery.data.order.status);
 	const statusCards = [
 		{
-			iconLabel: "#",
 			label: "Pedido",
 			value: orderDisplay.orderReference,
 		},
 		{
-			iconLabel: "Q",
 			label: "Entrega",
 			value: formatRoomReference({
 				roomId: trackingQuery.data.order.roomId,
@@ -190,12 +188,10 @@ export function OrderTrackingPage(props: {
 			}),
 		},
 		{
-			iconLabel: "It",
 			label: "Itens",
 			value: `${trackingQuery.data.order.items.length} selecionado(s)`,
 		},
 		{
-			iconLabel: "Hr",
 			label: "Criado em",
 			value: formatDate(trackingQuery.data.order.placedAt),
 		},
@@ -203,12 +199,12 @@ export function OrderTrackingPage(props: {
 
 	return (
 		<PageShell
-			className="bg-[radial-gradient(circle_at_top,_rgba(234,29,44,0.18),_transparent_30%),linear-gradient(180deg,_#fff8f6_0%,_#fff_55%,_#fff5f2_100%)]"
-			containerClassName="max-w-5xl gap-5 px-4 pb-32 pt-5 md:px-6 md:pb-16"
+			className="bg-[radial-gradient(circle_at_top,_rgba(217,77,56,0.14),_transparent_28%),linear-gradient(180deg,_#fff8f5_0%,_#fffdfb_54%,_#fff4ed_100%)]"
+			containerClassName="max-w-5xl gap-5 px-4 pb-32 pt-4 md:px-6 md:pb-16"
 		>
 			<div className="flex items-center justify-between gap-3">
 				<Button
-					className="rounded-full border-white/80 bg-white/85 px-4 text-slate-900 shadow-sm backdrop-blur hover:bg-white"
+					className="rounded-full border-[#ead8d2] bg-[#fffaf7] px-4 text-[#3d2926] shadow-[0_18px_40px_-30px_rgba(92,58,50,0.35)] hover:bg-white"
 					render={<Link href={`/g/${props.guestSessionToken}/menu`} />}
 					variant="outline"
 				>
@@ -217,110 +213,94 @@ export function OrderTrackingPage(props: {
 					</span>
 					Cardapio
 				</Button>
-				<div className="inline-flex items-center gap-2 rounded-full bg-white/80 px-3 py-2 text-[13px] text-slate-600 shadow-sm backdrop-blur">
+				<div className="inline-flex items-center gap-2 rounded-full border border-[#ebddd9] bg-white/92 px-3 py-2 text-[13px] text-[#7d6660] shadow-[0_18px_32px_-28px_rgba(92,58,50,0.28)]">
 					<span
 						aria-hidden="true"
-						className="inline-block size-2 rounded-full bg-[#ea1d2c]"
+						className="inline-block size-2 rounded-full bg-[#de5a43]"
 					/>
 					Atualizacao automatica
 				</div>
 			</div>
 
-			<section
-				className={`overflow-hidden rounded-[32px] bg-gradient-to-br ${statusPresentation.accentClassName} p-5 text-white shadow-[0_30px_90px_-36px_rgba(234,29,44,0.75)] md:p-7`}
-			>
+			<section className="overflow-hidden rounded-[36px] border border-[#f1ddd6] bg-[linear-gradient(180deg,#fff9f5_0%,#fff3ee_100%)] p-5 shadow-[0_30px_70px_-46px_rgba(86,59,52,0.38)]">
 				<div className="space-y-5">
-					<div className="flex flex-wrap items-start justify-between gap-4">
-						<div className="space-y-3">
-							<div className="inline-flex rounded-full bg-white/18 px-3 py-1 font-medium text-sm backdrop-blur">
-								{statusPresentation.eyebrow}
-							</div>
-							<div className="space-y-2">
-								<p className="text-sm text-white/80">
-									{orderDisplay.orderTitle}
-								</p>
-								<h1 className="max-w-xl font-semibold text-3xl leading-tight tracking-tight sm:text-4xl">
-									{statusPresentation.title}
-								</h1>
-								<p className="max-w-lg text-sm text-white/82 sm:text-base">
-									{statusPresentation.description}
-								</p>
-							</div>
+					<div className="space-y-3">
+						<div className="inline-flex rounded-full bg-white px-3 py-1 font-medium text-[#b15a45] text-sm shadow-[0_18px_32px_-28px_rgba(86,59,52,0.28)]">
+							{statusPresentation.eyebrow}
 						</div>
-						<div className="rounded-[28px] bg-black/15 px-4 py-3 backdrop-blur-sm">
-							<p className="text-white/70 text-xs uppercase tracking-[0.24em]">
-								Quarto
+						<div className="space-y-2">
+							<p className="text-[#8b7069] text-sm">
+								{orderDisplay.orderTitle}
 							</p>
-							<p className="mt-1 font-semibold text-lg">
-								{trackingQuery.data.order.roomLabel ??
-									trackingQuery.data.order.roomId}
+							<h1 className="max-w-xl font-semibold text-3xl text-[#2c1b19] leading-tight tracking-tight">
+								{statusPresentation.title}
+							</h1>
+							<p className="max-w-xl text-[#7d6660] text-sm leading-6">
+								{statusPresentation.description}
 							</p>
 						</div>
 					</div>
 
-					<div className="space-y-2">
-						<div className="flex items-center justify-between text-sm text-white/80">
+					<div className="space-y-2 rounded-[26px] bg-white px-4 py-4 shadow-[0_20px_32px_-28px_rgba(86,59,52,0.22)]">
+						<div className="flex items-center justify-between text-sm text-[#7d6660]">
 							<span>Progresso do pedido</span>
 							<span>{statusPresentation.progressValue}%</span>
 						</div>
-						<div className="h-2 rounded-full bg-white/18">
+						<div className="h-2 rounded-full bg-[#f2dfd9]">
 							<div
 								aria-hidden="true"
-								className="h-2 rounded-full bg-white transition-[width]"
+								className="h-2 rounded-full bg-[#d94d38] transition-[width]"
 								style={{ width: `${statusPresentation.progressValue}%` }}
 							/>
 						</div>
 					</div>
 
-					<div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-						{trackingSteps.map((step) => (
+					<div className="grid gap-3 sm:grid-cols-2">
+						{trackingSteps.map((step, index) => (
 							<div
-								className="rounded-[24px] border border-white/12 bg-white/10 px-3 py-3 backdrop-blur-sm"
+								className="flex items-center gap-3 rounded-[24px] bg-white px-4 py-3 shadow-[0_20px_32px_-28px_rgba(86,59,52,0.22)]"
 								key={step.label}
 							>
-								<div className="flex items-center gap-2">
-									<div
-										className={`flex size-7 items-center justify-center rounded-full ${
-											step.state === "active"
-												? "bg-white text-[#ea1d2c]"
-												: "bg-white/18 text-white"
-										}`}
-									>
-										<span className="text-sm">OK</span>
-									</div>
-									<span className="font-medium text-sm">{step.label}</span>
+								<div
+									className={`flex size-9 items-center justify-center rounded-full text-sm font-semibold ${
+										step.state === "active"
+											? "bg-[#d94d38] text-white"
+											: "bg-[#fff1ec] text-[#b15a45]"
+									}`}
+								>
+									{index + 1}
 								</div>
+								<div className="space-y-0.5">
+									<p className="font-medium text-[#2c1b19] text-sm">
+										{step.label}
+									</p>
+									<p className="text-[#8b7069] text-xs">
+										{step.state === "active" ? "Etapa atual" : "Concluida"}
+									</p>
+								</div>
+							</div>
+						))}
+					</div>
+
+					<div className="grid grid-cols-2 gap-3">
+						{statusCards.map((card) => (
+							<div
+								className="rounded-[24px] border border-[#f0ddd7] bg-white px-4 py-3 shadow-[0_20px_32px_-28px_rgba(86,59,52,0.22)]"
+								key={card.label}
+							>
+								<p className="text-[#b15a45] text-[11px] uppercase tracking-[0.22em]">
+									{card.label}
+								</p>
+								<p className="mt-2 font-semibold text-[#2c1b19] text-sm leading-6">
+									{card.value}
+								</p>
 							</div>
 						))}
 					</div>
 				</div>
 			</section>
 
-			<div className="grid grid-cols-2 gap-3">
-				{statusCards.map((card) => (
-					<Card
-						className="rounded-[26px] border-white/70 bg-white/84 shadow-[0_20px_60px_-38px_rgba(15,23,42,0.35)] backdrop-blur"
-						key={card.label}
-						size="sm"
-					>
-						<CardContent className="space-y-3 pt-4">
-							<div className="flex size-10 items-center justify-center rounded-full bg-[#fff1ee] text-[#ea1d2c]">
-								<span className="font-semibold text-sm">{card.iconLabel}</span>
-							</div>
-							<div className="space-y-1">
-								<p className="text-muted-foreground text-xs uppercase tracking-[0.22em]">
-									{card.label}
-								</p>
-								<p className="font-semibold text-sm leading-snug sm:text-base">
-									{card.value}
-								</p>
-							</div>
-						</CardContent>
-					</Card>
-				))}
-			</div>
-
-			<div className="grid gap-4 lg:grid-cols-[1.12fr_0.88fr]">
+			<div className="grid gap-4 lg:grid-cols-[1.05fr_0.95fr]">
 				<div className="space-y-3">
 					<OrderSummaryCard
 						order={{
@@ -342,21 +322,21 @@ export function OrderTrackingPage(props: {
 				</div>
 			</div>
 
-			<div className="fixed inset-x-0 bottom-0 z-20 border-[#f0d7d3] border-t bg-white/92 px-4 py-4 shadow-[0_-18px_48px_-32px_rgba(15,23,42,0.3)] backdrop-blur md:hidden">
+			<div className="fixed inset-x-0 bottom-0 z-20 border-[#ebddd9] border-t bg-white/96 px-4 py-4 shadow-[0_-18px_48px_-32px_rgba(86,59,52,0.28)] md:hidden">
 				<div className="mx-auto flex max-w-5xl items-center gap-3">
 					<div className="min-w-0 flex-1">
-						<p className="text-muted-foreground text-xs uppercase tracking-[0.24em]">
+						<p className="text-[#8b7069] text-[11px] uppercase tracking-[0.22em]">
 							Total do pedido
 						</p>
-						<p className="truncate font-semibold text-lg text-slate-950">
+						<p className="truncate font-semibold text-[#2c1b19] text-lg">
 							{formatPrice(trackingQuery.data.order.totalAmountInCents)}
 						</p>
 					</div>
 					<Button
-						className="h-11 rounded-full px-5 shadow-[0_16px_32px_-18px_rgba(234,29,44,0.9)]"
+						className="h-11 rounded-full bg-[#d94d38] px-5 text-white shadow-[0_20px_36px_-22px_rgba(217,77,56,0.9)] hover:bg-[#c94330]"
 						render={<Link href={`/g/${props.guestSessionToken}/menu`} />}
 					>
-						Ver cardapio
+						Ver menu
 					</Button>
 				</div>
 			</div>

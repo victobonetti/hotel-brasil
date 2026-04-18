@@ -47,11 +47,11 @@ export function OrderQueueBoard(props: {
 	title: string;
 }) {
 	return (
-		<Card className="border-primary/15 bg-card/88 shadow-primary/10 shadow-sm">
-			<CardHeader className="border-border/60 border-b">
-				<CardTitle>{props.title}</CardTitle>
+		<Card className="border-border/70 bg-card/90 shadow-sm">
+			<CardHeader className="border-border/60 border-b pb-4">
+				<CardTitle className="text-lg">{props.title}</CardTitle>
 			</CardHeader>
-			<CardContent className="space-y-3 pt-6">
+			<CardContent className="space-y-3 pt-5">
 				{props.orders.map((order) => {
 					const orderDisplay = getStaffOrderDisplayMeta({
 						orderId: order.id,
@@ -63,7 +63,7 @@ export function OrderQueueBoard(props: {
 
 					return (
 						<Button
-							className="h-auto w-full justify-start rounded-2xl border border-primary/10 px-4 py-4 text-left shadow-none"
+							className="h-auto w-full justify-start rounded-[1.25rem] border-border/70 px-4 py-3.5 text-left shadow-none"
 							key={order.id}
 							onClick={() => props.onSelect(order.id)}
 							variant={
@@ -75,7 +75,7 @@ export function OrderQueueBoard(props: {
 									<div>
 										<p className="font-medium">{orderDisplay.orderTitle}</p>
 										<p className="text-muted-foreground text-sm">
-											{orderDisplay.timingLabel} • {formatDate(order.placedAt)}
+											{orderDisplay.timingLabel} - {formatDate(order.placedAt)}
 										</p>
 									</div>
 									<Badge variant="outline">
@@ -90,7 +90,7 @@ export function OrderQueueBoard(props: {
 					);
 				})}
 				{props.orders.length === 0 ? (
-					<div className="rounded-2xl border border-primary/20 border-dashed bg-primary/[0.03] px-5 py-6 text-muted-foreground text-sm">
+					<div className="rounded-[1.25rem] border border-border/70 border-dashed bg-background/60 px-5 py-6 text-muted-foreground text-sm">
 						{props.emptyMessage}
 					</div>
 				) : null}

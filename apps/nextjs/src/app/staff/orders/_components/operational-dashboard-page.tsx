@@ -121,34 +121,23 @@ export function OperationalDashboardPage() {
 							variant="outline"
 						>
 							<RefreshIcon className="size-4" />
-							Atualizar agora
+							Atualizar
 						</Button>
 						<Button render={<Link href="/staff/menu" />} variant="secondary">
 							<PackageIcon className="size-4" />
-							Revisar cardapio
+							Cardapio
 						</Button>
 					</>
 				}
-				badge="Operacao do hotel"
-				description="Veja o que exige atencao agora, acompanhe o historico recente e mantenha a operacao andando sem precisar decifrar a tela."
+				badge="Pedidos"
+				description="Fila ativa, historico recente e detalhe do pedido."
 				supportingPanel={
-					<div className="rounded-[2rem] border border-primary/15 bg-card/84 p-6 shadow-primary/10 shadow-sm">
-						<p className="font-medium text-primary text-xs uppercase tracking-[0.18em]">
-							Como ler esta area
-						</p>
-						<div className="mt-3 space-y-3 text-muted-foreground text-sm leading-6">
-							<p>Comece pela fila ativa para decidir o proximo pedido.</p>
-							<p>
-								Abra um pedido para ver itens, historico e acoes em um so lugar.
-							</p>
-							<p>
-								Use o historico recente para conferir o que acabou de sair da
-								operacao.
-							</p>
-						</div>
+					<div className="space-y-0.5">
+						<p className="font-medium text-sm">Agora</p>
+						<p className="text-muted-foreground text-sm">Ativos primeiro.</p>
 					</div>
 				}
-				title="Painel operacional de pedidos"
+				title="Operacao"
 			/>
 
 			<StaffHotelGuard
@@ -156,33 +145,20 @@ export function OperationalDashboardPage() {
 				state={state}
 			>
 				<div className="grid gap-3 md:grid-cols-3">
-					<div className="rounded-[1.75rem] border border-primary/15 bg-card/88 p-5 shadow-primary/10 shadow-sm">
-						<p className="font-medium text-primary text-sm">Fila ativa</p>
+					<div className="rounded-[1.4rem] border border-border/70 bg-card/90 p-5 shadow-sm">
+						<p className="font-medium text-primary text-sm">Ativos</p>
 						<p className="mt-2 font-semibold text-3xl">
 							{pagination?.totalItems ?? 0}
 						</p>
-						<p className="mt-2 text-muted-foreground text-sm">
-							Pedidos aguardando acompanhamento nesta pagina.
-						</p>
 					</div>
-					<div className="rounded-[1.75rem] border border-primary/15 bg-card/88 p-5 shadow-primary/10 shadow-sm">
-						<p className="font-medium text-primary text-sm">
-							Entregas recentes
-						</p>
+					<div className="rounded-[1.4rem] border border-border/70 bg-card/90 p-5 shadow-sm">
+						<p className="font-medium text-primary text-sm">Recentes</p>
 						<p className="mt-2 font-semibold text-3xl">{recentOrders.length}</p>
-						<p className="mt-2 text-muted-foreground text-sm">
-							Itens concluidos que ainda valem uma conferida.
-						</p>
 					</div>
-					<div className="rounded-[1.75rem] border border-primary/15 bg-card/88 p-5 shadow-primary/10 shadow-sm">
-						<p className="font-medium text-primary text-sm">
-							Volume monitorado
-						</p>
+					<div className="rounded-[1.4rem] border border-border/70 bg-card/90 p-5 shadow-sm">
+						<p className="font-medium text-primary text-sm">Na fila</p>
 						<p className="mt-2 font-semibold text-3xl">
 							{formatPrice(totalRevenueInCents)}
-						</p>
-						<p className="mt-2 text-muted-foreground text-sm">
-							Valor somado dos pedidos ativos exibidos agora.
 						</p>
 					</div>
 				</div>

@@ -12,13 +12,7 @@ import {
 } from "@nowait24/ui/alert-dialog";
 import { Badge } from "@nowait24/ui/badge";
 import { Button } from "@nowait24/ui/button";
-import {
-	Card,
-	CardContent,
-	CardDescription,
-	CardHeader,
-	CardTitle,
-} from "@nowait24/ui/card";
+import { Card, CardContent } from "@nowait24/ui/card";
 import { Input } from "@nowait24/ui/input";
 import { Label } from "@nowait24/ui/label";
 import { Separator } from "@nowait24/ui/separator";
@@ -40,15 +34,7 @@ import {
 import { useTRPC } from "~/trpc/react";
 import { CategorySection } from "./category-section";
 import { GuestMenuActions } from "./guest-menu-actions";
-import { getGuestMenuHeroContent } from "./guest-menu-display";
 import { GuestSessionGuard } from "./guest-session-guard";
-
-function formatSessionExpiry(expiresAt: Date) {
-	return new Intl.DateTimeFormat("pt-BR", {
-		dateStyle: "short",
-		timeStyle: "short",
-	}).format(expiresAt);
-}
 
 function formatPrice(priceInCents: number) {
 	return new Intl.NumberFormat("pt-BR", {
@@ -151,37 +137,16 @@ export function GuestMenuPage(props: { guestSessionToken: string }) {
 		setSelectedItem(null);
 	}
 
-	const heroContent = getGuestMenuHeroContent(totalItems);
 	const roomReference = menuQuery.data
 		? formatRoomReference({
 				roomId: menuQuery.data.guestSession.roomId,
 				roomLabel: menuQuery.data.guestSession.roomLabel,
 			})
 		: "Seu quarto";
-	const statCards = menuQuery.data
-		? [
-				{
-					label: "Entrega",
-					value: roomReference,
-				},
-				{
-					label: "Sessao ativa ate",
-					value: formatSessionExpiry(menuQuery.data.guestSession.expiresAt),
-				},
-				{
-					label: "Categorias",
-					value: `${menuQuery.data.pagination.totalItems} disponiveis`,
-				},
-				{
-					label: "No pedido",
-					value: totalItems > 0 ? `${totalItems} item(ns)` : "Nada adicionado",
-				},
-			]
-		: [];
 
 	return (
 		<PageShell
-			className="bg-[radial-gradient(circle_at_top,_rgba(234,29,44,0.18),_transparent_30%),linear-gradient(180deg,_#fff8f6_0%,_#fff_55%,_#fff4ef_100%)]"
+			className="bg-[radial-gradient(circle_at_top,_rgba(217,77,56,0.14),_transparent_28%),linear-gradient(180deg,_#fff8f5_0%,_#fffdfb_54%,_#fff4ed_100%)]"
 			containerClassName="max-w-6xl gap-4 px-4 pb-32 pt-4 md:px-6 md:pb-16"
 		>
 			<GuestSessionGuard
@@ -193,108 +158,82 @@ export function GuestMenuPage(props: { guestSessionToken: string }) {
 				<div className="space-y-5">
 					<GuestMenuActions guestSessionToken={props.guestSessionToken} />
 
-					<section className="overflow-hidden rounded-[32px] bg-gradient-to-br from-[#ea1d2c] via-[#ff5a36] to-[#ff9f43] p-5 text-white shadow-[0_30px_90px_-36px_rgba(234,29,44,0.75)] md:p-6">
-						<div className="space-y-5">
-							<div className="grid gap-4 lg:grid-cols-[1.2fr_0.8fr] lg:items-start">
-								<div className="space-y-3">
-									<div className="inline-flex rounded-full bg-white/18 px-3 py-1 font-medium text-sm backdrop-blur">
-										{heroContent.eyebrow}
-									</div>
-									<div className="space-y-2">
-										<p className="text-sm text-white/80">{roomReference}</p>
-										<h1 className="max-w-2xl font-semibold text-3xl leading-tight tracking-tight sm:text-4xl">
-											{heroContent.title}
-										</h1>
-										<p className="max-w-xl text-sm text-white/82 sm:text-base">
-											{heroContent.description}
-										</p>
-									</div>
-								</div>
-								<div className="rounded-[28px] bg-black/15 p-4 backdrop-blur-sm">
-									<p className="text-white/70 text-xs uppercase tracking-[0.24em]">
-										Como funciona
-									</p>
-									<div className="mt-3 space-y-3 text-sm text-white/86">
-										<p>1. Escolha os itens no cardapio.</p>
-										<p>2. Revise quantidade e observacoes.</p>
-										<p>3. Confirme e acompanhe o status do pedido.</p>
-									</div>
-								</div>
+					<section className="rounded-[32px] border border-[#e8dfda] bg-white p-5 shadow-[0_24px_50px_-42px_rgba(86,59,52,0.22)]">
+						<div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+							<div className="space-y-2">
+								<p className="text-[#8b7069] text-sm">{roomReference}</p>
+								<h1 className="font-semibold text-3xl text-[#2c1b19] tracking-tight">
+									Cardapio
+								</h1>
+								<p className="max-w-xl text-[#7d6660] text-sm leading-6">
+									Escolha os itens e toque para personalizar antes de adicionar.
+								</p>
 							</div>
-
-							<div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-								{statCards.map((card) => (
-									<div
-										className="rounded-[24px] border border-white/12 bg-white/10 px-3 py-3 backdrop-blur-sm"
-										key={card.label}
-									>
-										<p className="text-white/72 text-xs uppercase tracking-[0.22em]">
-											{card.label}
-										</p>
-										<p className="mt-2 font-semibold text-sm leading-snug sm:text-base">
-											{card.value}
-										</p>
-									</div>
-								))}
-							</div>
+							{totalItems > 0 ? (
+								<div className="rounded-full border border-[#e7ddd8] bg-[#faf7f5] px-3 py-2 font-medium text-[#5e4742] text-sm">
+									{totalItems} item(ns) na bandeja
+								</div>
+							) : null}
 						</div>
 					</section>
 
-					<div className="grid gap-4 lg:grid-cols-[0.94fr_1.06fr] lg:items-start">
-						<Card className="order-2 overflow-hidden rounded-[28px] border-white/60 bg-white/90 shadow-[0_20px_70px_-30px_rgba(234,29,44,0.2)] backdrop-blur lg:sticky lg:top-5 lg:order-1">
-							<CardHeader className="border-white/70 border-b bg-white/78">
-								<div className="space-y-4">
+					<div className="grid gap-4 lg:grid-cols-[1.04fr_0.96fr] lg:items-start">
+						<Card className="order-2 overflow-hidden rounded-[32px] border-[#efe0da] bg-[#fffdfb] shadow-[0_28px_60px_-44px_rgba(86,59,52,0.34)] lg:sticky lg:top-5 lg:order-1">
+							<CardContent className="space-y-5 p-4">
+								<div className="space-y-4 rounded-[28px] bg-[#fff7f3] p-4">
 									<div className="flex items-start justify-between gap-3">
 										<div className="space-y-1">
-											<CardTitle className="text-lg">
-												Revise seu pedido
-											</CardTitle>
-											<CardDescription>
-												Tudo o que voce escolher aparece aqui para revisao antes
-												do envio.
-											</CardDescription>
+											<div className="inline-flex rounded-full bg-white px-3 py-1 font-medium text-[#b15a45] text-[11px] uppercase tracking-[0.2em]">
+												Sua bandeja
+											</div>
+											<p className="font-semibold text-[#2c1b19] text-xl">
+												Revise antes de enviar
+											</p>
+											<p className="text-[#7d6660] text-sm leading-6">
+												Os itens escolhidos aparecem aqui para voce ajustar com
+												calma antes da confirmacao.
+											</p>
 										</div>
-										<Badge className="rounded-full border-0 bg-[#fff3f1] px-3 py-1 text-[#b42318] shadow-none hover:bg-[#fff3f1]">
+										<Badge className="rounded-full border border-[#edd9d2] bg-white px-3 py-1 text-[#7d6660] shadow-none hover:bg-white">
 											{totalItems} item(ns)
 										</Badge>
 									</div>
 									<div className="grid grid-cols-2 gap-3">
-										<div className="rounded-[22px] bg-[#fff6f4] p-3">
-											<p className="text-[#b42318] text-xs uppercase tracking-[0.22em]">
+										<div className="rounded-[22px] bg-white px-3 py-3">
+											<p className="text-[#b15a45] text-[11px] uppercase tracking-[0.22em]">
 												Total
 											</p>
-											<p className="mt-2 font-semibold text-slate-950 text-sm">
+											<p className="mt-2 font-semibold text-[#2c1b19] text-sm">
 												{formatPrice(totalValueInCents)}
 											</p>
 										</div>
-										<div className="rounded-[22px] bg-slate-100 p-3">
-											<p className="text-slate-500 text-xs uppercase tracking-[0.22em]">
+										<div className="rounded-[22px] bg-white px-3 py-3">
+											<p className="text-[#b15a45] text-[11px] uppercase tracking-[0.22em]">
 												Itens
 											</p>
-											<p className="mt-2 font-semibold text-slate-950 text-sm">
+											<p className="mt-2 font-semibold text-[#2c1b19] text-sm">
 												{totalItems}
 											</p>
 										</div>
 									</div>
 								</div>
-							</CardHeader>
-							<CardContent className="space-y-5 pt-5">
+
 								{items.length > 0 ? (
 									<div className="space-y-3">
 										{items.map((item, index) => (
 											<div
-												className="flex items-start gap-3 rounded-[24px] border border-[#f4d6d2] bg-[#fffaf9] p-4"
+												className="flex items-start gap-3 rounded-[26px] border border-[#efe0da] bg-white p-4"
 												key={`${item.menuItemId}-${index}`}
 											>
-												<div className="flex size-10 shrink-0 items-center justify-center rounded-full bg-[#ea1d2c] font-semibold text-sm text-white">
+												<div className="flex size-11 shrink-0 items-center justify-center rounded-full bg-[#fff1ec] font-semibold text-[#b15a45] text-sm">
 													{item.quantity}x
 												</div>
 												<div className="min-w-0 flex-1 space-y-1">
-													<p className="font-medium text-[15px]">
+													<p className="font-medium text-[#2c1b19] text-[15px]">
 														{resolveMenuItem(item.menuItemId)?.name ??
 															"Item do menu"}
 													</p>
-													<p className="text-muted-foreground text-sm">
+													<p className="text-[#7d6660] text-sm">
 														{resolveMenuItem(item.menuItemId)
 															? formatPrice(
 																	(resolveMenuItem(item.menuItemId)
@@ -302,18 +241,12 @@ export function GuestMenuPage(props: { guestSessionToken: string }) {
 																)
 															: item.menuItemId}
 													</p>
-													{item.notes ? (
-														<p className="text-muted-foreground text-sm">
-															{item.notes}
-														</p>
-													) : (
-														<p className="text-muted-foreground text-sm">
-															Sem observacoes neste item.
-														</p>
-													)}
+													<p className="text-[#8b7069] text-sm leading-6">
+														{item.notes || "Sem observacoes neste item."}
+													</p>
 												</div>
 												<Button
-													className="rounded-full"
+													className="rounded-full text-[#8b7069]"
 													onClick={() =>
 														setItems((currentItems) =>
 															currentItems.filter(
@@ -331,13 +264,13 @@ export function GuestMenuPage(props: { guestSessionToken: string }) {
 										))}
 									</div>
 								) : (
-									<div className="rounded-[24px] border border-[#f4d6d2] border-dashed bg-[#fffaf9] px-5 py-6">
-										<p className="font-medium text-slate-950">
-											Seu pedido ainda esta vazio.
+									<div className="rounded-[26px] border border-[#eadad4] border-dashed bg-[#fffaf7] px-5 py-6">
+										<p className="font-medium text-[#2c1b19]">
+											Sua bandeja ainda esta vazia.
 										</p>
-										<p className="mt-2 text-muted-foreground text-sm">
-											Comece escolhendo uma categoria abaixo. Cada item pode ser
-											personalizado antes de entrar no pedido.
+										<p className="mt-2 text-[#7d6660] text-sm leading-6">
+											Explore as categorias abaixo. Cada item pode ser ajustado
+											antes de entrar no pedido.
 										</p>
 									</div>
 								)}
@@ -347,7 +280,7 @@ export function GuestMenuPage(props: { guestSessionToken: string }) {
 								<div className="space-y-2">
 									<Label htmlFor="order-notes">Observacoes gerais</Label>
 									<Textarea
-										className="min-h-24 rounded-[22px] border-[#f0d5d2] bg-[#fffaf9]"
+										className="min-h-24 rounded-[22px] border-[#ecd9d3] bg-[#fffaf7]"
 										id="order-notes"
 										onChange={(event) => setOrderNotes(event.target.value)}
 										placeholder="Ex.: bater na porta, deixar na bancada, alergias"
@@ -355,14 +288,14 @@ export function GuestMenuPage(props: { guestSessionToken: string }) {
 									/>
 								</div>
 
-								<div className="rounded-[24px] bg-slate-950 px-4 py-4 text-white">
+								<div className="rounded-[26px] bg-[#241816] px-4 py-4 text-white">
 									<div className="flex items-center justify-between gap-3">
 										<div>
-											<p className="text-white/70 text-xs uppercase tracking-[0.24em]">
+											<p className="text-[11px] uppercase tracking-[0.22em] text-white/58">
 												Confirmacao
 											</p>
-											<p className="mt-1 font-medium text-sm">
-												Envie quando estiver tudo certo para o quarto.
+											<p className="mt-1 text-sm text-white/78">
+												Envie para o quarto quando estiver tudo certo.
 											</p>
 										</div>
 										<p className="font-semibold text-xl">
@@ -370,7 +303,7 @@ export function GuestMenuPage(props: { guestSessionToken: string }) {
 										</p>
 									</div>
 									<Button
-										className="mt-4 h-11 w-full rounded-full shadow-[0_16px_32px_-18px_rgba(234,29,44,0.9)]"
+										className="mt-4 h-11 w-full rounded-full bg-[#d94d38] text-white shadow-[0_20px_36px_-22px_rgba(217,77,56,0.9)] hover:bg-[#c94330]"
 										disabled={
 											items.length === 0 || createOrderMutation.isPending
 										}
@@ -398,23 +331,23 @@ export function GuestMenuPage(props: { guestSessionToken: string }) {
 						</Card>
 
 						<div className="order-1 space-y-5 lg:order-2">
-							<section className="rounded-[28px] border border-white/65 bg-white/72 p-4 shadow-[0_18px_50px_-38px_rgba(15,23,42,0.28)] backdrop-blur sm:p-5">
+							<section className="rounded-[32px] border border-[#efe0da] bg-[#fffdfb] p-4 shadow-[0_28px_60px_-44px_rgba(86,59,52,0.3)] sm:p-5">
 								<div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
 									<div className="space-y-2">
-										<div className="inline-flex rounded-full bg-[#fff1ee] px-3 py-1 font-medium text-[#b42318] text-xs uppercase tracking-[0.22em]">
-											Cardapio
+										<div className="inline-flex rounded-full bg-[#fff1ec] px-3 py-1 font-medium text-[#b15a45] text-xs uppercase tracking-[0.22em]">
+											Menu
 										</div>
 										<div className="space-y-1">
-											<h2 className="font-semibold text-2xl text-slate-950 tracking-tight">
+											<h2 className="font-semibold text-2xl text-[#2c1b19] tracking-tight">
 												Escolha por categoria
 											</h2>
-											<p className="max-w-2xl text-muted-foreground text-sm sm:text-base">
+											<p className="max-w-2xl text-[#7d6660] text-sm leading-6 sm:text-base">
 												Toque em um item para ver detalhes, ajustar quantidade e
 												incluir observacoes.
 											</p>
 										</div>
 									</div>
-									<div className="rounded-full border border-[#f0d5d2] bg-[#fffaf9] px-3 py-2 font-medium text-[#b42318] text-sm shadow-sm">
+									<div className="rounded-full border border-[#f0ddd7] bg-white px-3 py-2 font-medium text-[#b15a45] text-sm shadow-[0_18px_32px_-28px_rgba(86,59,52,0.22)]">
 										{menuQuery.data?.pagination.totalItems ?? 0} categoria(s)
 									</div>
 								</div>
@@ -434,20 +367,20 @@ export function GuestMenuPage(props: { guestSessionToken: string }) {
 					</div>
 				</div>
 
-				<div className="fixed inset-x-0 bottom-0 z-20 border-[#f0d7d3] border-t bg-white/94 px-4 py-4 shadow-[0_-18px_48px_-32px_rgba(15,23,42,0.3)] backdrop-blur md:hidden">
+				<div className="fixed inset-x-0 bottom-0 z-20 border-[#ebddd9] border-t bg-white/96 px-4 py-4 shadow-[0_-18px_48px_-32px_rgba(86,59,52,0.28)] md:hidden">
 					<div className="mx-auto flex max-w-6xl items-center gap-3">
 						<div className="min-w-0 flex-1">
-							<p className="text-muted-foreground text-xs uppercase tracking-[0.24em]">
+							<p className="text-[#8b7069] text-[11px] uppercase tracking-[0.22em]">
 								Revisao rapida
 							</p>
-							<p className="truncate font-semibold text-lg text-slate-950">
+							<p className="truncate font-semibold text-[#2c1b19] text-lg">
 								{totalItems > 0
 									? `${totalItems} item(ns) | ${formatPrice(totalValueInCents)}`
 									: "Escolha itens para montar o pedido"}
 							</p>
 						</div>
 						<Button
-							className="h-11 rounded-full px-5 shadow-[0_16px_32px_-18px_rgba(234,29,44,0.9)]"
+							className="h-11 rounded-full bg-[#d94d38] px-5 text-white shadow-[0_20px_36px_-22px_rgba(217,77,56,0.9)] hover:bg-[#c94330]"
 							disabled={items.length === 0 || createOrderMutation.isPending}
 							onClick={() =>
 								createOrderMutation.mutate({
@@ -471,7 +404,7 @@ export function GuestMenuPage(props: { guestSessionToken: string }) {
 					}}
 					open={Boolean(selectedItem)}
 				>
-					<AlertDialogContent className="max-w-md overflow-hidden rounded-[30px] border-white/70 bg-white p-0 sm:max-w-md">
+					<AlertDialogContent className="max-w-md overflow-hidden rounded-[32px] border-[#efe0da] bg-[#fffdfb] p-0 sm:max-w-md">
 						{selectedItem ? (
 							<>
 								<div className="relative">
@@ -484,40 +417,39 @@ export function GuestMenuPage(props: { guestSessionToken: string }) {
 											width={420}
 										/>
 									) : (
-										<div className="flex aspect-[4/3] w-full items-center justify-center bg-[linear-gradient(135deg,_#fff1ee,_#ffe6dc_55%,_#ffd4c4)]">
-											<span className="rounded-full bg-white/85 px-4 py-2 font-medium text-[#b42318] text-sm shadow-sm">
+										<div className="flex aspect-[4/3] w-full items-center justify-center bg-[linear-gradient(135deg,_#fff5ef,_#fee8de_55%,_#f8d4c0)]">
+											<span className="rounded-full bg-white/88 px-4 py-2 font-medium text-[#b15a45] text-sm shadow-sm">
 												Room service
 											</span>
 										</div>
 									)}
-									<div className="pointer-events-none absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-black/52 via-black/10 to-transparent" />
-									<Badge className="absolute top-4 left-4 rounded-full border-0 bg-white/92 px-3 py-1 text-slate-900 shadow-none hover:bg-white/92">
+									<Badge className="absolute top-4 left-4 rounded-full border-0 bg-white/94 px-3 py-1 text-[#402a25] shadow-none hover:bg-white/94">
 										{formatPrice(selectedItem.priceInCents)}
 									</Badge>
 								</div>
 								<div className="p-5">
 									<AlertDialogHeader className="items-start text-left">
-										<AlertDialogTitle className="text-left text-slate-950 text-xl">
+										<AlertDialogTitle className="text-left text-[#2c1b19] text-xl">
 											{selectedItem.name}
 										</AlertDialogTitle>
-										<AlertDialogDescription className="text-left">
+										<AlertDialogDescription className="text-left text-[#7d6660]">
 											{selectedItem.description ??
 												"Personalize este item antes de adicionar ao pedido."}
 										</AlertDialogDescription>
 									</AlertDialogHeader>
 
 									<div className="mt-5 space-y-4">
-										<div className="rounded-[22px] bg-[#fff6f4] px-4 py-3">
+										<div className="rounded-[24px] bg-[#fff7f3] px-4 py-3">
 											<div className="flex items-center justify-between gap-3">
 												<div>
-													<p className="text-[#b42318] text-xs uppercase tracking-[0.22em]">
+													<p className="text-[#b15a45] text-[11px] uppercase tracking-[0.22em]">
 														Entrega estimada
 													</p>
-													<p className="mt-1 font-semibold text-slate-950 text-sm">
+													<p className="mt-1 font-semibold text-[#2c1b19] text-sm">
 														{selectedItem.preparationTimeMinutes ?? 15} minutos
 													</p>
 												</div>
-												<p className="font-semibold text-lg text-slate-950">
+												<p className="font-semibold text-[#2c1b19] text-lg">
 													{formatPrice(
 														selectedItem.priceInCents *
 															Math.max(1, selectedItemQuantity),
@@ -529,7 +461,7 @@ export function GuestMenuPage(props: { guestSessionToken: string }) {
 										<div className="space-y-2">
 											<Label htmlFor="selected-item-quantity">Quantidade</Label>
 											<Input
-												className="h-12 rounded-[18px] border-[#f0d5d2] bg-[#fffaf9]"
+												className="h-12 rounded-[18px] border-[#ecd9d3] bg-[#fffaf7]"
 												id="selected-item-quantity"
 												min={1}
 												onChange={(event) =>
@@ -545,7 +477,7 @@ export function GuestMenuPage(props: { guestSessionToken: string }) {
 										<div className="space-y-2">
 											<Label htmlFor="selected-item-notes">Observacoes</Label>
 											<Textarea
-												className="min-h-24 rounded-[18px] border-[#f0d5d2] bg-[#fffaf9]"
+												className="min-h-24 rounded-[18px] border-[#ecd9d3] bg-[#fffaf7]"
 												id="selected-item-notes"
 												onChange={(event) =>
 													setSelectedItemNotes(event.target.value)
@@ -557,11 +489,11 @@ export function GuestMenuPage(props: { guestSessionToken: string }) {
 									</div>
 
 									<div className="mt-5 grid grid-cols-2 gap-3">
-										<AlertDialogCancel className="rounded-full">
+										<AlertDialogCancel className="rounded-full border-[#ead8d2] bg-[#fffaf7] text-[#3d2926] hover:bg-white">
 											Cancelar
 										</AlertDialogCancel>
 										<AlertDialogAction
-											className="h-11 rounded-full shadow-[0_16px_32px_-18px_rgba(234,29,44,0.9)]"
+											className="h-11 rounded-full bg-[#d94d38] text-white shadow-[0_20px_36px_-22px_rgba(217,77,56,0.9)] hover:bg-[#c94330]"
 											onClick={handleAddSelectedItem}
 										>
 											Adicionar

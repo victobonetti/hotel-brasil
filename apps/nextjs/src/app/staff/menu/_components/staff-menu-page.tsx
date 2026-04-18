@@ -97,7 +97,7 @@ export function StaffMenuPage() {
 	}, [currentPage, pagination, pathname, router, searchParams]);
 
 	return (
-		<PageShell containerClassName="max-w-6xl gap-8" sidebar={<StaffNav />}>
+		<PageShell containerClassName="max-w-6xl gap-6" sidebar={<StaffNav />}>
 			<SectionHeader
 				actions={
 					<Button
@@ -105,24 +105,20 @@ export function StaffMenuPage() {
 						variant="secondary"
 					>
 						<PackageIcon className="size-4" />
-						Abrir itens do cardapio
+						Itens
 					</Button>
 				}
-				badge="Administracao do catalogo"
-				description="Defina a estrutura do cardapio de forma simples: crie categorias, ajuste a ordem e deixe claro o que esta visivel para o hospede."
+				badge="Cardapio"
+				description="Estrutura, ordem e visibilidade."
 				supportingPanel={
-					<div className="rounded-[2rem] border border-primary/15 bg-card/84 p-6 shadow-primary/10 shadow-sm">
-						<p className="font-medium text-primary text-xs uppercase tracking-[0.18em]">
-							Fluxo recomendado
+					<div className="space-y-0.5">
+						<p className="font-medium text-sm">Fluxo</p>
+						<p className="text-muted-foreground text-sm">
+							Categorias primeiro.
 						</p>
-						<div className="mt-3 space-y-3 text-muted-foreground text-sm leading-6">
-							<p>Primeiro organize as categorias principais.</p>
-							<p>Depois cadastre os itens dentro de cada grupo.</p>
-							<p>Por fim, esconda o que nao deve aparecer para o hospede.</p>
-						</div>
 					</div>
 				}
-				title="Categorias do cardapio"
+				title="Categorias"
 			/>
 
 			<StaffHotelGuard
@@ -130,51 +126,31 @@ export function StaffMenuPage() {
 				state={state}
 			>
 				<div className="grid gap-3 md:grid-cols-3">
-					<div className="rounded-[1.75rem] border border-primary/15 bg-card/88 p-5 shadow-primary/10 shadow-sm">
-						<p className="font-medium text-primary text-sm">
-							Categorias totais
-						</p>
+					<div className="rounded-[1.4rem] border border-border/70 bg-card/90 p-5 shadow-sm">
+						<p className="font-medium text-primary text-sm">Total</p>
 						<p className="mt-2 font-semibold text-3xl">
 							{pagination?.totalItems ?? 0}
 						</p>
-						<p className="mt-2 text-muted-foreground text-sm">
-							Estrutura exibida para organizar o cardapio.
-						</p>
 					</div>
-					<div className="rounded-[1.75rem] border border-primary/15 bg-card/88 p-5 shadow-primary/10 shadow-sm">
-						<p className="font-medium text-primary text-sm">
-							Categorias ativas
-						</p>
+					<div className="rounded-[1.4rem] border border-border/70 bg-card/90 p-5 shadow-sm">
+						<p className="font-medium text-primary text-sm">Ativas</p>
 						<p className="mt-2 font-semibold text-3xl">
 							{categories.filter((category) => category.active).length}
 						</p>
-						<p className="mt-2 text-muted-foreground text-sm">
-							Grupos visiveis para hospedes neste momento.
-						</p>
 					</div>
-					<div className="rounded-[1.75rem] border border-primary/15 bg-card/88 p-5 shadow-primary/10 shadow-sm">
-						<p className="font-medium text-primary text-sm">Proximo passo</p>
+					<div className="rounded-[1.4rem] border border-border/70 bg-card/90 p-5 shadow-sm">
+						<p className="font-medium text-primary text-sm">Proximo</p>
 						<p className="mt-2 font-semibold text-lg">
-							{categories.length === 0
-								? "Criar a primeira categoria"
-								: "Revisar itens"}
-						</p>
-						<p className="mt-2 text-muted-foreground text-sm">
-							{categories.length === 0
-								? "Comece pela estrutura principal do cardapio."
-								: "Com a estrutura pronta, ajuste os itens de cada grupo."}
+							{categories.length === 0 ? "Criar categoria" : "Revisar itens"}
 						</p>
 					</div>
 				</div>
 
 				<div className="grid gap-6 lg:grid-cols-[0.7fr_1.3fr]">
-					<Card className="border-primary/15 bg-card/88 shadow-primary/10 shadow-sm">
+					<Card className="border-border/70 bg-card/90 shadow-sm">
 						<CardHeader>
-							<CardTitle>Adicionar categoria</CardTitle>
-							<CardDescription>
-								Crie um grupo claro para os hospedes encontrarem os itens com
-								facilidade.
-							</CardDescription>
+							<CardTitle>Nova categoria</CardTitle>
+							<CardDescription>Crie um grupo principal.</CardDescription>
 						</CardHeader>
 						<CardContent className="space-y-4">
 							<div className="space-y-2">
@@ -197,37 +173,34 @@ export function StaffMenuPage() {
 								}
 							>
 								<PlusIcon className="size-4" />
-								Criar categoria
+								Salvar categoria
 							</Button>
 							<Button
 								render={<Link href="/staff/menu/items" />}
 								variant="outline"
 							>
 								<PackageIcon className="size-4" />
-								Ir para itens
+								Abrir itens
 							</Button>
 						</CardContent>
 					</Card>
 
-					<Card className="border-primary/15 bg-card/88 shadow-primary/10 shadow-sm">
+					<Card className="border-border/70 bg-card/90 shadow-sm">
 						<CardHeader>
 							<CardTitle>Estrutura atual</CardTitle>
-							<CardDescription>
-								Ajuste a ordem e a visibilidade sem perder a leitura do
-								conjunto.
-							</CardDescription>
+							<CardDescription>Ordem e visibilidade.</CardDescription>
 						</CardHeader>
 						<CardContent className="space-y-3">
 							{categories.map((category, index) => (
 								<div
-									className="flex flex-col gap-3 rounded-2xl border border-primary/10 bg-primary/[0.03] p-4"
+									className="flex flex-col gap-3 rounded-[1.25rem] border border-border/70 bg-background/60 p-4"
 									key={category.id}
 								>
 									<div className="flex flex-wrap items-center justify-between gap-3">
 										<div>
 											<p className="font-medium">{category.name}</p>
 											<p className="text-muted-foreground text-sm">
-												Sort order {category.sortOrder}
+												Ordem {category.sortOrder}
 											</p>
 										</div>
 										<div className="flex gap-2">
@@ -279,8 +252,8 @@ export function StaffMenuPage() {
 										</div>
 									</div>
 									<div className="flex flex-wrap gap-2">
-										<div className="rounded-full border border-primary/15 bg-background/80 px-3 py-1 text-muted-foreground text-xs">
-											Estado: {category.active ? "Ativa" : "Inativa"}
+										<div className="rounded-full border border-border/70 bg-background/80 px-3 py-1 text-muted-foreground text-xs">
+											{category.active ? "Ativa" : "Inativa"}
 										</div>
 										<Button
 											onClick={() =>
@@ -303,8 +276,8 @@ export function StaffMenuPage() {
 								</div>
 							))}
 							{categories.length === 0 ? (
-								<div className="rounded-2xl border border-primary/20 border-dashed bg-primary/[0.03] px-5 py-6 text-muted-foreground text-sm">
-									Crie a primeira categoria para estruturar o cardapio do hotel.
+								<div className="rounded-[1.25rem] border border-border/70 border-dashed bg-background/60 px-5 py-6 text-muted-foreground text-sm">
+									Crie a primeira categoria.
 								</div>
 							) : null}
 							{pagination ? (

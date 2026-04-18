@@ -47,14 +47,14 @@ describe("GuestOrdersPageView", () => {
 			}),
 		);
 
-		expect(html).toContain("Acompanhe seus pedidos");
+		expect(html).toContain("Pedidos da sua estadia");
 		expect(
 			html.indexOf(
-				'Em andamento</h2><p class="text-muted-foreground text-sm">Pedidos que ainda estao sendo preparados, confirmados ou a caminho.</p>',
+				'Agora</h2><p class="max-w-md text-muted-foreground text-sm">Pedidos que ainda estao sendo preparados, confirmados ou a caminho do quarto.</p>',
 			),
 		).toBeLessThan(
 			html.indexOf(
-				'Historico</h2><p class="text-muted-foreground text-sm">Pedidos entregues ou cancelados durante esta sessao do hospede.</p>',
+				'Antes</h2><p class="max-w-md text-muted-foreground text-sm">Pedidos finalizados nesta sessao para voce consultar novamente quando precisar.</p>',
 			),
 		);
 		expect(html).toContain("Acompanhar");

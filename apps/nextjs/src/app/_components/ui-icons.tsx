@@ -72,6 +72,15 @@ export function GridIcon({ className }: IconProps) {
 	);
 }
 
+export function CopyIcon({ className }: IconProps) {
+	return (
+		<Svg className={className}>
+			<rect height="11" rx="2" width="11" x="9" y="9" />
+			<path d="M15 5H7a2 2 0 0 0-2 2v8" />
+		</Svg>
+	);
+}
+
 export function LogoutIcon({ className }: IconProps) {
 	return (
 		<Svg className={className}>
@@ -92,6 +101,16 @@ export function PackageIcon({ className }: IconProps) {
 	);
 }
 
+export function LinkIcon({ className }: IconProps) {
+	return (
+		<Svg className={className}>
+			<path d="M10.5 13.5 13.5 10.5" />
+			<path d="M8 16a3.5 3.5 0 0 1 0-5l2-2a3.5 3.5 0 1 1 5 5l-.8.8" />
+			<path d="M16 8a3.5 3.5 0 0 1 0 5l-2 2a3.5 3.5 0 1 1-5-5l.8-.8" />
+		</Svg>
+	);
+}
+
 export function PlusIcon({ className }: IconProps) {
 	return (
 		<Svg className={className}>
@@ -106,6 +125,30 @@ export function RefreshIcon({ className }: IconProps) {
 		<Svg className={className}>
 			<path d="M20 11a8 8 0 1 0 2 5.5" />
 			<path d="M20 4v7h-7" />
+		</Svg>
+	);
+}
+
+export function QrCodeIcon({ className }: IconProps) {
+	return (
+		<Svg className={className}>
+			<rect height="6" rx="1" width="6" x="4" y="4" />
+			<rect height="6" rx="1" width="6" x="14" y="4" />
+			<rect height="6" rx="1" width="6" x="4" y="14" />
+			<path d="M15 14h2v2" />
+			<path d="M19 14v3" />
+			<path d="M14 19h3" />
+			<path d="M18 18h2v2" />
+		</Svg>
+	);
+}
+
+export function SaveIcon({ className }: IconProps) {
+	return (
+		<Svg className={className}>
+			<path d="M5 5.5A1.5 1.5 0 0 1 6.5 4h9.2L19 7.3v10.2a1.5 1.5 0 0 1-1.5 1.5h-11A1.5 1.5 0 0 1 5 17.5z" />
+			<path d="M8 4v5h7V4" />
+			<path d="M8.5 19v-5h7v5" />
 		</Svg>
 	);
 }
@@ -167,6 +210,31 @@ export function UtensilsIcon({ className }: IconProps) {
 			<path d="M7.5 12v8" />
 			<path d="M16 4c1.7 2 1.7 5 0 7v9" />
 			<path d="M13 4v4c0 1.7 1.3 3 3 3" />
+		</Svg>
+	);
+}
+
+export function BedIcon({ className }: IconProps) {
+	return (
+		<Svg className={className}>
+			<path d="M4 11.5h16V18" />
+			<path d="M4 18V9.5A1.5 1.5 0 0 1 5.5 8H9a2 2 0 0 1 2 2v1.5" />
+			<path d="M13 11.5V10a2 2 0 0 1 2-2h3.5A1.5 1.5 0 0 1 20 9.5V18" />
+			<path d="M4 15h16" />
+		</Svg>
+	);
+}
+
+export function BuildingIcon({ className }: IconProps) {
+	return (
+		<Svg className={className}>
+			<path d="M6 20V5.5A1.5 1.5 0 0 1 7.5 4h9A1.5 1.5 0 0 1 18 5.5V20" />
+			<path d="M4 20h16" />
+			<path d="M9 8h1" />
+			<path d="M14 8h1" />
+			<path d="M9 12h1" />
+			<path d="M14 12h1" />
+			<path d="M11 20v-4h2v4" />
 		</Svg>
 	);
 }

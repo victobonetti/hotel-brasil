@@ -264,29 +264,25 @@ export function StaffMenuItemsPage() {
 	};
 
 	return (
-		<PageShell containerClassName="max-w-6xl gap-8" sidebar={<StaffNav />}>
+		<PageShell containerClassName="max-w-6xl gap-6" sidebar={<StaffNav />}>
 			<SectionHeader
 				actions={
 					<Button render={<Link href="/staff/menu" />} variant="outline">
 						<RefreshIcon className="size-4" />
-						Voltar para categorias
+						Categorias
 					</Button>
 				}
-				badge="Administracao do catalogo"
-				description="Cadastre itens com preco, tempo e imagem em um fluxo direto, mantendo a disponibilidade sempre clara para a equipe."
+				badge="Cardapio"
+				description="Itens, preco, imagem e disponibilidade."
 				supportingPanel={
-					<div className="rounded-[2rem] border border-primary/15 bg-card/84 p-6 shadow-primary/10 shadow-sm">
-						<p className="font-medium text-primary text-xs uppercase tracking-[0.18em]">
-							O que manter consistente
+					<div className="space-y-0.5">
+						<p className="font-medium text-sm">Padrao</p>
+						<p className="text-muted-foreground text-sm">
+							Nome curto. Imagem limpa.
 						</p>
-						<div className="mt-3 space-y-3 text-muted-foreground text-sm leading-6">
-							<p>Use nomes curtos e faceis de escanear.</p>
-							<p>Mantenha imagens leves e objetivas.</p>
-							<p>Revise disponibilidade sempre que algo sair da operacao.</p>
-						</div>
 					</div>
 				}
-				title="Itens do cardapio"
+				title="Itens"
 			/>
 
 			<StaffHotelGuard
@@ -296,47 +292,31 @@ export function StaffMenuItemsPage() {
 				state={state}
 			>
 				<div className="grid gap-3 md:grid-cols-3">
-					<div className="rounded-[1.75rem] border border-primary/15 bg-card/88 p-5 shadow-primary/10 shadow-sm">
-						<p className="font-medium text-primary text-sm">Itens listados</p>
+					<div className="rounded-[1.4rem] border border-border/70 bg-card/90 p-5 shadow-sm">
+						<p className="font-medium text-primary text-sm">Itens</p>
 						<p className="mt-2 font-semibold text-3xl">
 							{pagination?.totalItems ?? 0}
 						</p>
-						<p className="mt-2 text-muted-foreground text-sm">
-							Itens cadastrados nesta pagina administrativa.
-						</p>
 					</div>
-					<div className="rounded-[1.75rem] border border-primary/15 bg-card/88 p-5 shadow-primary/10 shadow-sm">
-						<p className="font-medium text-primary text-sm">
-							Disponiveis agora
-						</p>
+					<div className="rounded-[1.4rem] border border-border/70 bg-card/90 p-5 shadow-sm">
+						<p className="font-medium text-primary text-sm">Disponiveis</p>
 						<p className="mt-2 font-semibold text-3xl">
 							{items.filter((item) => item.available).length}
 						</p>
-						<p className="mt-2 text-muted-foreground text-sm">
-							Itens prontos para aparecer no cardapio do hospede.
-						</p>
 					</div>
-					<div className="rounded-[1.75rem] border border-primary/15 bg-card/88 p-5 shadow-primary/10 shadow-sm">
-						<p className="font-medium text-primary text-sm">
-							Categorias prontas
-						</p>
+					<div className="rounded-[1.4rem] border border-border/70 bg-card/90 p-5 shadow-sm">
+						<p className="font-medium text-primary text-sm">Categorias</p>
 						<p className="mt-2 font-semibold text-3xl">
 							{categoryOptionsQuery.data?.length ?? 0}
-						</p>
-						<p className="mt-2 text-muted-foreground text-sm">
-							Grupos disponiveis para receber novos itens.
 						</p>
 					</div>
 				</div>
 
 				<div className="grid gap-6 lg:grid-cols-[0.78fr_1.22fr]">
-					<Card className="border-primary/15 bg-card/88 shadow-primary/10 shadow-sm">
+					<Card className="border-border/70 bg-card/90 shadow-sm">
 						<CardHeader>
-							<CardTitle>Adicionar item</CardTitle>
-							<CardDescription>
-								Preencha o basico primeiro e complemente com imagem quando fizer
-								sentido.
-							</CardDescription>
+							<CardTitle>Novo item</CardTitle>
+							<CardDescription>Preencha o basico e publique.</CardDescription>
 						</CardHeader>
 						<CardContent className="space-y-4">
 							<div className="space-y-2">
@@ -410,8 +390,7 @@ export function StaffMenuItemsPage() {
 											type="file"
 										/>
 										<p className="text-muted-foreground text-xs">
-											A imagem sera recortada para 200x200 e comprimida antes de
-											salvar.
+											Recorte automatico em 200x200.
 										</p>
 										<div className="flex flex-wrap gap-2">
 											<Button
@@ -459,23 +438,20 @@ export function StaffMenuItemsPage() {
 									onClick={handleCreateItem}
 								>
 									<PlusIcon className="size-4" />
-									Criar item
+									Salvar item
 								</Button>
 								<Button render={<Link href="/staff/menu" />} variant="outline">
 									<RefreshIcon className="size-4" />
-									Voltar as categorias
+									Categorias
 								</Button>
 							</div>
 						</CardContent>
 					</Card>
 
-					<Card className="border-primary/15 bg-card/88 shadow-primary/10 shadow-sm">
+					<Card className="border-border/70 bg-card/90 shadow-sm">
 						<CardHeader>
-							<CardTitle>Itens cadastrados</CardTitle>
-							<CardDescription>
-								Revise disponibilidade, capa e informacoes principais sem sair
-								da lista.
-							</CardDescription>
+							<CardTitle>Lista de itens</CardTitle>
+							<CardDescription>Disponibilidade e imagem.</CardDescription>
 						</CardHeader>
 						<CardContent className="space-y-3">
 							{itemActionError ? (
@@ -490,7 +466,7 @@ export function StaffMenuItemsPage() {
 								return (
 									<div
 										className={cn(
-											"relative flex flex-col gap-4 rounded-2xl border border-primary/10 bg-primary/[0.03] p-4 transition-opacity",
+											"relative flex flex-col gap-4 rounded-[1.25rem] border border-border/70 bg-background/60 p-4 transition-opacity",
 											loadingState.itemClassName,
 										)}
 										key={item.id}
@@ -542,7 +518,7 @@ export function StaffMenuItemsPage() {
 												{item.available ? "Desativar" : "Ativar"}
 											</Button>
 										</div>
-										<div className="flex flex-wrap items-center gap-3 rounded-2xl border border-primary/10 bg-background/70 p-3">
+										<div className="flex flex-wrap items-center gap-3 rounded-[1.1rem] border border-border/70 bg-background/80 p-3">
 											<Input
 												accept="image/*"
 												className="sr-only"
@@ -592,8 +568,8 @@ export function StaffMenuItemsPage() {
 								);
 							})}
 							{items.length === 0 ? (
-								<div className="rounded-2xl border border-primary/20 border-dashed bg-primary/[0.03] px-5 py-6 text-muted-foreground text-sm">
-									Adicione o primeiro item para comecar a compor o cardapio.
+								<div className="rounded-[1.25rem] border border-border/70 border-dashed bg-background/60 px-5 py-6 text-muted-foreground text-sm">
+									Adicione o primeiro item.
 								</div>
 							) : null}
 							{pagination ? (

@@ -1,7 +1,6 @@
 "use client";
 
 import { buttonVariants } from "@nowait24/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@nowait24/ui/card";
 import { cn } from "@nowait24/ui/lib/utils";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -10,17 +9,17 @@ import { GridIcon, PackageIcon, UtensilsIcon } from "./ui-icons";
 export function getStaffNavItems() {
 	return [
 		{
-			description: "Acompanhe a fila e avance cada pedido com clareza.",
+			description: "Fila e andamento",
 			href: "/staff/orders" as const,
 			label: "Pedidos",
 		},
 		{
-			description: "Organize categorias e itens sem perder o contexto.",
+			description: "Categorias e itens",
 			href: "/staff/menu" as const,
 			label: "Cardapio",
 		},
 		{
-			description: "Mantenha quartos e acessos publicos prontos para uso.",
+			description: "Quartos e acesso",
 			href: "/staff/rooms" as const,
 			label: "Quartos",
 		},
@@ -41,87 +40,73 @@ export function StaffNav() {
 	} as const;
 
 	return (
-		<Card className="overflow-hidden border-primary/15 bg-card/88 shadow-lg shadow-primary/10 backdrop-blur-sm">
-			<CardHeader className="border-border/60 border-b bg-primary/[0.04]">
-				<div className="space-y-3">
-					<div className="inline-flex w-fit rounded-full border border-primary/15 bg-background/80 px-3 py-1 font-medium text-primary text-xs uppercase tracking-[0.18em]">
-						Area da equipe
-					</div>
-					<div className="space-y-1.5">
-						<CardTitle className="flex items-center gap-2">
-							<GridIcon className="size-4" />
-							Painel administrativo
-						</CardTitle>
-						<p className="text-muted-foreground text-sm">
-							Escolha uma area e siga um fluxo por vez.
-						</p>
-					</div>
-					<div className="rounded-2xl border border-primary/12 bg-background/80 p-3">
-						<p className="font-medium text-sm">Agora voce esta em</p>
-						<p className="mt-1 text-muted-foreground text-sm">
-							{items.find((item) => isStaffNavItemActive(pathname, item.href))
-								?.label ?? "Painel da equipe"}
-						</p>
-					</div>
-				</div>
-			</CardHeader>
-			<CardContent className="space-y-4 pt-6">
-				<div className="space-y-2">
-					<p className="font-medium text-primary text-xs uppercase tracking-[0.18em]">
-						Areas principais
-					</p>
-					{items.map((item) => {
-						const isActive = isStaffNavItemActive(pathname, item.href);
-						const Icon = icons[item.href];
+		<>
+			<div className="flex items-center gap-2 overflow-x-auto rounded-[1.4rem] border border-border/70 bg-card/88 p-2 shadow-sm lg:hidden">
+				{items.map((item) => {
+					const isActive = isStaffNavItemActive(pathname, item.href);
+					const Icon = icons[item.href];
 
-						return (
-							<Link
-								className={cn(
-									buttonVariants({
-										className:
-											"h-auto w-full justify-start rounded-[1.4rem] px-4 py-3.5 text-left shadow-sm",
-										variant: isActive ? "default" : "outline",
-									}),
-									"flex-col items-start gap-2 whitespace-normal",
-								)}
-								href={item.href}
-								key={item.href}
-							>
-								<span className="flex items-center gap-2">
-									<span
+					return (
+						<Link
+							className={cn(
+								buttonVariants({
+									className: "h-11 min-w-0 rounded-[1rem] px-4 shadow-none",
+									variant: isActive ? "default" : "ghost",
+								}),
+								"gap-2",
+							)}
+							href={item.href}
+							key={item.href}
+						>
+							<Icon className="size-4" />
+							<span>{item.label}</span>
+						</Link>
+					);
+				})}
+			</div>
+
+			<div className="fixed inset-y-0 left-0 z-20 hidden w-24 border-border/70 border-r bg-background/94 lg:flex lg:flex-col lg:items-center lg:justify-between lg:py-6">
+				<div className="flex flex-col items-center gap-4">
+					<div className="flex size-12 items-center justify-center rounded-[1.35rem] bg-primary text-primary-foreground shadow-sm">
+						<GridIcon className="size-5" />
+					</div>
+					<div className="flex flex-col items-center gap-3">
+						{items.map((item) => {
+							const isActive = isStaffNavItemActive(pathname, item.href);
+							const Icon = icons[item.href];
+
+							return (
+								<div className="group relative" key={item.href}>
+									<Link
+										aria-label={item.label}
 										className={cn(
-											"rounded-full p-1.5",
-											isActive
-												? "bg-primary-foreground/15"
-												: "bg-primary/10 text-primary",
+											buttonVariants({
+												className:
+													"size-12 rounded-[1.25rem] border-0 px-0 shadow-none",
+												variant: isActive ? "default" : "ghost",
+											}),
 										)}
+										href={item.href}
+										title={item.label}
 									>
-										<Icon className="size-3.5" />
-									</span>
-									<span>{item.label}</span>
-								</span>
-								<span
-									className={cn(
-										"text-xs leading-5",
-										isActive
-											? "text-primary-foreground/80"
-											: "text-muted-foreground",
-									)}
-								>
-									{item.description}
-								</span>
-							</Link>
-						);
-					})}
+										<Icon className="size-4.5" />
+										<span className="sr-only">{item.label}</span>
+									</Link>
+									<div className="pointer-events-none absolute top-1/2 left-full ml-3 -translate-y-1/2 rounded-full border border-border/70 bg-background/96 px-3 py-1.5 font-medium text-[11px] uppercase tracking-[0.16em] text-foreground opacity-0 shadow-sm transition duration-150 group-hover:opacity-100">
+										{item.label}
+									</div>
+								</div>
+							);
+						})}
+					</div>
 				</div>
-				<div className="rounded-2xl border border-primary/10 bg-primary/[0.03] p-4">
-					<p className="font-medium text-sm">Ritmo recomendado</p>
-					<p className="mt-1 text-muted-foreground text-sm leading-6">
-						Primeiro acompanhe os pedidos, depois ajuste cardapio e quartos
-						quando a operacao estiver tranquila.
-					</p>
+
+				<div className="flex flex-col items-center gap-2">
+					<div className="text-muted-foreground text-[10px] uppercase tracking-[0.2em] [writing-mode:vertical-rl]">
+						Hotel
+					</div>
 				</div>
-			</CardContent>
-		</Card>
+			</div>
+		</>
 	);
 }

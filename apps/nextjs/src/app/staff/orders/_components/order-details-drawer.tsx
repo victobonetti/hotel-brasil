@@ -104,13 +104,10 @@ export function OrderDetailsDrawer(props: {
 
 	if (!props.orderId) {
 		return (
-			<Card className="border-primary/15 bg-card/88 shadow-primary/10 shadow-sm">
+			<Card className="border-border/70 bg-card/90 shadow-sm">
 				<CardHeader>
 					<CardTitle>Detalhes do pedido</CardTitle>
-					<CardDescription>
-						Selecione um pedido da fila ou do historico para ver itens,
-						andamento e acoes.
-					</CardDescription>
+					<CardDescription>Selecione um pedido.</CardDescription>
 				</CardHeader>
 			</Card>
 		);
@@ -118,7 +115,7 @@ export function OrderDetailsDrawer(props: {
 
 	if (orderDetailsQuery.isLoading) {
 		return (
-			<Card className="border-primary/15 bg-card/88 shadow-primary/10 shadow-sm">
+			<Card className="border-border/70 bg-card/90 shadow-sm">
 				<CardHeader>
 					<CardTitle>Carregando pedido</CardTitle>
 				</CardHeader>
@@ -149,21 +146,20 @@ export function OrderDetailsDrawer(props: {
 	});
 
 	return (
-		<Card className="border-primary/15 bg-card/88 shadow-primary/10 shadow-sm">
-			<CardHeader className="border-border/60 border-b">
+		<Card className="border-border/70 bg-card/90 shadow-sm">
+			<CardHeader className="border-border/60 border-b pb-4">
 				<div className="space-y-3">
 					<div className="flex flex-wrap items-start justify-between gap-3">
 						<div className="space-y-1">
 							<CardTitle>{orderDisplay.orderTitle}</CardTitle>
 							<CardDescription>
-								{orderDisplay.timingLabel} • Status atual:{" "}
-								{orderDisplay.statusLabel}
+								{orderDisplay.timingLabel} - {orderDisplay.statusLabel}
 							</CardDescription>
 						</div>
 						<Badge variant="outline">{orderDisplay.statusLabel}</Badge>
 					</div>
 					<div className="grid gap-3 sm:grid-cols-2">
-						<div className="rounded-2xl border border-primary/10 bg-primary/[0.03] p-4">
+						<div className="rounded-[1.25rem] border border-border/70 bg-background/70 p-4">
 							<p className="text-muted-foreground text-xs uppercase tracking-[0.18em]">
 								Quarto
 							</p>
@@ -172,9 +168,9 @@ export function OrderDetailsDrawer(props: {
 									orderDetailsQuery.data.roomId}
 							</p>
 						</div>
-						<div className="rounded-2xl border border-primary/10 bg-primary/[0.03] p-4">
+						<div className="rounded-[1.25rem] border border-border/70 bg-background/70 p-4">
 							<p className="text-muted-foreground text-xs uppercase tracking-[0.18em]">
-								Itens no pedido
+								Itens
 							</p>
 							<p className="mt-2 font-medium">
 								{orderDetailsQuery.data.items.length}
@@ -183,12 +179,12 @@ export function OrderDetailsDrawer(props: {
 					</div>
 				</div>
 			</CardHeader>
-			<CardContent className="space-y-5 pt-6">
+			<CardContent className="space-y-5 pt-5">
 				<div className="space-y-3">
-					<p className="font-medium text-primary text-sm">Itens do pedido</p>
+					<p className="font-medium text-primary text-sm">Itens</p>
 					{paginatedItems.items.map((item) => (
 						<div
-							className="rounded-2xl border border-primary/10 bg-primary/[0.03] p-4"
+							className="rounded-[1.25rem] border border-border/70 bg-background/60 p-4"
 							key={item.id}
 						>
 							<p className="font-medium">
@@ -214,13 +210,11 @@ export function OrderDetailsDrawer(props: {
 				/>
 
 				<div className="space-y-2">
-					<p className="font-medium text-primary text-sm">
-						Andamento deste pedido
-					</p>
+					<p className="font-medium text-primary text-sm">Historico</p>
 					<div className="space-y-2">
 						{paginatedHistory.items.map((entry) => (
 							<div
-								className="rounded-2xl border border-primary/10 bg-background/80 px-4 py-3 text-sm"
+								className="rounded-[1.1rem] border border-border/70 bg-background/80 px-4 py-3 text-sm"
 								key={entry.id}
 							>
 								{buildStaffOrderHistoryLabel({
