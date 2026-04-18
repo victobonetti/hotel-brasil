@@ -1,6 +1,7 @@
 import type { AppRouter } from "@finchat/api";
 import { appRouter, createTRPCContext } from "@finchat/api";
-import { dehydrate, HydrationBoundary } from "@tanstack/react-query";
+import { dehydrate } from "@tanstack/react-query";
+import { HydrationBoundary } from "./hydrate-client";
 import type { TRPCQueryOptions } from "@trpc/tanstack-react-query";
 import { createTRPCOptionsProxy } from "@trpc/tanstack-react-query";
 import { headers } from "next/headers";
