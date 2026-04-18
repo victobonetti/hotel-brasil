@@ -4,7 +4,10 @@ import { Badge } from "@finchat/ui/badge";
 import { Button } from "@finchat/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@finchat/ui/card";
 
-import { getOrderDisplayMeta } from "~/app/_components/order-display";
+import {
+	getStaffOrderDisplayMeta,
+	getStaffOrderStatusLabel,
+} from "./staff-order-display";
 
 interface OrderQueueItem {
 	id: string;
@@ -37,21 +40,25 @@ function formatDate(date: Date) {
 }
 
 export function OrderQueueBoard(props: {
+	emptyMessage: string;
 	onSelect: (orderId: string) => void;
 	orders: Array<OrderQueueItem>;
 	selectedOrderId: string | null;
+	title: string;
 }) {
 	return (
 		<Card className="border-primary/15 bg-card/88 shadow-primary/10 shadow-sm">
 			<CardHeader className="border-border/60 border-b">
-				<CardTitle>Fila operacional</CardTitle>
+				<CardTitle>{props.title}</CardTitle>
 			</CardHeader>
 			<CardContent className="space-y-3 pt-6">
 				{props.orders.map((order) => {
-					const orderDisplay = getOrderDisplayMeta({
+					const orderDisplay = getStaffOrderDisplayMeta({
 						orderId: order.id,
+						placedAt: order.placedAt,
 						roomId: order.roomId,
 						roomLabel: order.room?.label,
+						status: order.status,
 					});
 
 					return (
@@ -66,12 +73,14 @@ export function OrderQueueBoard(props: {
 							<div className="flex w-full flex-col gap-2">
 								<div className="flex items-center justify-between gap-3">
 									<div>
-										<p className="font-medium">{orderDisplay.roomReference}</p>
+										<p className="font-medium">{orderDisplay.orderTitle}</p>
 										<p className="text-muted-foreground text-sm">
-											{orderDisplay.orderTitle} • {formatDate(order.placedAt)}
+											{orderDisplay.timingLabel} • {formatDate(order.placedAt)}
 										</p>
 									</div>
-									<Badge variant="outline">{order.status}</Badge>
+									<Badge variant="outline">
+										{getStaffOrderStatusLabel(order.status)}
+									</Badge>
 								</div>
 								<p className="text-sm">
 									{formatPrice(order.totalAmountInCents)}
@@ -82,7 +91,7 @@ export function OrderQueueBoard(props: {
 				})}
 				{props.orders.length === 0 ? (
 					<div className="rounded-2xl border border-primary/20 border-dashed bg-primary/[0.03] px-5 py-6 text-muted-foreground text-sm">
-						Nao ha pedidos ativos na fila neste momento.
+						{props.emptyMessage}
 					</div>
 				) : null}
 			</CardContent>

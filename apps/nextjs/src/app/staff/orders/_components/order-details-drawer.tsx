@@ -1,6 +1,6 @@
 "use client";
 
-import { Button } from "@finchat/ui/button";
+import { Badge } from "@finchat/ui/badge";
 import {
 	Card,
 	CardContent,
@@ -22,6 +22,10 @@ import {
 } from "~/app/_components/pagination-state";
 import { useTRPC } from "~/trpc/react";
 import { OrderActionButtons } from "./order-action-buttons";
+import {
+	buildStaffOrderHistoryLabel,
+	getStaffOrderDisplayMeta,
+} from "./staff-order-display";
 
 export function OrderDetailsDrawer(props: {
 	onRefresh?: () => void;
@@ -104,7 +108,8 @@ export function OrderDetailsDrawer(props: {
 				<CardHeader>
 					<CardTitle>Detalhes do pedido</CardTitle>
 					<CardDescription>
-						Selecione um pedido da fila para ver itens, historico e acoes.
+						Selecione um pedido da fila ou do historico para ver itens,
+						andamento e acoes.
 					</CardDescription>
 				</CardHeader>
 			</Card>
@@ -135,21 +140,52 @@ export function OrderDetailsDrawer(props: {
 		);
 	}
 
+	const orderDisplay = getStaffOrderDisplayMeta({
+		orderId: orderDetailsQuery.data.id,
+		placedAt: orderDetailsQuery.data.placedAt,
+		roomId: orderDetailsQuery.data.roomId,
+		roomLabel: orderDetailsQuery.data.room?.label,
+		status: orderDetailsQuery.data.status,
+	});
+
 	return (
 		<Card className="border-primary/15 bg-card/88 shadow-primary/10 shadow-sm">
 			<CardHeader className="border-border/60 border-b">
-				<div className="space-y-1">
-					<CardTitle>Pedido {orderDetailsQuery.data.id}</CardTitle>
-					<CardDescription>
-						Quarto{" "}
-						{orderDetailsQuery.data.room?.label ??
-							orderDetailsQuery.data.roomId}{" "}
-						- status atual {orderDetailsQuery.data.status}
-					</CardDescription>
+				<div className="space-y-3">
+					<div className="flex flex-wrap items-start justify-between gap-3">
+						<div className="space-y-1">
+							<CardTitle>{orderDisplay.orderTitle}</CardTitle>
+							<CardDescription>
+								{orderDisplay.timingLabel} • Status atual:{" "}
+								{orderDisplay.statusLabel}
+							</CardDescription>
+						</div>
+						<Badge variant="outline">{orderDisplay.statusLabel}</Badge>
+					</div>
+					<div className="grid gap-3 sm:grid-cols-2">
+						<div className="rounded-2xl border border-primary/10 bg-primary/[0.03] p-4">
+							<p className="text-muted-foreground text-xs uppercase tracking-[0.18em]">
+								Quarto
+							</p>
+							<p className="mt-2 font-medium">
+								{orderDetailsQuery.data.room?.label ??
+									orderDetailsQuery.data.roomId}
+							</p>
+						</div>
+						<div className="rounded-2xl border border-primary/10 bg-primary/[0.03] p-4">
+							<p className="text-muted-foreground text-xs uppercase tracking-[0.18em]">
+								Itens no pedido
+							</p>
+							<p className="mt-2 font-medium">
+								{orderDetailsQuery.data.items.length}
+							</p>
+						</div>
+					</div>
 				</div>
 			</CardHeader>
 			<CardContent className="space-y-5 pt-6">
 				<div className="space-y-3">
+					<p className="font-medium text-primary text-sm">Itens do pedido</p>
 					{paginatedItems.items.map((item) => (
 						<div
 							className="rounded-2xl border border-primary/10 bg-primary/[0.03] p-4"
@@ -159,7 +195,9 @@ export function OrderDetailsDrawer(props: {
 								{item.quantity}x {item.itemNameSnapshot}
 							</p>
 							{item.notes ? (
-								<p className="text-muted-foreground text-sm">{item.notes}</p>
+								<p className="mt-1 text-muted-foreground text-sm">
+									Observacao: {item.notes}
+								</p>
 							) : null}
 						</div>
 					))}
@@ -176,14 +214,20 @@ export function OrderDetailsDrawer(props: {
 				/>
 
 				<div className="space-y-2">
-					<p className="font-medium text-primary text-sm">Historico</p>
+					<p className="font-medium text-primary text-sm">
+						Andamento deste pedido
+					</p>
 					<div className="space-y-2">
 						{paginatedHistory.items.map((entry) => (
 							<div
-								className="rounded-xl border border-primary/10 bg-background/80 px-3 py-2 text-sm"
+								className="rounded-2xl border border-primary/10 bg-background/80 px-4 py-3 text-sm"
 								key={entry.id}
 							>
-								{entry.toStatus}
+								{buildStaffOrderHistoryLabel({
+									changedAt: entry.changedAt,
+									fromStatus: entry.fromStatus,
+									toStatus: entry.toStatus,
+								})}
 							</div>
 						))}
 					</div>
@@ -192,10 +236,6 @@ export function OrderDetailsDrawer(props: {
 						pagination={paginatedHistory.pagination}
 					/>
 				</div>
-
-				<Button onClick={props.onRefresh} variant="outline">
-					Atualizar fila
-				</Button>
 			</CardContent>
 		</Card>
 	);

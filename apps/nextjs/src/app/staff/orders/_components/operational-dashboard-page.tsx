@@ -39,17 +39,24 @@ export function OperationalDashboardPage() {
 		}),
 		refetchInterval: 5000,
 	});
+	const recentOrdersQuery = useQuery({
+		...trpc.staffOrder.listRecentOrders.queryOptions({
+			page: 1,
+		}),
+		refetchInterval: 5000,
+	});
 
 	let state: "loading" | "needs-auth" | "unauthorized" | undefined;
-	if (activeOrdersQuery.isLoading) {
+	if (activeOrdersQuery.isLoading || recentOrdersQuery.isLoading) {
 		state = "loading";
 	} else if (activeOrdersQuery.error?.data?.code === "UNAUTHORIZED") {
 		state = "needs-auth";
-	} else if (activeOrdersQuery.error) {
+	} else if (activeOrdersQuery.error || recentOrdersQuery.error) {
 		state = "unauthorized";
 	}
 
 	const activeOrders = activeOrdersQuery.data?.items ?? [];
+	const recentOrders = recentOrdersQuery.data?.items ?? [];
 	const pagination = activeOrdersQuery.data?.pagination;
 	const totalRevenueInCents = activeOrders.reduce(
 		(total, order) => total + order.totalAmountInCents,
@@ -94,7 +101,7 @@ export function OperationalDashboardPage() {
 		<PageShell sidebar={<StaffNav />}>
 			<SectionHeader
 				badge="Operacao do hotel"
-				description="Acompanhe a fila ativa, abra detalhes com mais rapidez e avance os pedidos do seu hotel com uma leitura mais clara da operacao."
+				description="Acompanhe a fila ativa, consulte pedidos concluidos recentes e avance a operacao com uma leitura mais clara do andamento."
 				title="Painel operacional de pedidos"
 			/>
 
@@ -110,10 +117,10 @@ export function OperationalDashboardPage() {
 						</p>
 					</div>
 					<div className="rounded-2xl border border-primary/15 bg-card/88 p-4 shadow-primary/10 shadow-sm">
-						<p className="font-medium text-primary text-sm">Pedido em foco</p>
-						<p className="mt-2 font-semibold text-3xl">
-							{selectedOrderId ? 1 : 0}
+						<p className="font-medium text-primary text-sm">
+							Historico recente
 						</p>
+						<p className="mt-2 font-semibold text-3xl">{recentOrders.length}</p>
 					</div>
 					<div className="rounded-2xl border border-primary/15 bg-card/88 p-4 shadow-primary/10 shadow-sm">
 						<p className="font-medium text-primary text-sm">
@@ -128,9 +135,18 @@ export function OperationalDashboardPage() {
 				<div className="grid gap-6 lg:grid-cols-[0.95fr_1.05fr]">
 					<div className="space-y-3">
 						<OrderQueueBoard
+							emptyMessage="Nao ha pedidos ativos na fila neste momento."
 							onSelect={setSelectedOrderId}
 							orders={activeOrders}
 							selectedOrderId={selectedOrderId}
+							title="Fila operacional"
+						/>
+						<OrderQueueBoard
+							emptyMessage="Nenhum pedido concluido apareceu no historico recente."
+							onSelect={setSelectedOrderId}
+							orders={recentOrders}
+							selectedOrderId={selectedOrderId}
+							title="Historico recente"
 						/>
 						{pagination ? <PaginationControls pagination={pagination} /> : null}
 					</div>
@@ -139,6 +155,11 @@ export function OperationalDashboardPage() {
 							void queryClient.invalidateQueries({
 								queryKey: trpc.staffOrder.listActiveOrders.queryKey({
 									page: currentPage,
+								}),
+							});
+							void queryClient.invalidateQueries({
+								queryKey: trpc.staffOrder.listRecentOrders.queryKey({
+									page: 1,
 								}),
 							});
 							if (selectedOrderId) {

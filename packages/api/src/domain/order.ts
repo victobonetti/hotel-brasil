@@ -248,21 +248,44 @@ export function listOperationalOrders<
 	TOrder extends { hotelId: string; placedAt: Date; status: OrderStatus },
 >(
 	orders: Array<TOrder>,
-	filters: { hotelId: string; includeCompleted?: boolean },
+	filters: {
+		hotelId: string;
+		sortDirection?: "asc" | "desc";
+		statusGroup?: "active" | "all" | "completed";
+	},
 ) {
+	const statuses = getOperationalOrderStatuses(filters.statusGroup ?? "active");
+
 	return orders
 		.filter((order) => {
 			if (order.hotelId !== filters.hotelId) {
 				return false;
 			}
 
-			if (filters.includeCompleted) {
+			if (statuses === null) {
 				return true;
 			}
 
-			return order.status !== "cancelled" && order.status !== "delivered";
+			return statuses.includes(order.status);
 		})
-		.sort((left, right) => left.placedAt.getTime() - right.placedAt.getTime());
+		.sort((left, right) => {
+			const diff = left.placedAt.getTime() - right.placedAt.getTime();
+			return filters.sortDirection === "desc" ? diff * -1 : diff;
+		});
+}
+
+export function getOperationalOrderStatuses(
+	statusGroup: "active" | "all" | "completed",
+): Array<OrderStatus> | null {
+	if (statusGroup === "all") {
+		return null;
+	}
+
+	if (statusGroup === "completed") {
+		return ["cancelled", "delivered"];
+	}
+
+	return ["pending", "accepted", "preparing", "out_for_delivery"];
 }
 
 export function transitionOrderStatusWithAudit(

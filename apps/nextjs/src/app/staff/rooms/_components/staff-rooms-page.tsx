@@ -1,5 +1,14 @@
 "use client";
 
+import {
+	AlertDialog,
+	AlertDialogAction,
+	AlertDialogCancel,
+	AlertDialogContent,
+	AlertDialogDescription,
+	AlertDialogHeader,
+	AlertDialogTitle,
+} from "@finchat/ui/alert-dialog";
 import { Button } from "@finchat/ui/button";
 import {
 	Card,
@@ -12,7 +21,9 @@ import { Input } from "@finchat/ui/input";
 import { Label } from "@finchat/ui/label";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import type { Route } from "next";
+import Image from "next/image";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import QRCode from "qrcode";
 import { useEffect, useState } from "react";
 
 import { PageShell, SectionHeader } from "~/app/_components/page-shell";
@@ -33,10 +44,19 @@ import {
 import { useTRPC } from "~/trpc/react";
 import { StaffHotelGuard } from "../../orders/_components/staff-hotel-guard";
 import { buildRoomPublicUrl } from "./room-public-url";
+import { buildRoomQrCodeActionState } from "./room-qr-code-actions";
 
 interface DraftRoomState {
 	floor: string;
 	label: string;
+}
+
+interface RoomQrPreview {
+	dataUrl: string;
+	downloadName: string;
+	label: string;
+	publicUrl: string;
+	title: string;
 }
 
 function formatFloorLabel(floor: number | null) {
@@ -53,6 +73,8 @@ export function StaffRoomsPage() {
 	const [formError, setFormError] = useState<string | null>(null);
 	const [actionError, setActionError] = useState<string | null>(null);
 	const [drafts, setDrafts] = useState<Record<string, DraftRoomState>>({});
+	const [qrPreview, setQrPreview] = useState<RoomQrPreview | null>(null);
+	const [qrPreviewError, setQrPreviewError] = useState<string | null>(null);
 	const currentPage = parsePageParam(searchParams.get("page") ?? undefined);
 
 	const roomsQuery = useQuery(
@@ -148,6 +170,49 @@ export function StaffRoomsPage() {
 		}
 	}
 
+	async function openRoomQrPreview(input: {
+		label: string;
+		qrCodeToken: string;
+	}) {
+		try {
+			const publicUrl = buildRoomPublicUrl(
+				window.location.origin,
+				input.qrCodeToken,
+			);
+			const actionState = buildRoomQrCodeActionState(input);
+			const dataUrl = await QRCode.toDataURL(publicUrl, {
+				margin: 1,
+				width: 720,
+			});
+
+			setQrPreview({
+				dataUrl,
+				downloadName: actionState.downloadName,
+				label: input.label,
+				publicUrl,
+				title: actionState.title,
+			});
+			setQrPreviewError(null);
+		} catch {
+			setQrPreviewError("Nao foi possivel gerar o QR Code deste quarto.");
+		}
+	}
+
+	async function downloadQrPreview() {
+		if (!qrPreview) {
+			return;
+		}
+
+		try {
+			const link = document.createElement("a");
+			link.href = qrPreview.dataUrl;
+			link.download = qrPreview.downloadName;
+			link.click();
+		} catch {
+			setQrPreviewError("Nao foi possivel baixar o QR Code agora.");
+		}
+	}
+
 	return (
 		<PageShell containerClassName="max-w-6xl gap-8" sidebar={<StaffNav />}>
 			<SectionHeader
@@ -210,8 +275,8 @@ export function StaffRoomsPage() {
 						<CardHeader>
 							<CardTitle>Quartos cadastrados</CardTitle>
 							<CardDescription>
-								Edite o quarto, ative ou desative o acesso e regenere o token
-								quando precisar trocar o link publico.
+								Edite o quarto, ative ou desative o acesso, gere o QR Code e
+								regenere o token quando precisar trocar o link publico.
 							</CardDescription>
 						</CardHeader>
 						<CardContent className="space-y-4">
@@ -346,6 +411,18 @@ export function StaffRoomsPage() {
 											>
 												Copiar link publico
 											</Button>
+											<Button
+												onClick={() =>
+													void openRoomQrPreview({
+														label: room.label,
+														qrCodeToken: room.qrCodeToken,
+													})
+												}
+												size="sm"
+												variant="outline"
+											>
+												Gerar QR Code
+											</Button>
 										</div>
 									</div>
 								);
@@ -363,6 +440,66 @@ export function StaffRoomsPage() {
 					</Card>
 				</div>
 			</StaffHotelGuard>
+
+			<AlertDialog
+				onOpenChange={(open) => {
+					if (!open) {
+						setQrPreview(null);
+						setQrPreviewError(null);
+					}
+				}}
+				open={Boolean(qrPreview)}
+			>
+				<AlertDialogContent className="max-w-md rounded-[30px] border-white/70 bg-white p-0 sm:max-w-md">
+					{qrPreview ? (
+						<div className="space-y-0">
+							<div className="border-border/60 border-b px-5 py-5">
+								<AlertDialogHeader className="items-start text-left">
+									<AlertDialogTitle>{qrPreview.title}</AlertDialogTitle>
+									<AlertDialogDescription className="text-left">
+										Use este QR Code para levar o hospede direto ao fluxo
+										publico do quarto {qrPreview.label}.
+									</AlertDialogDescription>
+								</AlertDialogHeader>
+							</div>
+							<div className="space-y-4 p-5">
+								<div className="rounded-[28px] border border-primary/10 bg-primary/[0.03] p-4">
+									<Image
+										alt={qrPreview.title}
+										className="mx-auto aspect-square w-full max-w-[280px] rounded-[22px] bg-white object-contain p-3"
+										height={280}
+										src={qrPreview.dataUrl}
+										width={280}
+									/>
+								</div>
+
+								<div className="space-y-2 rounded-2xl border border-primary/10 bg-background/80 p-4">
+									<p className="font-medium text-sm">Link publico</p>
+									<p className="break-all text-muted-foreground text-xs">
+										{qrPreview.publicUrl}
+									</p>
+								</div>
+
+								{qrPreviewError ? (
+									<p className="text-destructive text-sm">{qrPreviewError}</p>
+								) : null}
+
+								<div className="grid grid-cols-2 gap-3">
+									<AlertDialogCancel className="rounded-full">
+										Fechar
+									</AlertDialogCancel>
+									<AlertDialogAction
+										className="rounded-full"
+										onClick={() => void downloadQrPreview()}
+									>
+										Baixar QR Code
+									</AlertDialogAction>
+								</div>
+							</div>
+						</div>
+					) : null}
+				</AlertDialogContent>
+			</AlertDialog>
 		</PageShell>
 	);
 }

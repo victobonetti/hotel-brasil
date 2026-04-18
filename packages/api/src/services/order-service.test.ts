@@ -4,6 +4,8 @@ import {
 	createOrderFromGuestSession,
 	getOrderTracking,
 	listActiveOrders,
+	listGuestOrders,
+	listRecentOrders,
 	listOrderStatusHistory,
 	type PersistedOrderHistoryRecord,
 	type PersistedOrderItemRecord,
@@ -269,9 +271,80 @@ describe("listOrderStatusHistory", () => {
 	});
 });
 
+describe("listGuestOrders", () => {
+	test("returns the guest session orders from newest to oldest", async () => {
+		const result = await listGuestOrders(
+			{
+				createOrder: () => undefined,
+				findGuestSessionByToken: () => guestSession,
+				findOrderTrackingByGuestSession: () => null,
+				listGuestOrders: () => [
+					{
+						acceptedAt: null,
+						cancelledAt: null,
+						deliveredAt: null,
+						deliveringAt: null,
+						guestSessionId: "session-1",
+						hotelId: "hotel-1",
+						id: "order-older",
+						notes: null,
+						placedAt: new Date("2026-04-16T10:00:00.000Z"),
+						preparingAt: null,
+						roomId: "room-101",
+						status: "delivered",
+						totalAmountInCents: 3500,
+					},
+					{
+						acceptedAt: null,
+						cancelledAt: null,
+						deliveredAt: null,
+						deliveringAt: null,
+						guestSessionId: "session-1",
+						hotelId: "hotel-1",
+						id: "order-newer",
+						notes: null,
+						placedAt: new Date("2026-04-16T12:00:00.000Z"),
+						preparingAt: null,
+						roomId: "room-101",
+						status: "pending",
+						totalAmountInCents: 4200,
+					},
+				],
+				loadMenuItems: () => menuItems,
+			},
+			{ guestSessionToken: "token-1" },
+		);
+
+		expect(result.map((order) => order.id)).toEqual([
+			"order-newer",
+			"order-older",
+		]);
+	});
+
+	test("loads orders using the current guest session scope", async () => {
+		let receivedGuestSessionId: string | null = null;
+
+		await listGuestOrders(
+			{
+				createOrder: () => undefined,
+				findGuestSessionByToken: () => guestSession,
+				findOrderTrackingByGuestSession: () => null,
+				listGuestOrders: (guestSessionId) => {
+					receivedGuestSessionId = guestSessionId;
+					return [];
+				},
+				loadMenuItems: () => menuItems,
+			},
+			{ guestSessionToken: "token-1" },
+		);
+
+		expect(receivedGuestSessionId).toBe("session-1");
+	});
+});
+
 describe("listActiveOrders", () => {
-	test("returns paginated operational orders", async () => {
-		const orders = Array.from({ length: 9 }, (_, index) => ({
+	test("returns paginated operational orders using only active totals", async () => {
+		const activeOrders = Array.from({ length: 9 }, (_, index) => ({
 			acceptedAt: null,
 			cancelledAt: null,
 			deliveredAt: null,
@@ -286,17 +359,36 @@ describe("listActiveOrders", () => {
 			status: "pending" as const,
 			totalAmountInCents: 1000 + index,
 		}));
+		const completedOrder = {
+			acceptedAt: null,
+			cancelledAt: null,
+			deliveredAt: new Date("2026-04-16T12:00:00.000Z"),
+			deliveringAt: null,
+			guestSessionId: "session-10",
+			hotelId: "hotel-1",
+			id: "order-10",
+			notes: null,
+			placedAt: new Date("2026-04-16T10:10:00.000Z"),
+			preparingAt: null,
+			roomId: "room-10",
+			status: "delivered" as const,
+			totalAmountInCents: 2000,
+		};
 
 		const result = await listActiveOrders(
 			{
-				countOrdersByHotelId: () => orders.length,
+				countOrdersByHotelId: (_hotelId, input) =>
+					input.statusGroup === "active" ? activeOrders.length : 1,
 				findMembershipByUserId: () => ({
 					hotelId: "hotel-1",
 					role: "manager",
 					userId: "user-1",
 				}),
 				listOrdersByHotelId: (_hotelId, input) =>
-					orders.slice(input.offset, input.offset + input.limit),
+					(input.statusGroup === "active"
+						? activeOrders
+						: [completedOrder]
+					).slice(input.offset, input.offset + input.limit),
 			},
 			{ page: 2, pageSize: 8, userId: "user-1" },
 		);
@@ -310,6 +402,79 @@ describe("listActiveOrders", () => {
 			totalItems: 9,
 			totalPages: 2,
 		});
+	});
+});
+
+describe("listRecentOrders", () => {
+	test("returns completed orders first for the recent history view", async () => {
+		const orders = [
+			{
+				acceptedAt: null,
+				cancelledAt: null,
+				deliveredAt: new Date("2026-04-16T14:00:00.000Z"),
+				deliveringAt: null,
+				guestSessionId: "session-1",
+				hotelId: "hotel-1",
+				id: "order-1",
+				notes: null,
+				placedAt: new Date("2026-04-16T10:00:00.000Z"),
+				preparingAt: null,
+				roomId: "room-1",
+				status: "delivered" as const,
+				totalAmountInCents: 1000,
+			},
+			{
+				acceptedAt: null,
+				cancelledAt: new Date("2026-04-16T15:00:00.000Z"),
+				deliveredAt: null,
+				deliveringAt: null,
+				guestSessionId: "session-2",
+				hotelId: "hotel-1",
+				id: "order-2",
+				notes: null,
+				placedAt: new Date("2026-04-16T11:00:00.000Z"),
+				preparingAt: null,
+				roomId: "room-2",
+				status: "cancelled" as const,
+				totalAmountInCents: 2000,
+			},
+			{
+				acceptedAt: null,
+				cancelledAt: null,
+				deliveredAt: null,
+				deliveringAt: null,
+				guestSessionId: "session-3",
+				hotelId: "hotel-1",
+				id: "order-3",
+				notes: null,
+				placedAt: new Date("2026-04-16T12:00:00.000Z"),
+				preparingAt: null,
+				roomId: "room-3",
+				status: "preparing" as const,
+				totalAmountInCents: 3000,
+			},
+		];
+
+		const result = await listRecentOrders(
+			{
+				countOrdersByHotelId: (_hotelId, input) =>
+					input.statusGroup === "completed" ? 2 : 1,
+				findMembershipByUserId: () => ({
+					hotelId: "hotel-1",
+					role: "manager",
+					userId: "user-1",
+				}),
+				listOrdersByHotelId: (_hotelId, input) =>
+					input.statusGroup === "completed" ? orders : [orders[2]!],
+			},
+			{ page: 1, pageSize: 12, userId: "user-1" },
+		);
+
+		expect(result.items.map((order) => order.id)).toEqual([
+			"order-2",
+			"order-1",
+		]);
+		expect(result.pagination.totalItems).toBe(2);
 	});
 });
 

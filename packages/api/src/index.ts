@@ -93,6 +93,7 @@ export {
 } from "./services/menu-service";
 export {
 	createOrderFromGuestSession,
+	type GuestOrderListItem,
 	getOrderByGuestSession,
 	getOrderTracking,
 	type InAppOrderStatusNotification,

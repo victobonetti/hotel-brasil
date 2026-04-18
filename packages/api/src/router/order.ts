@@ -14,6 +14,7 @@ import { z } from "zod/v4";
 import { mapDomainErrorToUserMessage } from "../errors";
 import {
 	createOrderFromGuestSession,
+	type GuestOrderListItem,
 	getOrderByGuestSession,
 	getOrderTracking,
 	listGuestOrders,
@@ -335,12 +336,39 @@ export const orderRouter = {
 							return result[0] ?? null;
 						},
 						findOrderTrackingByGuestSession: () => null,
-						listGuestOrders: async (guestSessionId) =>
-							await ctx.db
-								.select()
-								.from(orders)
-								.where(eq(orders.guestSessionId, guestSessionId))
-								.orderBy(desc(orders.placedAt)),
+						listGuestOrders: async (guestSessionId) => {
+							const guestOrders = await ctx.db.query.orders.findMany({
+								orderBy: (table, { desc }) => [desc(table.placedAt)],
+								where: (table, { eq }) =>
+									eq(table.guestSessionId, guestSessionId),
+								with: {
+									room: {
+										columns: {
+											label: true,
+										},
+									},
+								},
+							});
+
+							return guestOrders.map(
+								(order): GuestOrderListItem => ({
+									acceptedAt: order.acceptedAt,
+									cancelledAt: order.cancelledAt,
+									deliveredAt: order.deliveredAt,
+									deliveringAt: order.deliveringAt,
+									guestSessionId: order.guestSessionId,
+									hotelId: order.hotelId,
+									id: order.id,
+									notes: order.notes,
+									placedAt: order.placedAt,
+									preparingAt: order.preparingAt,
+									roomId: order.roomId,
+									roomLabel: order.room.label,
+									status: order.status,
+									totalAmountInCents: order.totalAmountInCents,
+								}),
+							);
+						},
 						loadMenuItems: () => [],
 					},
 					input,

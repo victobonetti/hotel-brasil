@@ -2,11 +2,13 @@ import { orderStatusHistories, orders } from "@finchat/db/schema";
 import { PAGE_SIZES } from "@finchat/utils";
 import type { TRPCRouterRecord } from "@trpc/server";
 import { TRPCError } from "@trpc/server";
-import { count, eq } from "drizzle-orm";
+import { and, count, eq, inArray } from "drizzle-orm";
 import { z } from "zod/v4";
 import { mapDomainErrorToUserMessage } from "../errors";
+import { getOperationalOrderStatuses } from "../domain/order";
 import {
 	listActiveOrders,
+	listRecentOrders,
 	OrderServiceError,
 	transitionStaffOrderStatus,
 } from "../services/order-service";
@@ -196,11 +198,21 @@ export const staffOrderRouter = {
 			try {
 				return await listActiveOrders(
 					{
-						countOrdersByHotelId: async (hotelId) => {
+						countOrdersByHotelId: async (hotelId, paginationInput) => {
+							const statuses = getOperationalOrderStatuses(
+								paginationInput.statusGroup,
+							);
 							const [result] = await ctx.db
 								.select({ totalItems: count() })
 								.from(orders)
-								.where(eq(orders.hotelId, hotelId));
+								.where(
+									statuses
+										? and(
+												eq(orders.hotelId, hotelId),
+												inArray(orders.status, statuses),
+											)
+										: eq(orders.hotelId, hotelId),
+								);
 
 							return result?.totalItems ?? 0;
 						},
@@ -215,12 +227,26 @@ export const staffOrderRouter = {
 							});
 							return result ?? null;
 						},
-						listOrdersByHotelId: async (hotelId, pagination) =>
-							await ctx.db.query.orders.findMany({
+						listOrdersByHotelId: async (hotelId, pagination) => {
+							const statuses = getOperationalOrderStatuses(
+								pagination.statusGroup,
+							);
+
+							return await ctx.db.query.orders.findMany({
 								limit: pagination.limit,
 								offset: pagination.offset,
-								orderBy: (table, { asc }) => [asc(table.placedAt)],
-								where: (table, { eq }) => eq(table.hotelId, hotelId),
+								orderBy: (table, { asc, desc }) => [
+									pagination.sortDirection === "desc"
+										? desc(table.placedAt)
+										: asc(table.placedAt),
+								],
+								where: (table, { and, eq, inArray }) =>
+									statuses
+										? and(
+												eq(table.hotelId, hotelId),
+												inArray(table.status, statuses),
+											)
+										: eq(table.hotelId, hotelId),
 								with: {
 									room: {
 										columns: {
@@ -228,7 +254,83 @@ export const staffOrderRouter = {
 										},
 									},
 								},
-							}),
+							});
+						},
+					},
+					{
+						page: input?.page,
+						pageSize: PAGE_SIZES.staffOperationalOrders,
+						userId: ctx.session.user.id,
+					},
+				);
+			} catch (error) {
+				mapStaffOrderServiceError(error);
+			}
+		}),
+	listRecentOrders: protectedProcedure
+		.input(pageInput)
+		.query(async ({ ctx, input }) => {
+			try {
+				return await listRecentOrders(
+					{
+						countOrdersByHotelId: async (hotelId, paginationInput) => {
+							const statuses = getOperationalOrderStatuses(
+								paginationInput.statusGroup,
+							);
+							const [result] = await ctx.db
+								.select({ totalItems: count() })
+								.from(orders)
+								.where(
+									statuses
+										? and(
+												eq(orders.hotelId, hotelId),
+												inArray(orders.status, statuses),
+											)
+										: eq(orders.hotelId, hotelId),
+								);
+
+							return result?.totalItems ?? 0;
+						},
+						findMembershipByUserId: async (userId) => {
+							const result = await ctx.db.query.staffUserHotels.findFirst({
+								columns: {
+									hotelId: true,
+									role: true,
+									userId: true,
+								},
+								where: (table, { eq }) => eq(table.userId, userId),
+							});
+							return result ?? null;
+						},
+						listOrdersByHotelId: async (hotelId, pagination) => {
+							const statuses = getOperationalOrderStatuses(
+								pagination.statusGroup,
+							);
+
+							return await ctx.db.query.orders.findMany({
+								limit: pagination.limit,
+								offset: pagination.offset,
+								orderBy: (table, { asc, desc }) => [
+									pagination.sortDirection === "desc"
+										? desc(table.placedAt)
+										: asc(table.placedAt),
+								],
+								where: (table, { and, eq, inArray }) =>
+									statuses
+										? and(
+												eq(table.hotelId, hotelId),
+												inArray(table.status, statuses),
+											)
+										: eq(table.hotelId, hotelId),
+								with: {
+									room: {
+										columns: {
+											label: true,
+										},
+									},
+								},
+							});
+						},
 					},
 					{
 						page: input?.page,

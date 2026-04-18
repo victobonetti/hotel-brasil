@@ -305,6 +305,38 @@ describe("listOperationalOrders", () => {
 			).map((order) => order.id),
 		).toEqual(["order-1", "order-2"]);
 	});
+
+	test("can return the completed history sorted from newest to oldest", () => {
+		expect(
+			listOperationalOrders(
+				[
+					{
+						hotelId: "hotel-1",
+						id: "order-1",
+						placedAt: new Date("2026-04-16T10:00:00.000Z"),
+						status: "delivered" as const,
+					},
+					{
+						hotelId: "hotel-1",
+						id: "order-2",
+						placedAt: new Date("2026-04-16T12:00:00.000Z"),
+						status: "cancelled" as const,
+					},
+					{
+						hotelId: "hotel-1",
+						id: "order-3",
+						placedAt: new Date("2026-04-16T11:00:00.000Z"),
+						status: "preparing" as const,
+					},
+				],
+				{
+					hotelId: "hotel-1",
+					sortDirection: "desc",
+					statusGroup: "completed",
+				},
+			).map((order) => order.id),
+		).toEqual(["order-2", "order-1"]);
+	});
 });
 
 describe("transitionOrderStatusWithAudit", () => {

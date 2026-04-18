@@ -10,7 +10,8 @@
 	},
 	"exports": {
 		".": "./src/index.ts",
-		"./env": "./src/env.ts"
+		"./env": "./src/env.ts",
+		"./pagination": "./src/pagination.ts"
 	},
 	"name": "@finchat/utils",
 	"private": true,

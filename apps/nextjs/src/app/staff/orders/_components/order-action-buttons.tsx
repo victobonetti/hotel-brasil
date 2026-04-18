@@ -64,7 +64,7 @@ export function OrderActionButtons(props: {
 
 	return (
 		<div className="space-y-3">
-			<p className="font-medium text-primary text-sm">Ações operacionais</p>
+			<p className="font-medium text-primary text-sm">Acoes operacionais</p>
 			<div className="flex flex-wrap gap-2">
 				{props.status === "pending" ? (
 					<Button

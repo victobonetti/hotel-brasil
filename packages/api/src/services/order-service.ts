@@ -56,6 +56,10 @@ export interface PersistedOrderRecord {
 	totalAmountInCents: number;
 }
 
+export interface GuestOrderListItem extends PersistedOrderRecord {
+	roomLabel?: string | null;
+}
+
 export interface PersistedOrderItemRecord {
 	id: string;
 	itemNameSnapshot: string;
@@ -121,7 +125,9 @@ interface OrderServiceDeps {
 	) => Promise<OrderTrackingView | null> | OrderTrackingView | null;
 	listGuestOrders: (
 		guestSessionId: string,
-	) => Promise<Array<PersistedOrderRecord>> | Array<PersistedOrderRecord>;
+	) =>
+		| Promise<Array<GuestOrderListItem>>
+		| Array<GuestOrderListItem>;
 	loadMenuItems: (
 		menuItemIds: Array<string>,
 	) => Promise<Array<MenuItemOrderLookup>> | Array<MenuItemOrderLookup>;
@@ -400,22 +406,98 @@ export async function listGuestOrders(
 		toOrderServiceError(error);
 	}
 
-	return await deps.listGuestOrders(guestSession.id);
+	return [...(await deps.listGuestOrders(guestSession.id))].sort(
+		(left, right) => right.placedAt.getTime() - left.placedAt.getTime(),
+	);
 }
 
 export async function listActiveOrders(
 	deps: {
-		countOrdersByHotelId: (hotelId: string) => Promise<number> | number;
+		countOrdersByHotelId: (
+			hotelId: string,
+			input: { statusGroup: "active" | "completed" },
+		) => Promise<number> | number;
 		findMembershipByUserId: (
 			userId: string,
 		) => Promise<StaffHotelMembership | null> | StaffHotelMembership | null;
 		listOrdersByHotelId: (
 			hotelId: string,
-			input: { limit: number; offset: number },
+			input: {
+				limit: number;
+				offset: number;
+				sortDirection: "asc" | "desc";
+				statusGroup: "active" | "completed";
+			},
 		) => Promise<Array<PersistedOrderRecord>> | Array<PersistedOrderRecord>;
 	},
 	input: { page?: number; pageSize: number; userId: string },
 ): Promise<PaginatedResult<PersistedOrderRecord>> {
+	return listHotelOrders(deps, {
+		page: input.page,
+		pageSize: input.pageSize,
+		sortDirection: "asc",
+		statusGroup: "active",
+		userId: input.userId,
+	});
+}
+
+export async function listRecentOrders(
+	deps: {
+		countOrdersByHotelId: (
+			hotelId: string,
+			input: { statusGroup: "active" | "completed" },
+		) => Promise<number> | number;
+		findMembershipByUserId: (
+			userId: string,
+		) => Promise<StaffHotelMembership | null> | StaffHotelMembership | null;
+		listOrdersByHotelId: (
+			hotelId: string,
+			input: {
+				limit: number;
+				offset: number;
+				sortDirection: "asc" | "desc";
+				statusGroup: "active" | "completed";
+			},
+		) => Promise<Array<PersistedOrderRecord>> | Array<PersistedOrderRecord>;
+	},
+	input: { page?: number; pageSize: number; userId: string },
+): Promise<PaginatedResult<PersistedOrderRecord>> {
+	return listHotelOrders(deps, {
+		page: input.page,
+		pageSize: input.pageSize,
+		sortDirection: "desc",
+		statusGroup: "completed",
+		userId: input.userId,
+	});
+}
+
+async function listHotelOrders(
+	deps: {
+		countOrdersByHotelId: (
+			hotelId: string,
+			input: { statusGroup: "active" | "completed" },
+		) => Promise<number> | number;
+		findMembershipByUserId: (
+			userId: string,
+		) => Promise<StaffHotelMembership | null> | StaffHotelMembership | null;
+		listOrdersByHotelId: (
+			hotelId: string,
+			input: {
+				limit: number;
+				offset: number;
+				sortDirection: "asc" | "desc";
+				statusGroup: "active" | "completed";
+			},
+		) => Promise<Array<PersistedOrderRecord>> | Array<PersistedOrderRecord>;
+	},
+	input: {
+		page?: number;
+		pageSize: number;
+		sortDirection: "asc" | "desc";
+		statusGroup: "active" | "completed";
+		userId: string;
+	},
+) {
 	const membership = await deps.findMembershipByUserId(input.userId);
 	if (!membership) {
 		throw new OrderServiceError(
@@ -424,7 +506,9 @@ export async function listActiveOrders(
 		);
 	}
 
-	const totalItems = await deps.countOrdersByHotelId(membership.hotelId);
+	const totalItems = await deps.countOrdersByHotelId(membership.hotelId, {
+		statusGroup: input.statusGroup,
+	});
 	const pagination = buildPaginationMetadata({
 		page: input.page,
 		pageSize: input.pageSize,
@@ -433,10 +517,16 @@ export async function listActiveOrders(
 	const orders = await deps.listOrdersByHotelId(membership.hotelId, {
 		limit: pagination.pageSize,
 		offset: (pagination.page - 1) * pagination.pageSize,
+		sortDirection: input.sortDirection,
+		statusGroup: input.statusGroup,
 	});
 
 	return {
-		items: listOperationalOrders(orders, { hotelId: membership.hotelId }),
+		items: listOperationalOrders(orders, {
+			hotelId: membership.hotelId,
+			sortDirection: input.sortDirection,
+			statusGroup: input.statusGroup,
+		}),
 		pagination,
 	};
 }

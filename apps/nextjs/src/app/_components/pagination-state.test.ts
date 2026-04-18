@@ -26,6 +26,16 @@ describe("buildPageSearch", () => {
 		).toBe("orderId=ord-1&page=3");
 	});
 
+	test("updates only the targeted page param when multiple paginations share the url", () => {
+		expect(
+			buildPageSearch(
+				new URLSearchParams("activePage=2&historyPage=4&orderId=ord-1"),
+				"historyPage",
+				3,
+			),
+		).toBe("activePage=2&historyPage=3&orderId=ord-1");
+	});
+
 	test("removes the page param when returning to the first page", () => {
 		expect(buildPageSearch(new URLSearchParams("page=2"), "page", 1)).toBe("");
 	});
