@@ -36,7 +36,7 @@
 	"name": "@finchat/nextjs",
 	"private": true,
 	"scripts": {
-		"build": "bun next build",
+		"build": "bun run ./scripts/build.ts",
 		"clean": "git clean -xdf .cache .next .turbo node_modules",
 		"dev": "bun next dev",
 		"pull-secrets": "infisical export --format=dotenv > .env",

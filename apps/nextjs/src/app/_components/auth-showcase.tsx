@@ -1,6 +1,5 @@
 import { db } from "@finchat/db/client";
 import { Badge } from "@finchat/ui/badge";
-import { Button } from "@finchat/ui/button";
 import {
 	Card,
 	CardContent,
@@ -15,13 +14,7 @@ import { redirect } from "next/navigation";
 import { auth, getSession } from "~/auth/server";
 import { getStaffAccessSummary } from "./auth-access";
 import { GoogleSignInButton } from "./google-sign-in-button";
-import {
-	GridIcon,
-	LogoutIcon,
-	PackageIcon,
-	ShieldIcon,
-	UtensilsIcon,
-} from "./ui-icons";
+import { ShieldIcon } from "./ui-icons";
 
 export async function AuthShowcase() {
 	const session = await getSession();
@@ -96,30 +89,28 @@ export async function AuthShowcase() {
 					<p className="font-medium text-sm">{access.title}</p>
 					<div className="mt-3 flex flex-wrap gap-2">
 						{access.canAccessOrders ? (
-							<Button render={<Link href="/staff/orders" />} size="sm">
-								<UtensilsIcon className="size-4" />
+							<Link
+								className="inline-flex items-center rounded-md bg-primary px-3 py-2 font-medium text-primary-foreground text-sm transition hover:bg-primary/85"
+								href="/staff/orders"
+							>
 								Abrir pedidos
-							</Button>
+							</Link>
 						) : null}
 						{access.canAccessCatalog ? (
-							<Button
-								render={<Link href="/staff/menu" />}
-								size="sm"
-								variant="outline"
+							<Link
+								className="inline-flex items-center rounded-md border border-border bg-background px-3 py-2 font-medium text-foreground text-sm transition hover:bg-muted"
+								href="/staff/menu"
 							>
-								<GridIcon className="size-4" />
 								Categorias do menu
-							</Button>
+							</Link>
 						) : null}
 						{access.canAccessCatalog ? (
-							<Button
-								render={<Link href="/staff/menu/items" />}
-								size="sm"
-								variant="outline"
+							<Link
+								className="inline-flex items-center rounded-md border border-border bg-background px-3 py-2 font-medium text-foreground text-sm transition hover:bg-muted"
+								href="/staff/menu/items"
 							>
-								<PackageIcon className="size-4" />
 								Itens do menu
-							</Button>
+							</Link>
 						) : null}
 					</div>
 					{!access.canAccessOrders ? (
@@ -131,8 +122,8 @@ export async function AuthShowcase() {
 				</div>
 
 				<form>
-					<Button
-						className="w-full"
+					<button
+						className="inline-flex w-full items-center justify-center rounded-md border border-border bg-background px-4 py-2.5 font-medium text-foreground text-sm transition hover:bg-muted"
 						formAction={async () => {
 							"use server";
 							await auth.api.signOut({
@@ -140,13 +131,10 @@ export async function AuthShowcase() {
 							});
 							redirect("/");
 						}}
-						size="lg"
 						type="submit"
-						variant="outline"
 					>
-						<LogoutIcon className="size-4" />
 						Sair da conta
-					</Button>
+					</button>
 				</form>
 			</CardContent>
 		</Card>
