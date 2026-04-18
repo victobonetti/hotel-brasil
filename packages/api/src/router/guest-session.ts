@@ -1,4 +1,4 @@
-import { guestSessions, hotels, rooms } from "@finchat/db/schema";
+import { guestSessions, hotels, rooms } from "@nowait24/db/schema";
 import type { TRPCRouterRecord } from "@trpc/server";
 import { TRPCError } from "@trpc/server";
 import { eq, gt } from "drizzle-orm";

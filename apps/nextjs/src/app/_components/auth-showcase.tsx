@@ -1,12 +1,12 @@
-import { db } from "@finchat/db/client";
-import { Badge } from "@finchat/ui/badge";
+import { db } from "@nowait24/db/client";
+import { Badge } from "@nowait24/ui/badge";
 import {
 	Card,
 	CardContent,
 	CardDescription,
 	CardHeader,
 	CardTitle,
-} from "@finchat/ui/card";
+} from "@nowait24/ui/card";
 
 import { auth, getSession } from "~/auth/server";
 import { getStaffAccessSummary } from "./auth-access";

@@ -11,7 +11,7 @@
 		"tailwind-merge": "catalog:"
 	},
 	"devDependencies": {
-		"@finchat/tsconfig": "workspace:*",
+		"@nowait24/tsconfig": "workspace:*",
 		"@types/react": "catalog:",
 		"react": "catalog:",
 		"tailwindcss": "catalog:",
@@ -24,7 +24,7 @@
 		"./globals.css": "./src/styles/globals.css",
 		"./lib/*": "./src/lib/*.ts"
 	},
-	"name": "@finchat/ui",
+	"name": "@nowait24/ui",
 	"peerDependencies": {
 		"react": "catalog:",
 		"zod": "catalog:"

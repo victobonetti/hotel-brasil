@@ -8,7 +8,7 @@
 	"packageRules": [
 		{
 			"enabled": false,
-			"matchPackagePatterns": ["^@finchat/"]
+			"matchPackagePatterns": ["^@nowait24/"]
 		}
 	],
 	"rangeStrategy": "bump",

@@ -1,15 +1,15 @@
 // biome-ignore lint/correctness/noUnusedImports: Import env files to validate at build time
-import { env } from "@finchat/utils/env";
+import { env } from "@nowait24/utils/env";
 import type { NextConfig } from "next/types";
 
 const config: NextConfig = {
 	cacheComponents: true,
 	/** Enables hot reloading for local packages without a build step */
 	transpilePackages: [
-		"@finchat/api",
-		"@finchat/auth",
-		"@finchat/db",
-		"@finchat/ui",
+		"@nowait24/api",
+		"@nowait24/auth",
+		"@nowait24/db",
+		"@nowait24/ui",
 	],
 	typedRoutes: true,
 

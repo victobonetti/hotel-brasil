@@ -52,23 +52,23 @@ export function getOrCreateClient<TClient>({
 }
 
 declare global {
-	var __finchatPostgresClient__: PostgresClient | undefined;
+	var __nowait24PostgresClient__: PostgresClient | undefined;
 }
 
 const client = getOrCreateClient({
 	createClient: () => postgres(databaseUrl, getSqlOptions(databaseUrl)),
 	existingClient:
 		process.env.NODE_ENV === "development"
-			? globalThis.__finchatPostgresClient__
+			? globalThis.__nowait24PostgresClient__
 			: undefined,
 	globalStore:
 		process.env.NODE_ENV === "development"
 			? {
 					get postgresClient() {
-						return globalThis.__finchatPostgresClient__;
+						return globalThis.__nowait24PostgresClient__;
 					},
 					set postgresClient(client) {
-						globalThis.__finchatPostgresClient__ = client;
+						globalThis.__nowait24PostgresClient__ = client;
 					},
 				}
 			: undefined,

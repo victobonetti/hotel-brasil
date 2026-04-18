@@ -4,7 +4,7 @@ import {
 	buildPaginationMetadata,
 	normalizePage,
 	paginateItems,
-} from "@finchat/utils";
+} from "@nowait24/utils";
 
 describe("normalizePage", () => {
 	test("returns 1 for invalid values", () => {

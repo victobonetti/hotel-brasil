@@ -1,5 +1,5 @@
-import { cn } from "@finchat/ui/lib/utils";
-import { Toaster } from "@finchat/ui/sonner";
+import { cn } from "@nowait24/ui/lib/utils";
+import { Toaster } from "@nowait24/ui/sonner";
 import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { ThemeProvider } from "~/app/_components/theme-provider";
@@ -10,7 +10,7 @@ import "~/app/globals.css";
 
 export const metadata: Metadata = {
 	description: "Sua plataforma de finanças",
-	title: "FinChat",
+	title: "NoWait24",
 };
 
 export const viewport: Viewport = {

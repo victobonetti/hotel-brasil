@@ -1,6 +1,6 @@
 "use client";
 
-import { Button } from "@finchat/ui/button";
+import { Button } from "@nowait24/ui/button";
 import { useMutation } from "@tanstack/react-query";
 
 import { useTRPC } from "~/trpc/react";

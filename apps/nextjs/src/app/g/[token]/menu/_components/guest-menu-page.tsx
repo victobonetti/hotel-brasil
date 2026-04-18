@@ -1,6 +1,6 @@
 "use client";
 
-import type { MenuItemView } from "@finchat/api";
+import type { MenuItemView } from "@nowait24/api";
 import {
 	AlertDialog,
 	AlertDialogAction,
@@ -9,20 +9,20 @@ import {
 	AlertDialogDescription,
 	AlertDialogHeader,
 	AlertDialogTitle,
-} from "@finchat/ui/alert-dialog";
-import { Badge } from "@finchat/ui/badge";
-import { Button } from "@finchat/ui/button";
+} from "@nowait24/ui/alert-dialog";
+import { Badge } from "@nowait24/ui/badge";
+import { Button } from "@nowait24/ui/button";
 import {
 	Card,
 	CardContent,
 	CardDescription,
 	CardHeader,
 	CardTitle,
-} from "@finchat/ui/card";
-import { Input } from "@finchat/ui/input";
-import { Label } from "@finchat/ui/label";
-import { Separator } from "@finchat/ui/separator";
-import { Textarea } from "@finchat/ui/textarea";
+} from "@nowait24/ui/card";
+import { Input } from "@nowait24/ui/input";
+import { Label } from "@nowait24/ui/label";
+import { Separator } from "@nowait24/ui/separator";
+import { Textarea } from "@nowait24/ui/textarea";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import type { Route } from "next";
 import Image from "next/image";

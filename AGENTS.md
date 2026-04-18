@@ -46,7 +46,7 @@ Turborepo monorepo with bun. Packages:
 
 **Client components**: Use `useTRPC()` from `~/trpc/react` hook.
 
-**Auth**: better-auth with Google OAuth. `auth` instance in `apps/nextjs/src/auth/server.ts`. Client auth via `@finchat/auth/client`.
+**Auth**: better-auth with Google OAuth. `auth` instance in `apps/nextjs/src/auth/server.ts`. Client auth via `@nowait24/auth/client`.
 
 **DB**: Drizzle with Neon. Schema in `packages/db/src/schema.ts`. Auth tables auto-generated.
 

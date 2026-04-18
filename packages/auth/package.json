@@ -1,12 +1,12 @@
 {
 	"dependencies": {
-		"@finchat/db": "workspace:*",
-		"@finchat/utils": "workspace:*",
+		"@nowait24/db": "workspace:*",
+		"@nowait24/utils": "workspace:*",
 		"better-auth": "catalog:"
 	},
 	"devDependencies": {
 		"@better-auth/cli": "catalog:",
-		"@finchat/tsconfig": "workspace:*",
+		"@nowait24/tsconfig": "workspace:*",
 		"dotenv-cli": "catalog:",
 		"typescript": "catalog:"
 	},
@@ -14,7 +14,7 @@
 		".": "./src/index.ts",
 		"./client": "./src/client.ts"
 	},
-	"name": "@finchat/auth",
+	"name": "@nowait24/auth",
 	"private": true,
 
 	"scripts": {

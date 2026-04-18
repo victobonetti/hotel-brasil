@@ -1,7 +1,7 @@
 import { randomUUID } from "node:crypto";
 
-import type { OrderStatus } from "@finchat/db/schema";
-import { buildPaginationMetadata, type PaginatedResult } from "@finchat/utils";
+import type { OrderStatus } from "@nowait24/db/schema";
+import { buildPaginationMetadata, type PaginatedResult } from "@nowait24/utils";
 import {
 	assertGuestSessionCanOrder,
 	assertMenuItemsBelongToHotel,

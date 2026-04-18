@@ -14,13 +14,13 @@
       },
     },
     "apps/nextjs": {
-      "name": "@finchat/nextjs",
+      "name": "@nowait24/nextjs",
       "dependencies": {
-        "@finchat/api": "workspace:*",
-        "@finchat/auth": "workspace:*",
-        "@finchat/db": "workspace:*",
-        "@finchat/ui": "workspace:*",
-        "@finchat/utils": "workspace:*",
+        "@nowait24/api": "workspace:*",
+        "@nowait24/auth": "workspace:*",
+        "@nowait24/db": "workspace:*",
+        "@nowait24/ui": "workspace:*",
+        "@nowait24/utils": "workspace:*",
         "@tanstack/react-form": "catalog:",
         "@tanstack/react-query": "catalog:",
         "@trpc/client": "catalog:",
@@ -37,8 +37,8 @@
         "zod": "catalog:",
       },
       "devDependencies": {
-        "@finchat/tailwind-config": "workspace:*",
-        "@finchat/tsconfig": "workspace:*",
+        "@nowait24/tailwind-config": "workspace:*",
+        "@nowait24/tsconfig": "workspace:*",
         "@tailwindcss/postcss": "catalog:",
         "@types/node": "catalog:",
         "@types/qrcode": "^1.5.6",
@@ -51,37 +51,37 @@
       },
     },
     "packages/api": {
-      "name": "@finchat/api",
+      "name": "@nowait24/api",
       "dependencies": {
-        "@finchat/auth": "workspace:*",
-        "@finchat/db": "workspace:*",
-        "@finchat/utils": "workspace:*",
+        "@nowait24/auth": "workspace:*",
+        "@nowait24/db": "workspace:*",
+        "@nowait24/utils": "workspace:*",
         "@trpc/server": "catalog:",
         "drizzle-orm": "catalog:",
         "superjson": "catalog:",
         "zod": "catalog:",
       },
       "devDependencies": {
-        "@finchat/tsconfig": "workspace:*",
+        "@nowait24/tsconfig": "workspace:*",
         "typescript": "catalog:",
       },
     },
     "packages/auth": {
-      "name": "@finchat/auth",
+      "name": "@nowait24/auth",
       "dependencies": {
-        "@finchat/db": "workspace:*",
-        "@finchat/utils": "workspace:*",
+        "@nowait24/db": "workspace:*",
+        "@nowait24/utils": "workspace:*",
         "better-auth": "catalog:",
       },
       "devDependencies": {
         "@better-auth/cli": "catalog:",
-        "@finchat/tsconfig": "workspace:*",
+        "@nowait24/tsconfig": "workspace:*",
         "dotenv-cli": "catalog:",
         "typescript": "catalog:",
       },
     },
     "packages/db": {
-      "name": "@finchat/db",
+      "name": "@nowait24/db",
       "dependencies": {
         "drizzle-orm": "catalog:",
         "drizzle-zod": "catalog:",
@@ -89,7 +89,7 @@
         "zod": "catalog:",
       },
       "devDependencies": {
-        "@finchat/tsconfig": "workspace:*",
+        "@nowait24/tsconfig": "workspace:*",
         "@types/node": "catalog:",
         "dotenv-cli": "catalog:",
         "drizzle-kit": "catalog:",
@@ -97,7 +97,7 @@
       },
     },
     "packages/ui": {
-      "name": "@finchat/ui",
+      "name": "@nowait24/ui",
       "dependencies": {
         "@base-ui/react": "catalog:",
         "@radix-ui/react-icons": "catalog:",
@@ -110,7 +110,7 @@
         "tailwind-merge": "catalog:",
       },
       "devDependencies": {
-        "@finchat/tsconfig": "workspace:*",
+        "@nowait24/tsconfig": "workspace:*",
         "@types/react": "catalog:",
         "react": "catalog:",
         "tailwindcss": "catalog:",
@@ -124,35 +124,35 @@
       },
     },
     "packages/utils": {
-      "name": "@finchat/utils",
+      "name": "@nowait24/utils",
       "dependencies": {
         "@t3-oss/env-nextjs": "catalog:",
         "zod": "catalog:",
       },
       "devDependencies": {
-        "@finchat/tsconfig": "workspace:*",
+        "@nowait24/tsconfig": "workspace:*",
         "@types/node": "catalog:",
         "typescript": "catalog:",
       },
     },
     "tooling/github": {
-      "name": "@finchat/github",
+      "name": "@nowait24/github",
     },
     "tooling/tailwind": {
-      "name": "@finchat/tailwind-config",
+      "name": "@nowait24/tailwind-config",
       "dependencies": {
         "@tailwindcss/postcss": "catalog:",
         "postcss": "catalog:",
         "tailwindcss": "catalog:",
       },
       "devDependencies": {
-        "@finchat/tsconfig": "workspace:*",
+        "@nowait24/tsconfig": "workspace:*",
         "@types/node": "catalog:",
         "typescript": "catalog:",
       },
     },
     "tooling/typescript": {
-      "name": "@finchat/tsconfig",
+      "name": "@nowait24/tsconfig",
     },
   },
   "catalog": {
@@ -379,23 +379,23 @@
 
     "@esbuild/win32-x64": ["@esbuild/win32-x64@0.25.12", "", { "os": "win32", "cpu": "x64" }, "sha512-alJC0uCZpTFrSL0CCDjcgleBXPnCrEAhTBILpeAp7M/OFgoqtAetfBzX0xM00MUsVVPpVjlPuMbREqnZCXaTnA=="],
 
-    "@finchat/api": ["@finchat/api@workspace:packages/api"],
+    "@nowait24/api": ["@nowait24/api@workspace:packages/api"],
 
-    "@finchat/auth": ["@finchat/auth@workspace:packages/auth"],
+    "@nowait24/auth": ["@nowait24/auth@workspace:packages/auth"],
 
-    "@finchat/db": ["@finchat/db@workspace:packages/db"],
+    "@nowait24/db": ["@nowait24/db@workspace:packages/db"],
 
-    "@finchat/github": ["@finchat/github@workspace:tooling/github"],
+    "@nowait24/github": ["@nowait24/github@workspace:tooling/github"],
 
-    "@finchat/nextjs": ["@finchat/nextjs@workspace:apps/nextjs"],
+    "@nowait24/nextjs": ["@nowait24/nextjs@workspace:apps/nextjs"],
 
-    "@finchat/tailwind-config": ["@finchat/tailwind-config@workspace:tooling/tailwind"],
+    "@nowait24/tailwind-config": ["@nowait24/tailwind-config@workspace:tooling/tailwind"],
 
-    "@finchat/tsconfig": ["@finchat/tsconfig@workspace:tooling/typescript"],
+    "@nowait24/tsconfig": ["@nowait24/tsconfig@workspace:tooling/typescript"],
 
-    "@finchat/ui": ["@finchat/ui@workspace:packages/ui"],
+    "@nowait24/ui": ["@nowait24/ui@workspace:packages/ui"],
 
-    "@finchat/utils": ["@finchat/utils@workspace:packages/utils"],
+    "@nowait24/utils": ["@nowait24/utils@workspace:packages/utils"],
 
     "@floating-ui/core": ["@floating-ui/core@1.7.3", "", { "dependencies": { "@floating-ui/utils": "^0.2.10" } }, "sha512-sGnvb5dmrJaKEZ+LDIpguvdX3bDlEllmv4/ClQ9awcmCZrlx5jQyyMWFM5kBI+EyNOCDDiKk8il0zeuX3Zlg/w=="],
 

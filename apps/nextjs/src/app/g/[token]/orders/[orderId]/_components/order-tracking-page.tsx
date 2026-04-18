@@ -1,14 +1,14 @@
 "use client";
 
-import { Button } from "@finchat/ui/button";
+import { Button } from "@nowait24/ui/button";
 import {
 	Card,
 	CardContent,
 	CardDescription,
 	CardHeader,
 	CardTitle,
-} from "@finchat/ui/card";
-import { PAGE_SIZES, paginateItems } from "@finchat/utils";
+} from "@nowait24/ui/card";
+import { PAGE_SIZES, paginateItems } from "@nowait24/utils";
 import { useQuery } from "@tanstack/react-query";
 import type { Route } from "next";
 import Link from "next/link";

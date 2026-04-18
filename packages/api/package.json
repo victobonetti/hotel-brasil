@@ -1,21 +1,21 @@
 {
 	"dependencies": {
-		"@finchat/auth": "workspace:*",
-		"@finchat/db": "workspace:*",
-		"@finchat/utils": "workspace:*",
+		"@nowait24/auth": "workspace:*",
+		"@nowait24/db": "workspace:*",
+		"@nowait24/utils": "workspace:*",
 		"@trpc/server": "catalog:",
 		"drizzle-orm": "catalog:",
 		"superjson": "catalog:",
 		"zod": "catalog:"
 	},
 	"devDependencies": {
-		"@finchat/tsconfig": "workspace:*",
+		"@nowait24/tsconfig": "workspace:*",
 		"typescript": "catalog:"
 	},
 	"exports": {
 		".": "./src/index.ts"
 	},
-	"name": "@finchat/api",
+	"name": "@nowait24/api",
 	"private": true,
 	"scripts": {
 		"build": "tsc",

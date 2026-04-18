@@ -1,6 +1,6 @@
-import { Button } from "@finchat/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@finchat/ui/card";
-import type { PaginationMetadata } from "@finchat/utils";
+import { Button } from "@nowait24/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@nowait24/ui/card";
+import type { PaginationMetadata } from "@nowait24/utils";
 
 import {
 	formatOrderReference,

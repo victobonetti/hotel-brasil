@@ -1,4 +1,4 @@
-import { Button } from "@finchat/ui/button";
+import { Button } from "@nowait24/ui/button";
 
 export function GuestMenuActions(props: { guestSessionToken: string }) {
 	return (

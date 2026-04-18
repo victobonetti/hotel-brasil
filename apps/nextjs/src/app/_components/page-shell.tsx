@@ -1,4 +1,4 @@
-import { cn } from "@finchat/ui/lib/utils";
+import { cn } from "@nowait24/ui/lib/utils";
 
 export function PageShell(props: {
 	children: React.ReactNode;

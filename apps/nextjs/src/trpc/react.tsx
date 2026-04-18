@@ -1,8 +1,8 @@
 "use client";
 
-import type { AppRouter } from "@finchat/api";
-import { getBaseUrl } from "@finchat/utils";
-import { env } from "@finchat/utils/env";
+import type { AppRouter } from "@nowait24/api";
+import { getBaseUrl } from "@nowait24/utils";
+import { env } from "@nowait24/utils/env";
 import type { QueryClient } from "@tanstack/react-query";
 import { QueryClientProvider } from "@tanstack/react-query";
 import {

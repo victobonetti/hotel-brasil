@@ -1,6 +1,6 @@
-import type { Drizzle } from "@finchat/db/client";
-import { rooms } from "@finchat/db/schema";
-import { PAGE_SIZES } from "@finchat/utils";
+import type { Drizzle } from "@nowait24/db/client";
+import { rooms } from "@nowait24/db/schema";
+import { PAGE_SIZES } from "@nowait24/utils";
 import type { TRPCRouterRecord } from "@trpc/server";
 import { TRPCError } from "@trpc/server";
 import { asc, count, eq } from "drizzle-orm";

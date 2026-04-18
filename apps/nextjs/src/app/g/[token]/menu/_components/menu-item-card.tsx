@@ -1,6 +1,6 @@
-import type { MenuItemView } from "@finchat/api";
-import { Badge } from "@finchat/ui/badge";
-import { Card, CardContent } from "@finchat/ui/card";
+import type { MenuItemView } from "@nowait24/api";
+import { Badge } from "@nowait24/ui/badge";
+import { Card, CardContent } from "@nowait24/ui/card";
 import Image from "next/image";
 
 function formatPrice(priceInCents: number) {

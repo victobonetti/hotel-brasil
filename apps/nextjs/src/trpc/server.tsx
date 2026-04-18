@@ -1,5 +1,5 @@
-import type { AppRouter } from "@finchat/api";
-import { appRouter, createTRPCContext } from "@finchat/api";
+import type { AppRouter } from "@nowait24/api";
+import { appRouter, createTRPCContext } from "@nowait24/api";
 import { dehydrate } from "@tanstack/react-query";
 import { HydrationBoundary } from "./hydrate-client";
 import type { TRPCQueryOptions } from "@trpc/tanstack-react-query";

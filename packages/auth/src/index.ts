@@ -1,5 +1,5 @@
-import { db } from "@finchat/db/client";
-import { env } from "@finchat/utils/env";
+import { db } from "@nowait24/db/client";
+import { env } from "@nowait24/utils/env";
 import type { BetterAuthOptions, BetterAuthPlugin } from "better-auth";
 import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";

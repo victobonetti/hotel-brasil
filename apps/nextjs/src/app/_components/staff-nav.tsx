@@ -1,8 +1,8 @@
 "use client";
 
-import { buttonVariants } from "@finchat/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@finchat/ui/card";
-import { cn } from "@finchat/ui/lib/utils";
+import { buttonVariants } from "@nowait24/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@nowait24/ui/card";
+import { cn } from "@nowait24/ui/lib/utils";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { GridIcon, PackageIcon, UtensilsIcon } from "./ui-icons";

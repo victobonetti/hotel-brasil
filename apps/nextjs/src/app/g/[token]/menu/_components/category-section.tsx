@@ -1,6 +1,6 @@
 "use client";
 
-import type { MenuCategoryWithItems } from "@finchat/api";
+import type { MenuCategoryWithItems } from "@nowait24/api";
 import type { Route } from "next";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useEffect } from "react";

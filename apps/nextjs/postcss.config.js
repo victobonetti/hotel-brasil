@@ -1,1 +1,1 @@
-export { default } from "@finchat/tailwind-config/postcss-config";
+export { default } from "@nowait24/tailwind-config/postcss-config";

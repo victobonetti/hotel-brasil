@@ -1,4 +1,4 @@
-import type { PaginationMetadata } from "@finchat/utils";
+import type { PaginationMetadata } from "@nowait24/utils";
 
 export function parsePageParam(value: string | Array<string> | undefined) {
 	const pageValue = Array.isArray(value) ? Number(value[0]) : Number(value);

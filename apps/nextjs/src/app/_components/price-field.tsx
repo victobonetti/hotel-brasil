@@ -1,6 +1,6 @@
 "use client";
 
-import { Input } from "@finchat/ui/input";
+import { Input } from "@nowait24/ui/input";
 
 export function parsePriceInputToCents(value: string) {
 	const digits = value.replace(/\D/g, "");

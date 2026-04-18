@@ -6,7 +6,7 @@ import {
 	orderStatusHistories,
 	orders,
 	rooms,
-} from "@finchat/db/schema";
+} from "@nowait24/db/schema";
 import type { TRPCRouterRecord } from "@trpc/server";
 import { TRPCError } from "@trpc/server";
 import { desc, eq, inArray } from "drizzle-orm";

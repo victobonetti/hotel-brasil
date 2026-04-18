@@ -1,6 +1,6 @@
 "use client";
 
-import { PAGE_SIZES, paginateItems } from "@finchat/utils";
+import { PAGE_SIZES, paginateItems } from "@nowait24/utils";
 import { useQuery } from "@tanstack/react-query";
 import type { Route } from "next";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";

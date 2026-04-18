@@ -1,8 +1,8 @@
 "use client";
 
-import { Badge } from "@finchat/ui/badge";
-import { Button } from "@finchat/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@finchat/ui/card";
+import { Badge } from "@nowait24/ui/badge";
+import { Button } from "@nowait24/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@nowait24/ui/card";
 
 import {
 	getStaffOrderDisplayMeta,

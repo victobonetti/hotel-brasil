@@ -1,7 +1,7 @@
 "use client";
 
-import { Button } from "@finchat/ui/button";
-import type { PaginationMetadata } from "@finchat/utils";
+import { Button } from "@nowait24/ui/button";
+import type { PaginationMetadata } from "@nowait24/utils";
 import type { Route } from "next";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 

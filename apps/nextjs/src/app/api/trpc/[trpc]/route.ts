@@ -1,4 +1,4 @@
-import { appRouter, createTRPCContext } from "@finchat/api";
+import { appRouter, createTRPCContext } from "@nowait24/api";
 import { fetchRequestHandler } from "@trpc/server/adapters/fetch";
 import type { NextRequest } from "next/server";
 

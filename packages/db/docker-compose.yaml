@@ -1,4 +1,4 @@
-name: finchat-db
+name: nowait24-db
 
 services:
   postgres:

@@ -5,7 +5,7 @@
 		"hooks": "src/hooks",
 		"lib": "src/lib",
 		"ui": "src/",
-		"utils": "@finchat/ui"
+		"utils": "@nowait24/ui"
 	},
 	"iconLibrary": "lucide",
 	"menuAccent": "subtle",

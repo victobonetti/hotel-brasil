@@ -1,10 +1,10 @@
 {
 	"dependencies": {
-		"@finchat/api": "workspace:*",
-		"@finchat/auth": "workspace:*",
-		"@finchat/db": "workspace:*",
-		"@finchat/ui": "workspace:*",
-		"@finchat/utils": "workspace:*",
+		"@nowait24/api": "workspace:*",
+		"@nowait24/auth": "workspace:*",
+		"@nowait24/db": "workspace:*",
+		"@nowait24/ui": "workspace:*",
+		"@nowait24/utils": "workspace:*",
 		"@tanstack/react-form": "catalog:",
 		"@tanstack/react-query": "catalog:",
 		"@trpc/client": "catalog:",
@@ -21,8 +21,8 @@
 		"zod": "catalog:"
 	},
 	"devDependencies": {
-		"@finchat/tailwind-config": "workspace:*",
-		"@finchat/tsconfig": "workspace:*",
+		"@nowait24/tailwind-config": "workspace:*",
+		"@nowait24/tsconfig": "workspace:*",
 		"@tailwindcss/postcss": "catalog:",
 		"@types/node": "catalog:",
 		"@types/qrcode": "^1.5.6",
@@ -33,7 +33,7 @@
 		"tw-animate-css": "catalog:",
 		"typescript": "catalog:"
 	},
-	"name": "@finchat/nextjs",
+	"name": "@nowait24/nextjs",
 	"private": true,
 	"scripts": {
 		"build": "bun run ./scripts/build.ts",

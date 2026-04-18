@@ -1,13 +1,13 @@
 "use client";
 
-import { Button } from "@finchat/ui/button";
+import { Button } from "@nowait24/ui/button";
 import {
 	Card,
 	CardContent,
 	CardDescription,
 	CardHeader,
 	CardTitle,
-} from "@finchat/ui/card";
+} from "@nowait24/ui/card";
 
 type GuardState = "loading" | "needs-auth" | "unauthorized";
 

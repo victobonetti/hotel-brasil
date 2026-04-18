@@ -1,6 +1,6 @@
 {
 	"compilerOptions": {},
 	"exclude": ["node_modules"],
-	"extends": "@finchat/tsconfig/base.json",
+	"extends": "@nowait24/tsconfig/base.json",
 	"include": ["*.ts", "src"]
 }

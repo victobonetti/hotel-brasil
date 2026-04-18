@@ -1,14 +1,14 @@
 "use client";
 
-import { Badge } from "@finchat/ui/badge";
+import { Badge } from "@nowait24/ui/badge";
 import {
 	Card,
 	CardContent,
 	CardDescription,
 	CardHeader,
 	CardTitle,
-} from "@finchat/ui/card";
-import { PAGE_SIZES, paginateItems } from "@finchat/utils";
+} from "@nowait24/ui/card";
+import { PAGE_SIZES, paginateItems } from "@nowait24/utils";
 import { useQuery } from "@tanstack/react-query";
 import type { Route } from "next";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";

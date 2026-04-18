@@ -1,5 +1,5 @@
 {
 	"exclude": ["node_modules", "src/**/*.test.ts"],
-	"extends": "@finchat/tsconfig/base.json",
+	"extends": "@nowait24/tsconfig/base.json",
 	"include": ["src", "drizzle.config.ts"]
 }

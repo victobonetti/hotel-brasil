@@ -3,11 +3,11 @@ import { describe, expect, test } from "bun:test";
 describe("getSqlOptions", () => {
 	test("disables ssl for localhost connections", async () => {
 		process.env.DATABASE_URL ??=
-			"postgresql://postgres:postgres@localhost:5432/finchat";
+			"postgresql://postgres:postgres@localhost:5432/nowait24";
 		const { getSqlOptions } = await import("./client");
 
 		expect(
-			getSqlOptions("postgresql://postgres:postgres@localhost:5432/finchat"),
+			getSqlOptions("postgresql://postgres:postgres@localhost:5432/nowait24"),
 		).toEqual({
 			ssl: false,
 		});
@@ -15,7 +15,7 @@ describe("getSqlOptions", () => {
 
 	test("requires ssl for remote connections", async () => {
 		process.env.DATABASE_URL ??=
-			"postgresql://postgres:postgres@localhost:5432/finchat";
+			"postgresql://postgres:postgres@localhost:5432/nowait24";
 		const { getSqlOptions } = await import("./client");
 
 		expect(
@@ -29,7 +29,7 @@ describe("getSqlOptions", () => {
 
 	test("reuses the cached client when available", async () => {
 		process.env.DATABASE_URL ??=
-			"postgresql://postgres:postgres@localhost:5432/finchat";
+			"postgresql://postgres:postgres@localhost:5432/nowait24";
 		const { getOrCreateClient } = await import("./client");
 		const existingClient = { kind: "existing" };
 		const createClient = () => ({ kind: "new" });
@@ -45,7 +45,7 @@ describe("getSqlOptions", () => {
 
 	test("caches the created client in development", async () => {
 		process.env.DATABASE_URL ??=
-			"postgresql://postgres:postgres@localhost:5432/finchat";
+			"postgresql://postgres:postgres@localhost:5432/nowait24";
 		const { getOrCreateClient } = await import("./client");
 		const globalStore: { postgresClient?: { kind: string } } = {};
 		const createdClient = { kind: "new" };
@@ -62,7 +62,7 @@ describe("getSqlOptions", () => {
 
 	test("does not cache the client outside development", async () => {
 		process.env.DATABASE_URL ??=
-			"postgresql://postgres:postgres@localhost:5432/finchat";
+			"postgresql://postgres:postgres@localhost:5432/nowait24";
 		const { getOrCreateClient } = await import("./client");
 		const globalStore: { postgresClient?: { kind: string } } = {};
 		const createdClient = { kind: "new" };

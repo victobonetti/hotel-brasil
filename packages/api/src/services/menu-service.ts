@@ -1,4 +1,4 @@
-import { type PaginationMetadata, paginateItems } from "@finchat/utils";
+import { type PaginationMetadata, paginateItems } from "@nowait24/utils";
 
 export interface GuestSessionSummary {
 	expiresAt: Date;

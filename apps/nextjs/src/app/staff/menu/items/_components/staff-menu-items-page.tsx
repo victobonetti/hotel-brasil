@@ -1,24 +1,24 @@
 "use client";
 
-import { Button } from "@finchat/ui/button";
+import { Button } from "@nowait24/ui/button";
 import {
 	Card,
 	CardContent,
 	CardDescription,
 	CardHeader,
 	CardTitle,
-} from "@finchat/ui/card";
-import { Input } from "@finchat/ui/input";
-import { Label } from "@finchat/ui/label";
-import { cn } from "@finchat/ui/lib/utils";
+} from "@nowait24/ui/card";
+import { Input } from "@nowait24/ui/input";
+import { Label } from "@nowait24/ui/label";
+import { cn } from "@nowait24/ui/lib/utils";
 import {
 	Select,
 	SelectContent,
 	SelectItem,
 	SelectTrigger,
 	SelectValue,
-} from "@finchat/ui/select";
-import { Textarea } from "@finchat/ui/textarea";
+} from "@nowait24/ui/select";
+import { Textarea } from "@nowait24/ui/textarea";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import type { Route } from "next";
 import Link from "next/link";

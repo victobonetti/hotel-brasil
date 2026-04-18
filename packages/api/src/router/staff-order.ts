@@ -1,5 +1,5 @@
-import { orderStatusHistories, orders } from "@finchat/db/schema";
-import { PAGE_SIZES } from "@finchat/utils";
+import { orderStatusHistories, orders } from "@nowait24/db/schema";
+import { PAGE_SIZES } from "@nowait24/utils";
 import type { TRPCRouterRecord } from "@trpc/server";
 import { TRPCError } from "@trpc/server";
 import { and, count, eq, inArray } from "drizzle-orm";

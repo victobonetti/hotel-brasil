@@ -1,4 +1,4 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@finchat/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@nowait24/ui/card";
 
 import { OrderStatusBadge } from "./order-status-badge";
 

@@ -1,5 +1,5 @@
-import { menuCategories, menuItems } from "@finchat/db/schema";
-import { PAGE_SIZES } from "@finchat/utils";
+import { menuCategories, menuItems } from "@nowait24/db/schema";
+import { PAGE_SIZES } from "@nowait24/utils";
 import type { TRPCRouterRecord } from "@trpc/server";
 import { TRPCError } from "@trpc/server";
 import { count, eq, inArray } from "drizzle-orm";

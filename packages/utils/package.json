@@ -4,7 +4,7 @@
 		"zod": "catalog:"
 	},
 	"devDependencies": {
-		"@finchat/tsconfig": "workspace:*",
+		"@nowait24/tsconfig": "workspace:*",
 		"@types/node": "catalog:",
 		"typescript": "catalog:"
 	},
@@ -13,7 +13,7 @@
 		"./env": "./src/env.ts",
 		"./pagination": "./src/pagination.ts"
 	},
-	"name": "@finchat/utils",
+	"name": "@nowait24/utils",
 	"private": true,
 	"scripts": {
 		"build": "tsc",

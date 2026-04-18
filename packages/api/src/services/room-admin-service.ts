@@ -1,5 +1,5 @@
 import { randomBytes, randomUUID } from "node:crypto";
-import { buildPaginationMetadata, type PaginatedResult } from "@finchat/utils";
+import { buildPaginationMetadata, type PaginatedResult } from "@nowait24/utils";
 import { assertUserCanManageHotel } from "../domain/order";
 import type { StaffHotelMembership } from "./order-service";
 

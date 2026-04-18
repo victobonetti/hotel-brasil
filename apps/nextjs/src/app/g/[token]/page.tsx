@@ -1,5 +1,5 @@
 import { Suspense } from "react";
-import { appRouter, createTRPCContext } from "@finchat/api";
+import { appRouter, createTRPCContext } from "@nowait24/api";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { auth } from "~/auth/server";

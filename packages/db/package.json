@@ -6,7 +6,7 @@
 		"zod": "catalog:"
 	},
 	"devDependencies": {
-		"@finchat/tsconfig": "workspace:*",
+		"@nowait24/tsconfig": "workspace:*",
 		"@types/node": "catalog:",
 		"dotenv-cli": "catalog:",
 		"drizzle-kit": "catalog:",
@@ -16,7 +16,7 @@
 		"./client": "./src/client.ts",
 		"./schema": "./src/schema.ts"
 	},
-	"name": "@finchat/db",
+	"name": "@nowait24/db",
 	"private": true,
 	"scripts": {
 		"build": "tsc",

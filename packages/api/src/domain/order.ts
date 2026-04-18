@@ -1,4 +1,4 @@
-import type { OrderStatus } from "@finchat/db/schema";
+import type { OrderStatus } from "@nowait24/db/schema";
 
 export interface OrderTotalLineItem {
 	quantity: number;

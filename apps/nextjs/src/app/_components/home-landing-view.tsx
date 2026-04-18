@@ -1,5 +1,5 @@
-import { Badge } from "@finchat/ui/badge";
-import { Card, CardContent, CardHeader, CardTitle } from "@finchat/ui/card";
+import { Badge } from "@nowait24/ui/badge";
+import { Card, CardContent, CardHeader, CardTitle } from "@nowait24/ui/card";
 import { PageShell } from "./page-shell";
 import {
 	ArrowDownIcon,
@@ -84,7 +84,7 @@ export function HomeLandingView(props: { authSlot: React.ReactNode }) {
 									primeiro login.
 								</p>
 								<p className="max-w-2xl text-base text-foreground/72 md:text-lg">
-									O FinChat apresenta o produto com a mesma clareza que entrega
+									O NoWait24 apresenta o produto com a mesma clareza que entrega
 									no dia a dia: menu digital para o hospede, acompanhamento em
 									tempo real e um painel de administracao pronto para o staff
 									operar sem friccao.

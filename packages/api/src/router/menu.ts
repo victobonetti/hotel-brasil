@@ -1,4 +1,4 @@
-import { PAGE_SIZES } from "@finchat/utils";
+import { PAGE_SIZES } from "@nowait24/utils";
 import type { TRPCRouterRecord } from "@trpc/server";
 import { TRPCError } from "@trpc/server";
 import { asc } from "drizzle-orm";

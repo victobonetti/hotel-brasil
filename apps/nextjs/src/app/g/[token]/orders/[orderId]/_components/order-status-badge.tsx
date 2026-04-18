@@ -1,4 +1,4 @@
-import { Badge } from "@finchat/ui/badge";
+import { Badge } from "@nowait24/ui/badge";
 
 type OrderStatus =
 	| "accepted"

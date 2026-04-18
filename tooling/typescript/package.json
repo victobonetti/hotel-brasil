@@ -2,6 +2,6 @@
 	"files": [
 		"*.json"
 	],
-	"name": "@finchat/tsconfig",
+	"name": "@nowait24/tsconfig",
 	"private": true
 }

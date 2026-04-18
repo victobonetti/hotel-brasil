@@ -1,6 +1,6 @@
 "use client";
 
-import { Button } from "@finchat/ui/button";
+import { Button } from "@nowait24/ui/button";
 import { startTransition, useState } from "react";
 
 import { authClient } from "~/auth/client";
