@@ -2,7 +2,7 @@ import { buttonVariants } from "@nowait24/ui/button";
 
 export function GuestMenuActions(props: { guestSessionToken: string }) {
 	return (
-		<div className="grid grid-cols-2 gap-3 sm:flex sm:flex-wrap sm:items-center">
+		<div className="flex items-center gap-2 overflow-x-auto pb-1">
 			<a
 				className={buttonVariants({
 					className:

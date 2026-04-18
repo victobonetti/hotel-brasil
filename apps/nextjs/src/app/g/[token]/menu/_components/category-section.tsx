@@ -57,22 +57,17 @@ export function CategorySection(props: {
 	]);
 
 	return (
-		<section className="space-y-4 rounded-[32px] border border-[#efe0da] bg-[linear-gradient(180deg,#fffdfb_0%,#fff8f4_100%)] p-4 shadow-[0_26px_60px_-48px_rgba(86,59,52,0.4)] sm:p-5">
-			<div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-				<div className="space-y-2">
-					<div className="inline-flex rounded-full bg-[#fff1ec] px-3 py-1 font-medium text-[#b15a45] text-xs uppercase tracking-[0.22em]">
-						Categoria
-					</div>
-					<div className="space-y-1">
-						<h2 className="font-semibold text-2xl text-[#2c1b19] tracking-tight sm:text-3xl">
-							{props.category.name}
-						</h2>
-						{props.category.description ? (
-							<p className="max-w-2xl text-[#7d6660] text-sm sm:text-base">
-								{props.category.description}
-							</p>
-						) : null}
-					</div>
+		<section className="space-y-4 rounded-[30px] border border-[#efe0da] bg-[linear-gradient(180deg,#fffdfb_0%,#fff8f4_100%)] p-4 shadow-[0_26px_60px_-48px_rgba(86,59,52,0.4)] sm:p-5">
+			<div className="flex items-start justify-between gap-3">
+				<div className="space-y-1">
+					<h2 className="font-semibold text-2xl text-[#2c1b19] tracking-tight">
+						{props.category.name}
+					</h2>
+					{props.category.description ? (
+						<p className="max-w-2xl text-[#7d6660] text-sm leading-6">
+							{props.category.description}
+						</p>
+					) : null}
 				</div>
 				<div className="self-start rounded-full border border-[#f0d8d0] bg-white px-3 py-1 font-medium text-[#b15a45] text-xs shadow-[0_14px_28px_-24px_rgba(86,59,52,0.35)]">
 					{props.category.items.length} item(ns)
@@ -81,7 +76,7 @@ export function CategorySection(props: {
 
 			{props.category.items.length > 0 ? (
 				<div className="space-y-4">
-					<div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+					<div className="grid gap-3 md:grid-cols-2">
 						{paginatedItems.items.map((item) => (
 							<MenuItemCard
 								item={item}

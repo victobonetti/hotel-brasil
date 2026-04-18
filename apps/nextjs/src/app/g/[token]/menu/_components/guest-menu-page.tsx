@@ -12,11 +12,6 @@ import {
 } from "@nowait24/ui/alert-dialog";
 import { Badge } from "@nowait24/ui/badge";
 import { Button } from "@nowait24/ui/button";
-import { Card, CardContent } from "@nowait24/ui/card";
-import { Input } from "@nowait24/ui/input";
-import { Label } from "@nowait24/ui/label";
-import { Separator } from "@nowait24/ui/separator";
-import { Textarea } from "@nowait24/ui/textarea";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import type { Route } from "next";
 import Image from "next/image";
@@ -31,9 +26,19 @@ import {
 	parsePageParam,
 	shouldSyncPageParam,
 } from "~/app/_components/pagination-state";
+import {
+	PackageIcon,
+	PlusIcon,
+	UtensilsIcon,
+} from "~/app/_components/ui-icons";
 import { useTRPC } from "~/trpc/react";
 import { CategorySection } from "./category-section";
+import { GuestCartCheckout } from "./guest-cart-checkout";
 import { GuestMenuActions } from "./guest-menu-actions";
+import {
+	getGuestMenuHeroContent,
+	getGuestMobileCartCtaLabel,
+} from "./guest-menu-display";
 import { GuestSessionGuard } from "./guest-session-guard";
 
 function formatPrice(priceInCents: number) {
@@ -49,6 +54,7 @@ export function GuestMenuPage(props: { guestSessionToken: string }) {
 	const router = useRouter();
 	const searchParams = useSearchParams();
 	const currentPage = parsePageParam(searchParams.get("page") ?? undefined);
+	const [cartOpen, setCartOpen] = useState(false);
 	const menuQuery = useQuery(
 		trpc.menu.getMenuForGuestSession.queryOptions({
 			guestSessionToken: props.guestSessionToken,
@@ -77,6 +83,7 @@ export function GuestMenuPage(props: { guestSessionToken: string }) {
 
 	const totalItems = items.reduce((total, item) => total + item.quantity, 0);
 	const pagination = menuQuery.data?.pagination;
+	const heroContent = getGuestMenuHeroContent(totalItems);
 
 	useEffect(() => {
 		if (!pagination || !shouldSyncPageParam(currentPage, pagination)) {
@@ -137,6 +144,14 @@ export function GuestMenuPage(props: { guestSessionToken: string }) {
 		setSelectedItem(null);
 	}
 
+	function handleSubmitOrder() {
+		createOrderMutation.mutate({
+			guestSessionToken: props.guestSessionToken,
+			items,
+			orderNotes: orderNotes.trim() || undefined,
+		});
+	}
+
 	const roomReference = menuQuery.data
 		? formatRoomReference({
 				roomId: menuQuery.data.guestSession.roomId,
@@ -146,8 +161,8 @@ export function GuestMenuPage(props: { guestSessionToken: string }) {
 
 	return (
 		<PageShell
-			className="bg-[radial-gradient(circle_at_top,_rgba(217,77,56,0.14),_transparent_28%),linear-gradient(180deg,_#fff8f5_0%,_#fffdfb_54%,_#fff4ed_100%)]"
-			containerClassName="max-w-6xl gap-4 px-4 pb-32 pt-4 md:px-6 md:pb-16"
+			className="bg-[radial-gradient(circle_at_top,_rgba(219,88,49,0.12),_transparent_26%),linear-gradient(180deg,_#fff8f3_0%,_#fffdfb_52%,_#fff5ef_100%)]"
+			containerClassName="max-w-7xl gap-4 px-4 pb-28 pt-4 md:px-6 md:pb-12"
 		>
 			<GuestSessionGuard
 				errorMessage={
@@ -155,200 +170,49 @@ export function GuestMenuPage(props: { guestSessionToken: string }) {
 				}
 				isLoading={menuQuery.isLoading || availableItemsQuery.isLoading}
 			>
-				<div className="space-y-5">
+				<div className="space-y-4">
 					<GuestMenuActions guestSessionToken={props.guestSessionToken} />
 
-					<section className="rounded-[32px] border border-[#e8dfda] bg-white p-5 shadow-[0_24px_50px_-42px_rgba(86,59,52,0.22)]">
-						<div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-							<div className="space-y-2">
-								<p className="text-[#8b7069] text-sm">{roomReference}</p>
-								<h1 className="font-semibold text-3xl text-[#2c1b19] tracking-tight">
-									Cardapio
-								</h1>
-								<p className="max-w-xl text-[#7d6660] text-sm leading-6">
-									Escolha os itens e toque para personalizar antes de adicionar.
-								</p>
-							</div>
-							{totalItems > 0 ? (
-								<div className="rounded-full border border-[#e7ddd8] bg-[#faf7f5] px-3 py-2 font-medium text-[#5e4742] text-sm">
-									{totalItems} item(ns) na bandeja
+					<section className="rounded-[30px] border border-[#ecdfd9] bg-white px-4 py-5 shadow-[0_24px_50px_-42px_rgba(86,59,52,0.22)] sm:px-5">
+						<div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+							<div className="space-y-3">
+								<div className="inline-flex items-center gap-2 rounded-full bg-[#fff1e9] px-3 py-1 font-medium text-[#b45a43] text-[11px] uppercase tracking-[0.2em]">
+									<UtensilsIcon className="size-3.5" />
+									{heroContent.eyebrow}
 								</div>
-							) : null}
+								<div className="space-y-1">
+									<p className="text-[#886f68] text-sm">{roomReference}</p>
+									<h1 className="font-semibold text-3xl text-[#251613] tracking-tight">
+										{heroContent.title}
+									</h1>
+									<p className="max-w-2xl text-[#7b645d] text-sm leading-6">
+										{heroContent.description}
+									</p>
+								</div>
+							</div>
+							<div className="flex items-center gap-2">
+								<Badge className="rounded-full border border-[#ebddd7] bg-[#fffaf7] px-3 py-1 text-[#6b524c] shadow-none hover:bg-[#fffaf7]">
+									{menuQuery.data?.pagination.totalItems ?? 0} categoria(s)
+								</Badge>
+								<Badge className="rounded-full border border-[#ebddd7] bg-[#fffaf7] px-3 py-1 text-[#6b524c] shadow-none hover:bg-[#fffaf7]">
+									{totalItems} item(ns)
+								</Badge>
+							</div>
 						</div>
 					</section>
 
-					<div className="grid gap-4 lg:grid-cols-[1.04fr_0.96fr] lg:items-start">
-						<Card className="order-2 overflow-hidden rounded-[32px] border-[#efe0da] bg-[#fffdfb] shadow-[0_28px_60px_-44px_rgba(86,59,52,0.34)] lg:sticky lg:top-5 lg:order-1">
-							<CardContent className="space-y-5 p-4">
-								<div className="space-y-4 rounded-[28px] bg-[#fff7f3] p-4">
-									<div className="flex items-start justify-between gap-3">
-										<div className="space-y-1">
-											<div className="inline-flex rounded-full bg-white px-3 py-1 font-medium text-[#b15a45] text-[11px] uppercase tracking-[0.2em]">
-												Sua bandeja
-											</div>
-											<p className="font-semibold text-[#2c1b19] text-xl">
-												Revise antes de enviar
-											</p>
-											<p className="text-[#7d6660] text-sm leading-6">
-												Os itens escolhidos aparecem aqui para voce ajustar com
-												calma antes da confirmacao.
-											</p>
-										</div>
-										<Badge className="rounded-full border border-[#edd9d2] bg-white px-3 py-1 text-[#7d6660] shadow-none hover:bg-white">
-											{totalItems} item(ns)
-										</Badge>
-									</div>
-									<div className="grid grid-cols-2 gap-3">
-										<div className="rounded-[22px] bg-white px-3 py-3">
-											<p className="text-[#b15a45] text-[11px] uppercase tracking-[0.22em]">
-												Total
-											</p>
-											<p className="mt-2 font-semibold text-[#2c1b19] text-sm">
-												{formatPrice(totalValueInCents)}
-											</p>
-										</div>
-										<div className="rounded-[22px] bg-white px-3 py-3">
-											<p className="text-[#b15a45] text-[11px] uppercase tracking-[0.22em]">
-												Itens
-											</p>
-											<p className="mt-2 font-semibold text-[#2c1b19] text-sm">
-												{totalItems}
-											</p>
-										</div>
-									</div>
-								</div>
-
-								{items.length > 0 ? (
-									<div className="space-y-3">
-										{items.map((item, index) => (
-											<div
-												className="flex items-start gap-3 rounded-[26px] border border-[#efe0da] bg-white p-4"
-												key={`${item.menuItemId}-${index}`}
-											>
-												<div className="flex size-11 shrink-0 items-center justify-center rounded-full bg-[#fff1ec] font-semibold text-[#b15a45] text-sm">
-													{item.quantity}x
-												</div>
-												<div className="min-w-0 flex-1 space-y-1">
-													<p className="font-medium text-[#2c1b19] text-[15px]">
-														{resolveMenuItem(item.menuItemId)?.name ??
-															"Item do menu"}
-													</p>
-													<p className="text-[#7d6660] text-sm">
-														{resolveMenuItem(item.menuItemId)
-															? formatPrice(
-																	(resolveMenuItem(item.menuItemId)
-																		?.priceInCents ?? 0) * item.quantity,
-																)
-															: item.menuItemId}
-													</p>
-													<p className="text-[#8b7069] text-sm leading-6">
-														{item.notes || "Sem observacoes neste item."}
-													</p>
-												</div>
-												<Button
-													className="rounded-full text-[#8b7069]"
-													onClick={() =>
-														setItems((currentItems) =>
-															currentItems.filter(
-																(_, itemIndex) => itemIndex !== index,
-															),
-														)
-													}
-													size="sm"
-													type="button"
-													variant="ghost"
-												>
-													Remover
-												</Button>
-											</div>
-										))}
-									</div>
-								) : (
-									<div className="rounded-[26px] border border-[#eadad4] border-dashed bg-[#fffaf7] px-5 py-6">
-										<p className="font-medium text-[#2c1b19]">
-											Sua bandeja ainda esta vazia.
-										</p>
-										<p className="mt-2 text-[#7d6660] text-sm leading-6">
-											Explore as categorias abaixo. Cada item pode ser ajustado
-											antes de entrar no pedido.
+					<div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_24rem] xl:items-start">
+						<div className="space-y-4">
+							<section className="rounded-[30px] border border-[#efe0da] bg-[#fffdfb] p-4 shadow-[0_28px_60px_-44px_rgba(86,59,52,0.3)] sm:p-5">
+								<div className="flex items-center justify-between gap-3">
+									<div className="space-y-1">
+										<p className="font-semibold text-[#251613] text-xl">Menu</p>
+										<p className="text-[#7b645d] text-sm leading-6">
+											Toque em um item para ajustar antes de adicionar.
 										</p>
 									</div>
-								)}
-
-								<Separator />
-
-								<div className="space-y-2">
-									<Label htmlFor="order-notes">Observacoes gerais</Label>
-									<Textarea
-										className="min-h-24 rounded-[22px] border-[#ecd9d3] bg-[#fffaf7]"
-										id="order-notes"
-										onChange={(event) => setOrderNotes(event.target.value)}
-										placeholder="Ex.: bater na porta, deixar na bancada, alergias"
-										value={orderNotes}
-									/>
-								</div>
-
-								<div className="rounded-[26px] bg-[#241816] px-4 py-4 text-white">
-									<div className="flex items-center justify-between gap-3">
-										<div>
-											<p className="text-[11px] uppercase tracking-[0.22em] text-white/58">
-												Confirmacao
-											</p>
-											<p className="mt-1 text-sm text-white/78">
-												Envie para o quarto quando estiver tudo certo.
-											</p>
-										</div>
-										<p className="font-semibold text-xl">
-											{formatPrice(totalValueInCents)}
-										</p>
-									</div>
-									<Button
-										className="mt-4 h-11 w-full rounded-full bg-[#d94d38] text-white shadow-[0_20px_36px_-22px_rgba(217,77,56,0.9)] hover:bg-[#c94330]"
-										disabled={
-											items.length === 0 || createOrderMutation.isPending
-										}
-										onClick={() =>
-											createOrderMutation.mutate({
-												guestSessionToken: props.guestSessionToken,
-												items,
-												orderNotes: orderNotes.trim() || undefined,
-											})
-										}
-										type="button"
-									>
-										{createOrderMutation.isPending
-											? "Enviando pedido..."
-											: "Confirmar pedido"}
-									</Button>
-								</div>
-
-								{createOrderMutation.error ? (
-									<p className="text-destructive text-sm">
-										{createOrderMutation.error.message}
-									</p>
-								) : null}
-							</CardContent>
-						</Card>
-
-						<div className="order-1 space-y-5 lg:order-2">
-							<section className="rounded-[32px] border border-[#efe0da] bg-[#fffdfb] p-4 shadow-[0_28px_60px_-44px_rgba(86,59,52,0.3)] sm:p-5">
-								<div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-									<div className="space-y-2">
-										<div className="inline-flex rounded-full bg-[#fff1ec] px-3 py-1 font-medium text-[#b15a45] text-xs uppercase tracking-[0.22em]">
-											Menu
-										</div>
-										<div className="space-y-1">
-											<h2 className="font-semibold text-2xl text-[#2c1b19] tracking-tight">
-												Escolha por categoria
-											</h2>
-											<p className="max-w-2xl text-[#7d6660] text-sm leading-6 sm:text-base">
-												Toque em um item para ver detalhes, ajustar quantidade e
-												incluir observacoes.
-											</p>
-										</div>
-									</div>
-									<div className="rounded-full border border-[#f0ddd7] bg-white px-3 py-2 font-medium text-[#b15a45] text-sm shadow-[0_18px_32px_-28px_rgba(86,59,52,0.22)]">
-										{menuQuery.data?.pagination.totalItems ?? 0} categoria(s)
+									<div className="hidden rounded-full bg-[#fff1e9] px-3 py-1 font-medium text-[#b45a43] text-xs uppercase tracking-[0.18em] sm:inline-flex">
+										Adicionar
 									</div>
 								</div>
 							</section>
@@ -364,37 +228,75 @@ export function GuestMenuPage(props: { guestSessionToken: string }) {
 								<PaginationControls pagination={pagination} />
 							) : null}
 						</div>
+
+						<section className="hidden rounded-[32px] border border-[#eadbd5] bg-[#fffdfb] p-5 shadow-[0_30px_60px_-46px_rgba(86,59,52,0.34)] xl:sticky xl:top-5 xl:block">
+							<GuestCartCheckout
+								createOrderErrorMessage={createOrderMutation.error?.message}
+								isSubmitting={createOrderMutation.isPending}
+								items={items}
+								noteInputId="desktop-order-notes"
+								onOrderNotesChange={setOrderNotes}
+								onRemoveItem={(index) =>
+									setItems((currentItems) =>
+										currentItems.filter((_, itemIndex) => itemIndex !== index),
+									)
+								}
+								onSubmit={handleSubmitOrder}
+								orderNotes={orderNotes}
+								resolveMenuItem={resolveMenuItem}
+								totalItems={totalItems}
+								totalValueInCents={totalValueInCents}
+							/>
+						</section>
 					</div>
 				</div>
 
-				<div className="fixed inset-x-0 bottom-0 z-20 border-[#ebddd9] border-t bg-white/96 px-4 py-4 shadow-[0_-18px_48px_-32px_rgba(86,59,52,0.28)] md:hidden">
-					<div className="mx-auto flex max-w-6xl items-center gap-3">
+				<div className="fixed inset-x-0 bottom-0 z-20 border-[#ebddd9] border-t bg-white/96 px-4 py-4 shadow-[0_-18px_48px_-32px_rgba(86,59,52,0.28)] backdrop-blur xl:hidden">
+					<div className="mx-auto flex max-w-7xl items-center gap-3">
 						<div className="min-w-0 flex-1">
 							<p className="text-[#8b7069] text-[11px] uppercase tracking-[0.22em]">
-								Revisao rapida
+								Carrinho
 							</p>
-							<p className="truncate font-semibold text-[#2c1b19] text-lg">
+							<p className="truncate font-semibold text-[#251613] text-lg">
 								{totalItems > 0
 									? `${totalItems} item(ns) | ${formatPrice(totalValueInCents)}`
-									: "Escolha itens para montar o pedido"}
+									: "Adicione itens para revisar"}
 							</p>
 						</div>
 						<Button
 							className="h-11 rounded-full bg-[#d94d38] px-5 text-white shadow-[0_20px_36px_-22px_rgba(217,77,56,0.9)] hover:bg-[#c94330]"
-							disabled={items.length === 0 || createOrderMutation.isPending}
-							onClick={() =>
-								createOrderMutation.mutate({
-									guestSessionToken: props.guestSessionToken,
-									items,
-									orderNotes: orderNotes.trim() || undefined,
-								})
-							}
+							onClick={() => setCartOpen(true)}
 							type="button"
 						>
-							{createOrderMutation.isPending ? "Enviando..." : "Enviar"}
+							<PackageIcon className="size-4" />
+							{getGuestMobileCartCtaLabel(totalItems)}
 						</Button>
 					</div>
 				</div>
+
+				<AlertDialog onOpenChange={setCartOpen} open={cartOpen}>
+					<AlertDialogContent className="top-auto right-0 bottom-0 left-0 w-full max-w-none translate-x-0 translate-y-0 rounded-t-[32px] rounded-b-none border-[#ebddd7] bg-[#fffdfb] p-5 sm:max-w-none xl:hidden">
+						<GuestCartCheckout
+							createOrderErrorMessage={createOrderMutation.error?.message}
+							isSubmitting={createOrderMutation.isPending}
+							items={items}
+							noteInputId="mobile-order-notes"
+							onClose={() => setCartOpen(false)}
+							onOrderNotesChange={setOrderNotes}
+							onRemoveItem={(index) =>
+								setItems((currentItems) =>
+									currentItems.filter((_, itemIndex) => itemIndex !== index),
+								)
+							}
+							onSubmit={handleSubmitOrder}
+							orderNotes={orderNotes}
+							resolveMenuItem={resolveMenuItem}
+							showCloseButton
+							totalItems={totalItems}
+							totalValueInCents={totalValueInCents}
+						/>
+					</AlertDialogContent>
+				</AlertDialog>
 
 				<AlertDialog
 					onOpenChange={(open) => {
@@ -419,7 +321,7 @@ export function GuestMenuPage(props: { guestSessionToken: string }) {
 									) : (
 										<div className="flex aspect-[4/3] w-full items-center justify-center bg-[linear-gradient(135deg,_#fff5ef,_#fee8de_55%,_#f8d4c0)]">
 											<span className="rounded-full bg-white/88 px-4 py-2 font-medium text-[#b15a45] text-sm shadow-sm">
-												Room service
+												Menu
 											</span>
 										</div>
 									)}
@@ -434,7 +336,7 @@ export function GuestMenuPage(props: { guestSessionToken: string }) {
 										</AlertDialogTitle>
 										<AlertDialogDescription className="text-left text-[#7d6660]">
 											{selectedItem.description ??
-												"Personalize este item antes de adicionar ao pedido."}
+												"Ajuste este item antes de adicionar ao carrinho."}
 										</AlertDialogDescription>
 									</AlertDialogHeader>
 
@@ -443,7 +345,7 @@ export function GuestMenuPage(props: { guestSessionToken: string }) {
 											<div className="flex items-center justify-between gap-3">
 												<div>
 													<p className="text-[#b15a45] text-[11px] uppercase tracking-[0.22em]">
-														Entrega estimada
+														Preparo
 													</p>
 													<p className="mt-1 font-semibold text-[#2c1b19] text-sm">
 														{selectedItem.preparationTimeMinutes ?? 15} minutos
@@ -459,9 +361,14 @@ export function GuestMenuPage(props: { guestSessionToken: string }) {
 										</div>
 
 										<div className="space-y-2">
-											<Label htmlFor="selected-item-quantity">Quantidade</Label>
-											<Input
-												className="h-12 rounded-[18px] border-[#ecd9d3] bg-[#fffaf7]"
+											<label
+												className="font-medium text-sm"
+												htmlFor="selected-item-quantity"
+											>
+												Quantidade
+											</label>
+											<input
+												className="flex h-12 w-full rounded-[18px] border border-[#ecd9d3] bg-[#fffaf7] px-3 py-2 text-base outline-none"
 												id="selected-item-quantity"
 												min={1}
 												onChange={(event) =>
@@ -475,9 +382,14 @@ export function GuestMenuPage(props: { guestSessionToken: string }) {
 										</div>
 
 										<div className="space-y-2">
-											<Label htmlFor="selected-item-notes">Observacoes</Label>
-											<Textarea
-												className="min-h-24 rounded-[18px] border-[#ecd9d3] bg-[#fffaf7]"
+											<label
+												className="font-medium text-sm"
+												htmlFor="selected-item-notes"
+											>
+												Observacoes
+											</label>
+											<textarea
+												className="flex min-h-24 w-full rounded-[18px] border border-[#ecd9d3] bg-[#fffaf7] px-3 py-2 text-base outline-none"
 												id="selected-item-notes"
 												onChange={(event) =>
 													setSelectedItemNotes(event.target.value)
@@ -496,6 +408,7 @@ export function GuestMenuPage(props: { guestSessionToken: string }) {
 											className="h-11 rounded-full bg-[#d94d38] text-white shadow-[0_20px_36px_-22px_rgba(217,77,56,0.9)] hover:bg-[#c94330]"
 											onClick={handleAddSelectedItem}
 										>
+											<PlusIcon className="size-4" />
 											Adicionar
 										</AlertDialogAction>
 									</div>
