@@ -57,6 +57,32 @@ describe("getS3CompatibleStorageConfig", () => {
 			secretAccessKey: "secret",
 		});
 	});
+
+	test("normalizes Oracle path-style public urls to include the bucket", () => {
+		expect(
+			getS3CompatibleStorageConfig({
+				accessKeyId: "access",
+				bucket: "menu-images",
+				endpoint:
+					"https://namespace.compat.objectstorage.sa-saopaulo-1.oraclecloud.com",
+				forcePathStyle: true,
+				publicBaseUrl:
+					"https://namespace.compat.objectstorage.sa-saopaulo-1.oraclecloud.com",
+				region: "sa-saopaulo-1",
+				secretAccessKey: "secret",
+			}),
+		).toEqual({
+			accessKeyId: "access",
+			bucket: "menu-images",
+			endpoint:
+				"https://namespace.compat.objectstorage.sa-saopaulo-1.oraclecloud.com",
+			forcePathStyle: true,
+			publicBaseUrl:
+				"https://namespace.compat.objectstorage.sa-saopaulo-1.oraclecloud.com/menu-images",
+			region: "sa-saopaulo-1",
+			secretAccessKey: "secret",
+		});
+	});
 });
 
 describe("isManagedStorageKey", () => {

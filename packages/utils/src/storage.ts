@@ -37,8 +37,44 @@ function encodeStorageKey(key: string) {
 		.join("/");
 }
 
-export function normalizePublicBaseUrl(url: string) {
-	return trimTrailingSlashes(url);
+function normalizeBucketPath(pathname: string) {
+	return pathname.replace(/^\/+|\/+$/g, "");
+}
+
+export function normalizePublicBaseUrl(input: {
+	bucket: string;
+	endpoint: string;
+	forcePathStyle?: boolean;
+	url: string;
+}) {
+	const normalizedUrl = trimTrailingSlashes(input.url);
+
+	if (!input.forcePathStyle) {
+		return normalizedUrl;
+	}
+
+	const normalizedBucket = input.bucket.trim();
+	if (normalizedBucket.length === 0) {
+		return normalizedUrl;
+	}
+
+	try {
+		const publicUrl = new URL(normalizedUrl);
+		const endpointUrl = new URL(trimTrailingSlashes(input.endpoint));
+		const publicPath = normalizeBucketPath(publicUrl.pathname);
+
+		if (
+			publicUrl.origin === endpointUrl.origin &&
+			(publicPath.length === 0 || publicPath === normalizedBucket)
+		) {
+			publicUrl.pathname = `/${normalizedBucket}`;
+			return trimTrailingSlashes(publicUrl.toString());
+		}
+	} catch {
+		return normalizedUrl;
+	}
+
+	return normalizedUrl;
 }
 
 export function isManagedStorageKey(key: string, prefix: string) {
@@ -102,7 +138,12 @@ export function getS3CompatibleStorageConfig(input: {
 		bucket: input.bucket as string,
 		endpoint: input.endpoint as string,
 		forcePathStyle: resolveStorageBoolean(input.forcePathStyle, true),
-		publicBaseUrl: normalizePublicBaseUrl(input.publicBaseUrl as string),
+		publicBaseUrl: normalizePublicBaseUrl({
+			bucket: input.bucket as string,
+			endpoint: input.endpoint as string,
+			forcePathStyle: resolveStorageBoolean(input.forcePathStyle, true),
+			url: input.publicBaseUrl as string,
+		}),
 		region: input.region as string,
 		secretAccessKey: input.secretAccessKey as string,
 	} satisfies S3CompatibleStorageConfig;
@@ -127,7 +168,12 @@ export class S3CompatibleStorage implements FileStorage {
 		this.client = client;
 		this.config = {
 			...config,
-			publicBaseUrl: normalizePublicBaseUrl(config.publicBaseUrl),
+			publicBaseUrl: normalizePublicBaseUrl({
+				bucket: config.bucket,
+				endpoint: config.endpoint,
+				forcePathStyle: config.forcePathStyle,
+				url: config.publicBaseUrl,
+			}),
 		};
 	}
 
