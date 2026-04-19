@@ -87,7 +87,7 @@ export function SectionHeader(props: {
 
 export function StickyAdminHeader(props: { children: React.ReactNode }) {
 	return (
-		<div className="sticky top-3 z-30 space-y-3 rounded-[2rem] bg-[linear-gradient(180deg,color-mix(in_oklab,var(--background)_78%,white_22%)_0%,color-mix(in_oklab,var(--background)_92%,transparent)_100%)] pb-1 backdrop-blur-md md:top-4">
+		<div className="space-y-3 lg:sticky lg:top-4 lg:z-30 lg:rounded-[2rem] lg:bg-[linear-gradient(180deg,color-mix(in_oklab,var(--background)_78%,white_22%)_0%,color-mix(in_oklab,var(--background)_92%,transparent)_100%)] lg:pb-1 lg:backdrop-blur-md">
 			{props.children}
 		</div>
 	);

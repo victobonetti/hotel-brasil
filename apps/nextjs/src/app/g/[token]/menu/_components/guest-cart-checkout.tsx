@@ -37,11 +37,11 @@ export function GuestCartCheckout(props: {
 	const isMobileFullscreen = props.isMobileFullscreen ?? false;
 
 	return (
-		<div className="flex h-full min-h-0 flex-col">
+		<div className="flex h-dvh min-h-0 flex-col bg-[#fffdfb]">
 			<div
 				className={
 					isMobileFullscreen
-						? "sticky top-0 z-10 -mx-5 -mt-5 space-y-4 border-[#ecdcd6] border-b bg-[#fff7f2]/96 px-5 pt-5 pb-4 backdrop-blur-md"
+						? "sticky top-0 z-10 space-y-4 border-[#ecdcd6] border-b bg-[#fff7f2]/96 px-5 pt-[max(1.25rem,env(safe-area-inset-top))] pb-4 backdrop-blur-md"
 						: "space-y-4 rounded-[30px] border border-[#ecdcd6] bg-[#fff7f2] p-4"
 				}
 			>
@@ -100,7 +100,7 @@ export function GuestCartCheckout(props: {
 			<div
 				className={
 					isMobileFullscreen
-						? "min-h-0 flex-1 space-y-3 overflow-y-auto px-0 pt-5 pb-5"
+						? "min-h-0 flex-1 space-y-3 overflow-y-auto px-5 pt-5 pb-5"
 						: "mt-5 flex-1 space-y-3 overflow-y-auto pr-1"
 				}
 			>
@@ -173,7 +173,7 @@ export function GuestCartCheckout(props: {
 			<div
 				className={
 					isMobileFullscreen
-						? "sticky bottom-0 z-10 -mx-5 mt-auto space-y-4 border-[#ecdcd6] border-t bg-[#fffdfb]/98 px-5 pt-4 pb-[calc(1rem+env(safe-area-inset-bottom))] backdrop-blur-md"
+						? "sticky bottom-0 z-10 mt-auto space-y-4 border-[#ecdcd6] border-t bg-[#fffdfb]/98 px-5 pt-4 pb-[calc(1rem+env(safe-area-inset-bottom))] backdrop-blur-md"
 						: "mt-5 space-y-4"
 				}
 			>

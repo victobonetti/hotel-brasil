@@ -96,71 +96,80 @@ export function HomeLandingView(props: { authSlot: React.ReactNode }) {
 			className="overflow-hidden bg-[radial-gradient(circle_at_top_left,color-mix(in_oklab,var(--primary)_12%,transparent)_0%,transparent_38%),radial-gradient(circle_at_82%_12%,color-mix(in_oklab,var(--accent)_45%,white_55%)_0%,transparent_22%),linear-gradient(180deg,color-mix(in_oklab,var(--background)_95%,white_5%)_0%,color-mix(in_oklab,var(--background)_98%,var(--secondary)_2%)_100%)]"
 			containerClassName="gap-8 px-4 py-5 md:gap-12 md:px-8 md:py-8"
 		>
-			<header className="rounded-[2rem] border border-border/70 bg-card/82 px-4 py-3 shadow-[0_30px_70px_-54px_color-mix(in_oklab,var(--foreground)_18%,transparent)] backdrop-blur-md md:px-5">
-				<div className="grid gap-4 lg:grid-cols-[minmax(16rem,0.95fr)_minmax(15rem,0.85fr)_minmax(17rem,0.8fr)] lg:items-center">
+			<header className="space-y-3">
+				<div className="grid gap-3 lg:grid-cols-[minmax(18rem,1fr)_minmax(18rem,22rem)] lg:items-stretch">
 					<a
 						aria-label="NoWait24 inicio"
-						className="group flex items-center gap-3 rounded-[1.7rem] border border-border/60 bg-background/78 px-3 py-3 transition hover:bg-background"
+						className="group flex items-center gap-3 rounded-[1.9rem] border border-border/70 bg-card/86 px-4 py-4 shadow-[0_26px_60px_-48px_color-mix(in_oklab,var(--foreground)_20%,transparent)] backdrop-blur-md transition hover:bg-card"
 						href="/"
 					>
-						<div className="flex size-14 shrink-0 items-center justify-center rounded-[1.35rem] bg-[linear-gradient(180deg,color-mix(in_oklab,var(--primary)_18%,white_82%)_0%,color-mix(in_oklab,var(--accent)_52%,white_48%)_100%)] text-primary shadow-[0_20px_34px_-24px_color-mix(in_oklab,var(--primary)_42%,transparent)] transition group-hover:scale-[1.02]">
-							<BedIcon className="size-5" />
+						<div className="flex size-16 shrink-0 items-center justify-center rounded-[1.55rem] bg-[linear-gradient(180deg,color-mix(in_oklab,var(--primary)_18%,white_82%)_0%,color-mix(in_oklab,var(--accent)_52%,white_48%)_100%)] text-primary shadow-[0_24px_38px_-24px_color-mix(in_oklab,var(--primary)_42%,transparent)] transition group-hover:scale-[1.02]">
+							<BedIcon className="size-6" />
 						</div>
-						<div className="min-w-0 space-y-1">
+						<div className="min-w-0 space-y-1.5">
 							<div className="flex flex-wrap items-center gap-2">
-								<p className="font-semibold text-[1.2rem] leading-none tracking-[-0.04em]">
+								<p className="font-semibold text-[1.35rem] leading-none tracking-[-0.05em]">
 									NoWait24
 								</p>
 								<span className="rounded-full border border-primary/14 bg-primary/8 px-2.5 py-1 font-medium text-[10px] text-primary uppercase tracking-[0.18em]">
 									Marca
 								</span>
 							</div>
-							<p className="max-w-[24ch] text-[11px] text-muted-foreground uppercase tracking-[0.24em]">
+							<p className="max-w-[28ch] text-[11px] text-muted-foreground uppercase tracking-[0.24em]">
 								Plataforma de room service
+							</p>
+							<p className="max-w-[34ch] text-foreground/72 text-sm leading-6">
+								Operacao de pedidos no quarto com menu mobile e painel claro
+								para o hotel.
 							</p>
 						</div>
 					</a>
 
-					<nav className="flex flex-wrap items-center justify-start gap-2 text-muted-foreground text-sm lg:justify-center">
-						<a
-							className="rounded-full px-3 py-1.5 transition hover:bg-accent hover:text-accent-foreground"
-							href="#plataforma"
-						>
-							Plataforma
-						</a>
-						<a
-							className="rounded-full px-3 py-1.5 transition hover:bg-accent hover:text-accent-foreground"
-							href="#impacto"
-						>
-							Impacto
-						</a>
-						<a
-							className="rounded-full px-3 py-1.5 transition hover:bg-accent hover:text-accent-foreground"
-							href="#fechamento"
-						>
-							Proxima etapa
-						</a>
-					</nav>
-
-					<div className="rounded-[1.7rem] border border-[#ead8d1] bg-white/92 p-3 shadow-[0_18px_40px_-34px_rgba(86,59,52,0.24)]">
+					<div className="rounded-[1.9rem] border border-[#ead8d1] bg-white/94 p-4 shadow-[0_24px_54px_-40px_rgba(86,59,52,0.24)]">
 						<div className="flex items-start gap-3">
-							<div className="mt-0.5 flex size-10 shrink-0 items-center justify-center rounded-2xl bg-primary/8 text-primary">
+							<div className="mt-0.5 flex size-11 shrink-0 items-center justify-center rounded-2xl bg-primary/8 text-primary">
 								<ShieldIcon className="size-4.5" />
 							</div>
 							<div className="min-w-0 flex-1 space-y-2">
 								<div className="space-y-0.5">
 									<p className="text-[10px] text-foreground/60 uppercase tracking-[0.22em]">
-										Acesso da equipe
+										Entrada da equipe
 									</p>
 									<p className="text-foreground/72 text-sm">
 										Entrar ou abrir o painel administrativo.
 									</p>
 								</div>
-								<div className="flex items-center lg:justify-end">
-									{props.authSlot}
-								</div>
+								<div className="flex items-center">{props.authSlot}</div>
 							</div>
 						</div>
+					</div>
+				</div>
+
+				<div className="rounded-[1.7rem] border border-border/65 bg-card/80 px-4 py-3 shadow-[0_24px_54px_-46px_color-mix(in_oklab,var(--foreground)_18%,transparent)] backdrop-blur-md">
+					<div className="flex flex-col gap-2 lg:flex-row lg:items-center lg:justify-between">
+						<p className="text-[10px] text-muted-foreground uppercase tracking-[0.22em]">
+							Navegacao principal
+						</p>
+						<nav className="flex flex-wrap items-center gap-2 text-muted-foreground text-sm">
+							<a
+								className="rounded-full px-3 py-1.5 transition hover:bg-accent hover:text-accent-foreground"
+								href="#plataforma"
+							>
+								Plataforma
+							</a>
+							<a
+								className="rounded-full px-3 py-1.5 transition hover:bg-accent hover:text-accent-foreground"
+								href="#impacto"
+							>
+								Impacto
+							</a>
+							<a
+								className="rounded-full px-3 py-1.5 transition hover:bg-accent hover:text-accent-foreground"
+								href="#fechamento"
+							>
+								Proxima etapa
+							</a>
+						</nav>
 					</div>
 				</div>
 			</header>

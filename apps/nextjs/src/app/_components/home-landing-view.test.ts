@@ -14,7 +14,8 @@ describe("home landing view", () => {
 
 		expect(html).toContain('aria-label="NoWait24 inicio"');
 		expect(html).toContain("Plataforma de room service");
-		expect(html).toContain("Acesso da equipe");
+		expect(html).toContain("Entrada da equipe");
+		expect(html).toContain("Navegacao principal");
 		expect(html).toContain("NoWait24 para hoteis que querem vender melhor");
 		expect(html).toContain(
 			"O room service que aumenta a receita sem aumentar o caos da operacao.",

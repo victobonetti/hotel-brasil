@@ -285,7 +285,7 @@ export function GuestMenuPage(props: { guestSessionToken: string }) {
 				</div>
 
 				<AlertDialog onOpenChange={setCartOpen} open={cartOpen}>
-					<AlertDialogContent className="inset-0 h-[100dvh] max-h-[100dvh] w-screen max-w-none translate-x-0 translate-y-0 rounded-none border-0 bg-[#fffdfb] p-5 sm:max-w-none xl:hidden">
+					<AlertDialogContent className="!top-0 !left-0 !translate-x-0 !translate-y-0 inset-0 h-dvh max-h-dvh w-screen max-w-none gap-0 rounded-none border-0 bg-[#fffdfb] p-0 ring-0 xl:hidden">
 						<GuestCartCheckout
 							createOrderErrorMessage={createOrderMutation.error?.message}
 							isMobileFullscreen

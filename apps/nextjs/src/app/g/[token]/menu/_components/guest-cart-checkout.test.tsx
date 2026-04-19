@@ -27,6 +27,7 @@ describe("GuestCartCheckout", () => {
 		expect(html).toContain("Carrinho / checkout");
 		expect(html).toContain("Voltar ao menu");
 		expect(html).toContain("Resumo do pedido");
+		expect(html).toContain("Observacoes gerais");
 		expect(html).toContain("Finalizar pedido");
 	});
 });
