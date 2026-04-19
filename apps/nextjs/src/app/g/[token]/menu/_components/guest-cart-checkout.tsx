@@ -19,6 +19,7 @@ function formatPrice(priceInCents: number) {
 
 export function GuestCartCheckout(props: {
 	createOrderErrorMessage?: string;
+	isMobileFullscreen?: boolean;
 	isSubmitting: boolean;
 	items: Array<{ menuItemId: string; notes?: string; quantity: number }>;
 	noteInputId: string;
@@ -33,10 +34,17 @@ export function GuestCartCheckout(props: {
 	totalValueInCents: number;
 }) {
 	const cartContent = getGuestCartContent(props.totalItems);
+	const isMobileFullscreen = props.isMobileFullscreen ?? false;
 
 	return (
-		<div className="flex h-full flex-col">
-			<div className="space-y-4 rounded-[30px] border border-[#ecdcd6] bg-[#fff7f2] p-4">
+		<div className="flex h-full min-h-0 flex-col">
+			<div
+				className={
+					isMobileFullscreen
+						? "sticky top-0 z-10 -mx-5 -mt-5 space-y-4 border-[#ecdcd6] border-b bg-[#fff7f2]/96 px-5 pt-5 pb-4 backdrop-blur-md"
+						: "space-y-4 rounded-[30px] border border-[#ecdcd6] bg-[#fff7f2] p-4"
+				}
+			>
 				<div className="flex items-start justify-between gap-3">
 					<div className="space-y-2">
 						<div className="inline-flex rounded-full bg-white px-3 py-1 font-medium text-[#b45a43] text-[11px] uppercase tracking-[0.2em]">
@@ -57,13 +65,13 @@ export function GuestCartCheckout(props: {
 						</Badge>
 						{props.showCloseButton && props.onClose ? (
 							<Button
-								className="rounded-full border-[#ead7d0] bg-white text-[#4c3732] hover:bg-white"
+								className="rounded-full border-[#e0c8c0] bg-white text-[#4c3732] hover:bg-[#fffaf7]"
 								onClick={props.onClose}
 								size="sm"
 								type="button"
 								variant="outline"
 							>
-								Fechar
+								{isMobileFullscreen ? "Voltar ao menu" : "Fechar"}
 							</Button>
 						) : null}
 					</div>
@@ -89,7 +97,13 @@ export function GuestCartCheckout(props: {
 				</div>
 			</div>
 
-			<div className="mt-5 flex-1 space-y-3 overflow-y-auto pr-1">
+			<div
+				className={
+					isMobileFullscreen
+						? "min-h-0 flex-1 space-y-3 overflow-y-auto px-0 pt-5 pb-5"
+						: "mt-5 flex-1 space-y-3 overflow-y-auto pr-1"
+				}
+			>
 				{props.items.length > 0 ? (
 					props.items.map((item, index) => {
 						const menuItem = props.resolveMenuItem(item.menuItemId);
@@ -132,7 +146,13 @@ export function GuestCartCheckout(props: {
 						);
 					})
 				) : (
-					<div className="rounded-[24px] border border-[#ead8d1] border-dashed bg-[#fffaf7] px-5 py-6">
+					<div
+						className={
+							isMobileFullscreen
+								? "flex min-h-[30dvh] items-center rounded-[28px] border border-[#ead8d1] border-dashed bg-[#fffaf7] px-5 py-6"
+								: "rounded-[24px] border border-[#ead8d1] border-dashed bg-[#fffaf7] px-5 py-6"
+						}
+					>
 						<div className="flex items-center gap-3">
 							<div className="flex size-11 items-center justify-center rounded-full bg-white text-[#b45a43]">
 								<PackageIcon className="size-4" />
@@ -150,11 +170,21 @@ export function GuestCartCheckout(props: {
 				)}
 			</div>
 
-			<div className="mt-5 space-y-4">
+			<div
+				className={
+					isMobileFullscreen
+						? "sticky bottom-0 z-10 -mx-5 mt-auto space-y-4 border-[#ecdcd6] border-t bg-[#fffdfb]/98 px-5 pt-4 pb-[calc(1rem+env(safe-area-inset-bottom))] backdrop-blur-md"
+						: "mt-5 space-y-4"
+				}
+			>
 				<Separator />
 
 				<div className="space-y-2">
-					<Label htmlFor={props.noteInputId}>Observacoes do pedido</Label>
+					<Label htmlFor={props.noteInputId}>
+						{isMobileFullscreen
+							? "Observacoes gerais"
+							: "Observacoes do pedido"}
+					</Label>
 					<Textarea
 						className="min-h-24 rounded-[22px] border-[#ead8d1] bg-[#fffaf7]"
 						id={props.noteInputId}
@@ -168,10 +198,12 @@ export function GuestCartCheckout(props: {
 					<div className="flex items-center justify-between gap-3">
 						<div>
 							<p className="text-[11px] text-white/58 uppercase tracking-[0.22em]">
-								Checkout
+								{isMobileFullscreen ? "Resumo do pedido" : "Checkout"}
 							</p>
 							<p className="mt-1 text-sm text-white/74">
-								Revise e envie para o hotel.
+								{isMobileFullscreen
+									? "Revise tudo e envie para o hotel."
+									: "Revise e envie para o hotel."}
 							</p>
 						</div>
 						<p className="font-semibold text-xl">
@@ -179,7 +211,7 @@ export function GuestCartCheckout(props: {
 						</p>
 					</div>
 					<Button
-						className="mt-4 h-11 w-full rounded-full bg-[#d94d38] text-white shadow-[0_20px_36px_-22px_rgba(217,77,56,0.9)] hover:bg-[#c94330]"
+						className="mt-4 h-12 w-full rounded-full bg-[#d94d38] text-white shadow-[0_20px_36px_-22px_rgba(217,77,56,0.9)] hover:bg-[#c94330]"
 						disabled={props.items.length === 0 || props.isSubmitting}
 						onClick={props.onSubmit}
 						type="button"
