@@ -8,7 +8,7 @@ import {
 
 describe("getStaffOrderStatusLabel", () => {
 	test("translates operational statuses to Portuguese", () => {
-		expect(getStaffOrderStatusLabel("pending")).toBe("Recebido");
+		expect(getStaffOrderStatusLabel("pending")).toBe("Pendente");
 		expect(getStaffOrderStatusLabel("accepted")).toBe("Aceito");
 		expect(getStaffOrderStatusLabel("preparing")).toBe("Em preparo");
 		expect(getStaffOrderStatusLabel("out_for_delivery")).toBe(
@@ -30,6 +30,7 @@ describe("getStaffOrderDisplayMeta", () => {
 				status: "preparing",
 			}),
 		).toMatchObject({
+			orderReference: "Quarto 101",
 			orderTitle: "Pedido do Quarto 101",
 			statusLabel: "Em preparo",
 			timingLabel: "Recebido as 10:25",

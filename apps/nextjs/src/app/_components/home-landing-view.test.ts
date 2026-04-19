@@ -12,11 +12,19 @@ describe("home landing view", () => {
 			}),
 		);
 
-		expect(html).toContain("Room service para hoteis que querem operar melhor");
-		expect(html).toContain("O pedido sai do quarto com contexto");
+		expect(html).toContain('aria-label="NoWait24 inicio"');
+		expect(html).toContain("Plataforma de room service");
+		expect(html).toContain("Acesso da equipe");
+		expect(html).toContain("NoWait24 para hoteis que querem vender melhor");
+		expect(html).toContain(
+			"O room service que aumenta a receita sem aumentar o caos da operacao.",
+		);
 		expect(html).toContain("Painel do hotel");
-		expect(html).toContain("Ver a operacao");
-		expect(html).toContain("Como a operacao flui");
-		expect(html).toContain("O que muda no dia a dia");
+		expect(html).toContain("Conhecer a plataforma");
+		expect(html).toContain("Acessar painel");
+		expect(html).toContain("Como funciona na pratica");
+		expect(html).toContain(
+			"Pronto para profissionalizar o room service do hotel?",
+		);
 	});
 });

@@ -30,7 +30,13 @@ export function isStaffNavItemActive(pathname: string, href: string) {
 	return pathname === href || pathname.startsWith(`${href}/`);
 }
 
-export function StaffNav() {
+export function StaffNav(props: {
+	context?: {
+		hotelName: string;
+		role: "admin" | "frontdesk" | "kitchen" | "manager";
+		userName: string;
+	} | null;
+}) {
 	const pathname = usePathname();
 	const items = getStaffNavItems();
 	const icons = {
@@ -38,10 +44,12 @@ export function StaffNav() {
 		"/staff/orders": UtensilsIcon,
 		"/staff/rooms": PackageIcon,
 	} as const;
+	const currentItem =
+		items.find((item) => isStaffNavItemActive(pathname, item.href)) ?? items[0];
 
 	return (
 		<>
-			<div className="flex items-center gap-2 overflow-x-auto rounded-[1.4rem] border border-border/70 bg-card/88 p-2 shadow-sm lg:hidden">
+			<div className="flex items-center gap-2 overflow-x-auto rounded-[1.4rem] border border-border/70 bg-card/92 p-2 shadow-sm lg:hidden">
 				{items.map((item) => {
 					const isActive = isStaffNavItemActive(pathname, item.href);
 					const Icon = icons[item.href];
@@ -65,12 +73,24 @@ export function StaffNav() {
 				})}
 			</div>
 
-			<div className="fixed inset-y-0 left-0 z-20 hidden w-24 border-border/70 border-r bg-background/94 lg:flex lg:flex-col lg:items-center lg:justify-between lg:py-6">
-				<div className="flex flex-col items-center gap-4">
-					<div className="flex size-12 items-center justify-center rounded-[1.35rem] bg-primary text-primary-foreground shadow-sm">
-						<GridIcon className="size-5" />
+			<div className="fixed inset-y-0 left-0 z-20 hidden w-64 border-border/70 border-r bg-background/94 px-5 py-6 lg:flex lg:flex-col">
+				<div className="space-y-6">
+					<div className="rounded-[1.6rem] border border-border/70 bg-card/90 p-4 shadow-sm">
+						<div className="flex items-center gap-3">
+							<div className="flex size-11 items-center justify-center rounded-[1.1rem] bg-primary text-primary-foreground shadow-sm">
+								<GridIcon className="size-5" />
+							</div>
+							<div className="space-y-0.5">
+								<p className="font-semibold text-sm tracking-[0.01em]">
+									NoWait24
+								</p>
+								<p className="text-muted-foreground text-xs uppercase tracking-[0.18em]">
+									Painel administrativo
+								</p>
+							</div>
+						</div>
 					</div>
-					<div className="flex flex-col items-center gap-3">
+					<div className="space-y-2">
 						{items.map((item) => {
 							const isActive = isStaffNavItemActive(pathname, item.href);
 							const Icon = icons[item.href];
@@ -82,17 +102,23 @@ export function StaffNav() {
 										className={cn(
 											buttonVariants({
 												className:
-													"size-12 rounded-[1.25rem] border-0 px-0 shadow-none",
+													"h-auto w-full justify-start rounded-[1.25rem] border-0 px-3 py-3 shadow-none",
 												variant: isActive ? "default" : "ghost",
 											}),
+											"gap-3",
 										)}
 										href={item.href}
 										title={item.label}
 									>
-										<Icon className="size-4.5" />
-										<span className="sr-only">{item.label}</span>
+										<div className="flex size-9 items-center justify-center rounded-[0.9rem] bg-background/80">
+											<Icon className="size-4.5" />
+										</div>
+										<div className="min-w-0 text-left">
+											<p className="font-medium text-sm">{item.label}</p>
+											<p className="text-xs opacity-70">{item.description}</p>
+										</div>
 									</Link>
-									<div className="pointer-events-none absolute top-1/2 left-full ml-3 -translate-y-1/2 rounded-full border border-border/70 bg-background/96 px-3 py-1.5 font-medium text-[11px] uppercase tracking-[0.16em] text-foreground opacity-0 shadow-sm transition duration-150 group-hover:opacity-100">
+									<div className="pointer-events-none absolute top-1/2 left-full ml-3 -translate-y-1/2 rounded-full border border-border/70 bg-background/96 px-3 py-1.5 font-medium text-[11px] text-foreground uppercase tracking-[0.16em] opacity-0 shadow-sm transition duration-150 group-hover:opacity-100 xl:hidden">
 										{item.label}
 									</div>
 								</div>
@@ -101,9 +127,26 @@ export function StaffNav() {
 					</div>
 				</div>
 
-				<div className="flex flex-col items-center gap-2">
-					<div className="text-muted-foreground text-[10px] uppercase tracking-[0.2em] [writing-mode:vertical-rl]">
-						Hotel
+				<div className="mt-auto rounded-[1.5rem] border border-border/70 bg-card/82 px-4 py-4">
+					<p className="text-[11px] text-muted-foreground uppercase tracking-[0.18em]">
+						Agora
+					</p>
+					<p className="mt-1 font-medium text-sm">{currentItem?.label}</p>
+					<p className="mt-1 text-muted-foreground text-sm leading-6">
+						{currentItem?.description}
+					</p>
+					<div className="mt-4 rounded-[1.1rem] bg-background/80 px-3 py-3">
+						<p className="text-[11px] text-muted-foreground uppercase tracking-[0.18em]">
+							Conta ativa
+						</p>
+						<p className="mt-1 font-medium text-sm">
+							{props.context?.hotelName ?? "Hotel vinculado"}
+						</p>
+						<p className="mt-1 text-muted-foreground text-xs leading-5">
+							{props.context
+								? `${props.context.userName} • ${props.context.role}`
+								: "Admin conectado"}
+						</p>
 					</div>
 				</div>
 			</div>

@@ -57,7 +57,7 @@ function GuestOrderCard(props: {
 			<CardContent className="space-y-4 p-4">
 				<div className="flex items-start justify-between gap-3">
 					<div className="space-y-1">
-						<p className="font-semibold text-[18px] text-[#2c1b19]">
+						<p className="font-semibold text-[#2c1b19] text-[18px]">
 							Pedido {orderReference}
 						</p>
 						<div className="flex flex-wrap gap-2 text-[#7d6660] text-sm">
@@ -90,7 +90,7 @@ function GuestOrderCard(props: {
 
 				<div className="flex items-center justify-between gap-3 rounded-[24px] bg-[#241816] px-4 py-4 text-white">
 					<div>
-						<p className="text-[11px] uppercase tracking-[0.22em] text-white/58">
+						<p className="text-[11px] text-white/58 uppercase tracking-[0.22em]">
 							Total
 						</p>
 						<p className="mt-1 text-sm text-white/78">Resumo do pedido</p>
@@ -166,7 +166,7 @@ export function GuestOrdersPageView(props: {
 					</span>
 					Voltar ao menu
 				</a>
-				<div className="inline-flex items-center gap-2 self-start rounded-full border border-[#ebddd9] bg-white/92 px-3 py-2 text-[13px] text-[#7d6660] shadow-[0_18px_32px_-28px_rgba(92,58,50,0.28)]">
+				<div className="inline-flex items-center gap-2 self-start rounded-full border border-[#ebddd9] bg-white/92 px-3 py-2 text-[#7d6660] text-[13px] shadow-[0_18px_32px_-28px_rgba(92,58,50,0.28)]">
 					<span
 						aria-hidden="true"
 						className="inline-block size-2 rounded-full bg-[#de5a43]"
@@ -181,26 +181,26 @@ export function GuestOrdersPageView(props: {
 				<div className="space-y-5">
 					<div className="space-y-3">
 						<div className="inline-flex rounded-full bg-white px-3 py-1 font-medium text-[#b15a45] text-sm shadow-[0_18px_32px_-28px_rgba(86,59,52,0.28)]">
-							Pedidos da sua estadia
+							Pedidos do seu quarto
 						</div>
 						<div className="space-y-2">
 							<h1 className="max-w-xl font-semibold text-3xl text-[#2c1b19] leading-tight tracking-tight">
-								Veja o que esta em andamento e o que ja chegou
+								Acompanhe o que esta em andamento e consulte o historico sem
+								procurar.
 							</h1>
 							<p className="max-w-xl text-[#7d6660] text-sm leading-6">
-								Os pedidos ativos aparecem primeiro para voce acompanhar sem
-								procurar. O restante fica salvo logo abaixo para consulta
-								rapida.
+								Os pedidos ativos aparecem primeiro. O historico continua logo
+								abaixo para consulta rapida durante a estadia.
 							</p>
 						</div>
 					</div>
 					<div className="grid grid-cols-2 gap-3">
 						<SummaryCard
-							label="Agora"
+							label="Ativos"
 							value={`${props.activeTotal} pedido(s)`}
 						/>
 						<SummaryCard
-							label="Antes"
+							label="Historico"
 							value={`${props.historyTotal} pedido(s)`}
 						/>
 						<SummaryCard
@@ -215,10 +215,12 @@ export function GuestOrdersPageView(props: {
 			<div className="grid gap-6 lg:grid-cols-[1fr_1fr]">
 				<section className="space-y-4">
 					<div className="space-y-1">
-						<h2 className="font-semibold text-2xl text-[#2c1b19]">Agora</h2>
+						<h2 className="font-semibold text-2xl text-[#2c1b19]">
+							Em andamento
+						</h2>
 						<p className="max-w-md text-muted-foreground text-sm">
-							Pedidos que ainda estao sendo preparados, confirmados ou a caminho
-							do quarto.
+							Acompanhe aqui os pedidos que ainda estao sendo preparados,
+							confirmados ou a caminho do quarto.
 						</p>
 					</div>
 					{props.activeOrders.length > 0 ? (
@@ -241,7 +243,7 @@ export function GuestOrdersPageView(props: {
 					) : (
 						<SectionEmptyState
 							description="Assim que um novo pedido for criado, ele aparecera aqui com atualizacoes em tempo real."
-							title="Nenhum pedido em andamento."
+							title="Nenhum pedido ativo."
 						/>
 					)}
 					<a
@@ -258,7 +260,7 @@ export function GuestOrdersPageView(props: {
 
 				<section className="space-y-4">
 					<div className="space-y-1">
-						<h2 className="font-semibold text-2xl text-[#2c1b19]">Antes</h2>
+						<h2 className="font-semibold text-2xl text-[#2c1b19]">Historico</h2>
 						<p className="max-w-md text-muted-foreground text-sm">
 							Pedidos finalizados nesta sessao para voce consultar novamente
 							quando precisar.
@@ -284,7 +286,7 @@ export function GuestOrdersPageView(props: {
 					) : (
 						<SectionEmptyState
 							description="Pedidos entregues ou cancelados vao aparecer aqui quando a sessao acumular historico."
-							title="Nenhum pedido no historico desta sessao."
+							title="Nenhum pedido no historico."
 						/>
 					)}
 				</section>

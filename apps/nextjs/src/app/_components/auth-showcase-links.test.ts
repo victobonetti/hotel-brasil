@@ -19,9 +19,10 @@ describe("auth showcase signed-in view", () => {
 			}),
 		);
 
-		expect(html).toContain("Bem-vindo");
+		expect(html).toContain("Painel da equipe");
 		expect(html).toContain("Victor");
-		expect(html).toContain("Ver painel adm");
+		expect(html).toContain("Abrir painel");
+		expect(html).toContain("Acesso liberado para Hotel Brasil Demo");
 		expect(html).toContain('href="/staff/orders"');
 		expect(html).not.toContain('href="/staff/menu"');
 		expect(html).not.toContain('href="/staff/menu/items"');
@@ -37,9 +38,10 @@ describe("auth showcase signed-in view", () => {
 			}),
 		);
 
-		expect(html).toContain("Bem-vindo");
+		expect(html).toContain("Painel da equipe");
 		expect(html).toContain("Victor");
+		expect(html).toContain("Aguardando vinculacao a um hotel");
 		expect(html).not.toContain('href="/staff/orders"');
-		expect(html).not.toContain("Ver painel adm");
+		expect(html).not.toContain("Abrir painel");
 	});
 });

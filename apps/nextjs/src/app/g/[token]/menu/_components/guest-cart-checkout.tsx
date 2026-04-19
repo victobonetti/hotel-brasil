@@ -36,11 +36,11 @@ export function GuestCartCheckout(props: {
 
 	return (
 		<div className="flex h-full flex-col">
-			<div className="space-y-4 rounded-[30px] bg-[#fff7f2] p-4">
+			<div className="space-y-4 rounded-[30px] border border-[#ecdcd6] bg-[#fff7f2] p-4">
 				<div className="flex items-start justify-between gap-3">
 					<div className="space-y-2">
 						<div className="inline-flex rounded-full bg-white px-3 py-1 font-medium text-[#b45a43] text-[11px] uppercase tracking-[0.2em]">
-							Carrinho
+							Carrinho / checkout
 						</div>
 						<div className="space-y-1">
 							<h2 className="font-semibold text-[#251613] text-xl">
@@ -171,7 +171,7 @@ export function GuestCartCheckout(props: {
 								Checkout
 							</p>
 							<p className="mt-1 text-sm text-white/74">
-								Revise e envie para o quarto.
+								Revise e envie para o hotel.
 							</p>
 						</div>
 						<p className="font-semibold text-xl">

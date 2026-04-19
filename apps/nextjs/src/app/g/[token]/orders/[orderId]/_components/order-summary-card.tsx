@@ -49,13 +49,13 @@ export function OrderSummaryCard(props: { order: OrderSummary }) {
 	});
 
 	return (
-		<Card className="overflow-hidden rounded-[32px] border-[#efe0da] bg-[#fffdfb] shadow-[0_28px_60px_-44px_rgba(86,59,52,0.34)]">
+		<Card className="overflow-hidden rounded-[32px] border-[#efe0da] bg-[#fffdfb] shadow-[0_28px_60px_-44px_rgba(86,59,52,0.24)]">
 			<CardContent className="space-y-5 p-4">
 				<div className="space-y-4 rounded-[28px] bg-[#fff7f3] p-4">
 					<div className="flex flex-wrap items-start justify-between gap-3">
 						<div className="space-y-2">
 							<div className="inline-flex rounded-full bg-white px-3 py-1 font-medium text-[#b15a45] text-[11px] uppercase tracking-[0.2em]">
-								Resumo do pedido
+								Resumo
 							</div>
 							<div className="space-y-1">
 								<p className="font-semibold text-[#2c1b19] text-xl">
@@ -113,12 +113,10 @@ export function OrderSummaryCard(props: { order: OrderSummary }) {
 
 				<div className="flex items-center justify-between gap-3 rounded-[26px] bg-[#241816] px-4 py-4 text-white">
 					<div>
-						<p className="text-[11px] uppercase tracking-[0.22em] text-white/58">
+						<p className="text-[11px] text-white/58 uppercase tracking-[0.22em]">
 							Total
 						</p>
-						<p className="mt-1 text-sm text-white/78">
-							Pagamento no room service
-						</p>
+						<p className="mt-1 text-sm text-white/78">Total do pedido</p>
 					</div>
 					<span className="font-semibold text-xl">
 						{formatPrice(props.order.totalAmountInCents)}

@@ -15,7 +15,7 @@ export function MenuItemCard(props: {
 	onSelect: (item: MenuItemView) => void;
 }) {
 	return (
-		<Card className="group overflow-hidden rounded-[28px] border-[#ecdcd6] bg-[#fffdfb] shadow-[0_24px_56px_-46px_rgba(86,59,52,0.34)] transition-transform duration-200 hover:-translate-y-0.5">
+		<Card className="group overflow-hidden rounded-[28px] border-[#ecdcd6] bg-[#fffdfb] shadow-[0_24px_56px_-46px_rgba(86,59,52,0.24)] transition-transform duration-200 hover:-translate-y-0.5">
 			<button
 				className="block w-full text-left"
 				onClick={() => props.onSelect(props.item)}
@@ -48,16 +48,17 @@ export function MenuItemCard(props: {
 								<p className="font-semibold text-[#281816] text-[17px] leading-tight">
 									{props.item.name}
 								</p>
-								<p className="line-clamp-2 text-[#7d6660] text-sm leading-5">
-									{props.item.description ??
-										"Abra para ajustar antes de adicionar."}
-								</p>
+								{props.item.description ? (
+									<p className="line-clamp-2 text-[#7d6660] text-sm leading-5">
+										{props.item.description}
+									</p>
+								) : null}
 							</div>
 							<div className="flex items-center justify-between gap-3">
 								<span className="rounded-full bg-[#fff1ec] px-2.5 py-1 font-medium text-[#b15a45] text-[11px] uppercase tracking-[0.16em]">
 									{props.item.preparationTimeMinutes ?? 15} min
 								</span>
-								<p className="font-medium text-[#c34733] text-sm">Adicionar</p>
+								<p className="font-medium text-[#c34733] text-sm">Ver item</p>
 							</div>
 						</div>
 					</CardContent>

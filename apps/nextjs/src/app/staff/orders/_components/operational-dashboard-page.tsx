@@ -7,7 +7,11 @@ import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useEffect } from "react";
 
-import { PageShell, SectionHeader } from "~/app/_components/page-shell";
+import {
+	PageShell,
+	SectionHeader,
+	StickyAdminHeader,
+} from "~/app/_components/page-shell";
 import { PaginationControls } from "~/app/_components/pagination-controls";
 import {
 	buildPageSearch,
@@ -28,7 +32,13 @@ function formatPrice(priceInCents: number) {
 	}).format(priceInCents / 100);
 }
 
-export function OperationalDashboardPage() {
+export function OperationalDashboardPage(props: {
+	staffContext?: {
+		hotelName: string;
+		role: "admin" | "frontdesk" | "kitchen" | "manager";
+		userName: string;
+	} | null;
+}) {
 	const trpc = useTRPC();
 	const pathname = usePathname();
 	const queryClient = useQueryClient();
@@ -65,6 +75,15 @@ export function OperationalDashboardPage() {
 		(total, order) => total + order.totalAmountInCents,
 		0,
 	);
+	const pendingOrders = activeOrders.filter(
+		(order) => order.status === "pending",
+	);
+	let currentAttentionLabel = "Sem pedidos urgentes";
+	if (pendingOrders.length > 0) {
+		currentAttentionLabel = `${pendingOrders.length} aguardando aceite`;
+	} else if (activeOrders.length > 0) {
+		currentAttentionLabel = "Fila em andamento";
+	}
 
 	useEffect(() => {
 		if (!pagination || !shouldSyncPageParam(currentPage, pagination)) {
@@ -101,77 +120,95 @@ export function OperationalDashboardPage() {
 	}
 
 	return (
-		<PageShell sidebar={<StaffNav />}>
-			<SectionHeader
-				actions={
-					<>
-						<Button
-							onClick={() => {
-								void queryClient.invalidateQueries({
-									queryKey: trpc.staffOrder.listActiveOrders.queryKey({
-										page: currentPage,
-									}),
-								});
-								void queryClient.invalidateQueries({
-									queryKey: trpc.staffOrder.listRecentOrders.queryKey({
-										page: 1,
-									}),
-								});
-							}}
-							variant="outline"
-						>
-							<RefreshIcon className="size-4" />
-							Atualizar
-						</Button>
-						<Button render={<Link href="/staff/menu" />} variant="secondary">
-							<PackageIcon className="size-4" />
-							Cardapio
-						</Button>
-					</>
-				}
-				badge="Pedidos"
-				description="Fila ativa, historico recente e detalhe do pedido."
-				supportingPanel={
-					<div className="space-y-0.5">
-						<p className="font-medium text-sm">Agora</p>
-						<p className="text-muted-foreground text-sm">Ativos primeiro.</p>
-					</div>
-				}
-				title="Operacao"
-			/>
-
+		<PageShell sidebar={<StaffNav context={props.staffContext} />}>
 			<StaffHotelGuard
 				errorMessage={activeOrdersQuery.error?.message}
 				state={state}
 			>
-				<div className="grid gap-3 md:grid-cols-3">
-					<div className="rounded-[1.4rem] border border-border/70 bg-card/90 p-5 shadow-sm">
-						<p className="font-medium text-primary text-sm">Ativos</p>
-						<p className="mt-2 font-semibold text-3xl">
-							{pagination?.totalItems ?? 0}
-						</p>
-					</div>
-					<div className="rounded-[1.4rem] border border-border/70 bg-card/90 p-5 shadow-sm">
-						<p className="font-medium text-primary text-sm">Recentes</p>
-						<p className="mt-2 font-semibold text-3xl">{recentOrders.length}</p>
-					</div>
-					<div className="rounded-[1.4rem] border border-border/70 bg-card/90 p-5 shadow-sm">
-						<p className="font-medium text-primary text-sm">Na fila</p>
-						<p className="mt-2 font-semibold text-3xl">
-							{formatPrice(totalRevenueInCents)}
-						</p>
-					</div>
-				</div>
+				<StickyAdminHeader>
+					<SectionHeader
+						actions={
+							<>
+								<Button
+									onClick={() => {
+										void queryClient.invalidateQueries({
+											queryKey: trpc.staffOrder.listActiveOrders.queryKey({
+												page: currentPage,
+											}),
+										});
+										void queryClient.invalidateQueries({
+											queryKey: trpc.staffOrder.listRecentOrders.queryKey({
+												page: 1,
+											}),
+										});
+									}}
+									variant="outline"
+								>
+									<RefreshIcon className="size-4" />
+									Atualizar
+								</Button>
+								<Button
+									render={<Link href="/staff/menu" />}
+									variant="secondary"
+								>
+									<PackageIcon className="size-4" />
+									Cardapio
+								</Button>
+							</>
+						}
+						badge="Pedidos"
+						description="Cockpit do hotel com prioridades do momento, fila ativa e detalhe do pedido selecionado."
+						supportingPanel={
+							<div className="space-y-0.5">
+								<p className="font-medium text-sm">Prioridade atual</p>
+								<p className="text-muted-foreground text-sm">
+									{currentAttentionLabel}
+								</p>
+							</div>
+						}
+						title="Painel operacional"
+					/>
 
-				<div className="grid gap-6 lg:grid-cols-[0.95fr_1.05fr]">
+					<div className="grid gap-3 xl:grid-cols-4">
+						<div className="rounded-[1.5rem] border border-border/70 bg-card/92 p-5 shadow-sm">
+							<p className="font-medium text-primary text-sm">Ativos</p>
+							<p className="mt-2 font-semibold text-3xl">
+								{pagination?.totalItems ?? 0}
+							</p>
+						</div>
+						<div className="rounded-[1.5rem] border border-border/70 bg-card/92 p-5 shadow-sm">
+							<p className="font-medium text-primary text-sm">Aguardando</p>
+							<p className="mt-2 font-semibold text-3xl">
+								{pendingOrders.length}
+							</p>
+						</div>
+						<div className="rounded-[1.5rem] border border-border/70 bg-card/92 p-5 shadow-sm">
+							<p className="font-medium text-primary text-sm">Historico</p>
+							<p className="mt-2 font-semibold text-3xl">
+								{recentOrders.length}
+							</p>
+						</div>
+						<div className="rounded-[1.5rem] border border-border/70 bg-card/92 p-5 shadow-sm">
+							<p className="font-medium text-primary text-sm">
+								Receita em aberto
+							</p>
+							<p className="mt-2 font-semibold text-3xl">
+								{formatPrice(totalRevenueInCents)}
+							</p>
+						</div>
+					</div>
+				</StickyAdminHeader>
+
+				<div className="grid gap-6 xl:grid-cols-[0.92fr_1.08fr]">
 					<div className="space-y-3">
 						<OrderQueueBoard
 							emptyMessage="Nao ha pedidos ativos na fila neste momento."
 							onSelect={setSelectedOrderId}
 							orders={activeOrders}
 							selectedOrderId={selectedOrderId}
-							title="Fila operacional"
+							title="Fila ativa"
 						/>
+						{pagination ? <PaginationControls pagination={pagination} /> : null}
 						<OrderQueueBoard
 							emptyMessage="Nenhum pedido concluido apareceu no historico recente."
 							onSelect={setSelectedOrderId}
@@ -179,7 +216,6 @@ export function OperationalDashboardPage() {
 							selectedOrderId={selectedOrderId}
 							title="Historico recente"
 						/>
-						{pagination ? <PaginationControls pagination={pagination} /> : null}
 					</div>
 					<OrderDetailsDrawer
 						onRefresh={() => {

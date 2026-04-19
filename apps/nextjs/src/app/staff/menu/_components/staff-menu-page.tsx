@@ -16,7 +16,11 @@ import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 
-import { PageShell, SectionHeader } from "~/app/_components/page-shell";
+import {
+	PageShell,
+	SectionHeader,
+	StickyAdminHeader,
+} from "~/app/_components/page-shell";
 import { PaginationControls } from "~/app/_components/pagination-controls";
 import {
 	buildPageSearch,
@@ -35,7 +39,13 @@ import {
 import { useTRPC } from "~/trpc/react";
 import { StaffHotelGuard } from "../../orders/_components/staff-hotel-guard";
 
-export function StaffMenuPage() {
+export function StaffMenuPage(props: {
+	staffContext?: {
+		hotelName: string;
+		role: "admin" | "frontdesk" | "kitchen" | "manager";
+		userName: string;
+	} | null;
+}) {
 	const trpc = useTRPC();
 	const pathname = usePathname();
 	const router = useRouter();
@@ -97,60 +107,68 @@ export function StaffMenuPage() {
 	}, [currentPage, pagination, pathname, router, searchParams]);
 
 	return (
-		<PageShell containerClassName="max-w-6xl gap-6" sidebar={<StaffNav />}>
-			<SectionHeader
-				actions={
-					<Button
-						render={<Link href="/staff/menu/items" />}
-						variant="secondary"
-					>
-						<PackageIcon className="size-4" />
-						Itens
-					</Button>
-				}
-				badge="Cardapio"
-				description="Estrutura, ordem e visibilidade."
-				supportingPanel={
-					<div className="space-y-0.5">
-						<p className="font-medium text-sm">Fluxo</p>
-						<p className="text-muted-foreground text-sm">
-							Categorias primeiro.
-						</p>
-					</div>
-				}
-				title="Categorias"
-			/>
-
+		<PageShell
+			containerClassName="max-w-6xl gap-6"
+			sidebar={<StaffNav context={props.staffContext} />}
+		>
 			<StaffHotelGuard
 				errorMessage={categoriesQuery.error?.message}
 				state={state}
 			>
-				<div className="grid gap-3 md:grid-cols-3">
-					<div className="rounded-[1.4rem] border border-border/70 bg-card/90 p-5 shadow-sm">
-						<p className="font-medium text-primary text-sm">Total</p>
-						<p className="mt-2 font-semibold text-3xl">
-							{pagination?.totalItems ?? 0}
-						</p>
+				<StickyAdminHeader>
+					<SectionHeader
+						actions={
+							<Button
+								render={<Link href="/staff/menu/items" />}
+								variant="secondary"
+							>
+								<PackageIcon className="size-4" />
+								Itens
+							</Button>
+						}
+						badge="Cardapio"
+						description="Organize a estrutura do menu com menos ruido visual e uma leitura mais administrativa."
+						supportingPanel={
+							<div className="space-y-0.5">
+								<p className="font-medium text-sm">Fluxo</p>
+								<p className="text-muted-foreground text-sm">
+									Categorias primeiro.
+								</p>
+							</div>
+						}
+						title="Estrutura do cardapio"
+					/>
+
+					<div className="grid gap-3 md:grid-cols-3">
+						<div className="rounded-[1.4rem] border border-border/70 bg-card/90 p-5 shadow-sm">
+							<p className="font-medium text-primary text-sm">Total</p>
+							<p className="mt-2 font-semibold text-3xl">
+								{pagination?.totalItems ?? 0}
+							</p>
+						</div>
+						<div className="rounded-[1.4rem] border border-border/70 bg-card/90 p-5 shadow-sm">
+							<p className="font-medium text-primary text-sm">Ativas</p>
+							<p className="mt-2 font-semibold text-3xl">
+								{categories.filter((category) => category.active).length}
+							</p>
+						</div>
+						<div className="rounded-[1.4rem] border border-border/70 bg-card/90 p-5 shadow-sm">
+							<p className="font-medium text-primary text-sm">Proximo passo</p>
+							<p className="mt-2 font-semibold text-lg">
+								{categories.length === 0 ? "Criar categoria" : "Revisar itens"}
+							</p>
+						</div>
 					</div>
-					<div className="rounded-[1.4rem] border border-border/70 bg-card/90 p-5 shadow-sm">
-						<p className="font-medium text-primary text-sm">Ativas</p>
-						<p className="mt-2 font-semibold text-3xl">
-							{categories.filter((category) => category.active).length}
-						</p>
-					</div>
-					<div className="rounded-[1.4rem] border border-border/70 bg-card/90 p-5 shadow-sm">
-						<p className="font-medium text-primary text-sm">Proximo</p>
-						<p className="mt-2 font-semibold text-lg">
-							{categories.length === 0 ? "Criar categoria" : "Revisar itens"}
-						</p>
-					</div>
-				</div>
+				</StickyAdminHeader>
 
 				<div className="grid gap-6 lg:grid-cols-[0.7fr_1.3fr]">
 					<Card className="border-border/70 bg-card/90 shadow-sm">
 						<CardHeader>
 							<CardTitle>Nova categoria</CardTitle>
-							<CardDescription>Crie um grupo principal.</CardDescription>
+							<CardDescription>
+								Cadastre a base do cardapio e siga para os itens quando estiver
+								pronto.
+							</CardDescription>
 						</CardHeader>
 						<CardContent className="space-y-4">
 							<div className="space-y-2">
@@ -188,7 +206,9 @@ export function StaffMenuPage() {
 					<Card className="border-border/70 bg-card/90 shadow-sm">
 						<CardHeader>
 							<CardTitle>Estrutura atual</CardTitle>
-							<CardDescription>Ordem e visibilidade.</CardDescription>
+							<CardDescription>
+								Lista simples para revisar ordem e estado.
+							</CardDescription>
 						</CardHeader>
 						<CardContent className="space-y-3">
 							{categories.map((category, index) => (

@@ -15,16 +15,17 @@ export function getGuestMenuHeroContent(
 	if (totalItems > 0) {
 		return {
 			description:
-				"Abra o carrinho para revisar, ajustar observacoes e finalizar.",
+				"Abra o carrinho para revisar os itens, ajustar observacoes e finalizar.",
 			eyebrow: "Carrinho pronto",
-			title: "Seus itens ja podem seguir",
+			title: "Seu pedido esta quase pronto",
 		};
 	}
 
 	return {
-		description: "Escolha os itens e monte seu pedido em poucos toques.",
-		eyebrow: "Menu",
-		title: "Peça para o seu quarto",
+		description:
+			"Escolha os itens do menu e adicione ao carrinho com poucos toques.",
+		eyebrow: "Menu do quarto",
+		title: "Monte seu pedido",
 	};
 }
 
@@ -32,17 +33,18 @@ export function getGuestCartContent(totalItems: number): GuestCartContent {
 	if (totalItems > 0) {
 		return {
 			description:
-				"Confira os itens, adicione observacoes e finalize o pedido.",
-			title: "Revise antes de enviar",
+				"Confira os itens, adicione observacoes gerais e envie para o hotel.",
+			title: "Revisar e finalizar",
 		};
 	}
 
 	return {
-		description: "Adicione itens do menu para revisar aqui antes de finalizar.",
-		title: "Seu carrinho esta vazio",
+		description:
+			"Os itens do menu aparecem aqui para voce revisar antes de finalizar.",
+		title: "Carrinho vazio",
 	};
 }
 
 export function getGuestMobileCartCtaLabel(totalItems: number) {
-	return totalItems > 0 ? "Ver carrinho" : "Abrir carrinho";
+	return totalItems > 0 ? "Abrir checkout" : "Ver carrinho";
 }

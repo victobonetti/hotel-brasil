@@ -26,6 +26,9 @@ export function GuestMenuActions(props: { guestSessionToken: string }) {
 			>
 				Meus pedidos
 			</a>
+			<div className="ml-auto hidden rounded-full border border-[#ebddd9] bg-white/92 px-3 py-2 text-[#7d6660] text-[13px] shadow-[0_18px_32px_-28px_rgba(92,58,50,0.28)] sm:inline-flex">
+				Sessao ativa
+			</div>
 		</div>
 	);
 }

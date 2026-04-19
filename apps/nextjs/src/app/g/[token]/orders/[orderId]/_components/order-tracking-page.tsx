@@ -213,7 +213,7 @@ export function OrderTrackingPage(props: {
 					</span>
 					Cardapio
 				</Button>
-				<div className="inline-flex items-center gap-2 rounded-full border border-[#ebddd9] bg-white/92 px-3 py-2 text-[13px] text-[#7d6660] shadow-[0_18px_32px_-28px_rgba(92,58,50,0.28)]">
+				<div className="inline-flex items-center gap-2 rounded-full border border-[#ebddd9] bg-white/92 px-3 py-2 text-[#7d6660] text-[13px] shadow-[0_18px_32px_-28px_rgba(92,58,50,0.28)]">
 					<span
 						aria-hidden="true"
 						className="inline-block size-2 rounded-full bg-[#de5a43]"
@@ -222,7 +222,7 @@ export function OrderTrackingPage(props: {
 				</div>
 			</div>
 
-			<section className="overflow-hidden rounded-[36px] border border-[#f1ddd6] bg-[linear-gradient(180deg,#fff9f5_0%,#fff3ee_100%)] p-5 shadow-[0_30px_70px_-46px_rgba(86,59,52,0.38)]">
+			<section className="overflow-hidden rounded-[36px] border border-[#f1ddd6] bg-[linear-gradient(180deg,#fff9f5_0%,#fff3ee_100%)] p-5 shadow-[0_30px_70px_-46px_rgba(86,59,52,0.3)]">
 				<div className="space-y-5">
 					<div className="space-y-3">
 						<div className="inline-flex rounded-full bg-white px-3 py-1 font-medium text-[#b15a45] text-sm shadow-[0_18px_32px_-28px_rgba(86,59,52,0.28)]">
@@ -242,7 +242,7 @@ export function OrderTrackingPage(props: {
 					</div>
 
 					<div className="space-y-2 rounded-[26px] bg-white px-4 py-4 shadow-[0_20px_32px_-28px_rgba(86,59,52,0.22)]">
-						<div className="flex items-center justify-between text-sm text-[#7d6660]">
+						<div className="flex items-center justify-between text-[#7d6660] text-sm">
 							<span>Progresso do pedido</span>
 							<span>{statusPresentation.progressValue}%</span>
 						</div>
@@ -262,7 +262,7 @@ export function OrderTrackingPage(props: {
 								key={step.label}
 							>
 								<div
-									className={`flex size-9 items-center justify-center rounded-full text-sm font-semibold ${
+									className={`flex size-9 items-center justify-center rounded-full font-semibold text-sm ${
 										step.state === "active"
 											? "bg-[#d94d38] text-white"
 											: "bg-[#fff1ec] text-[#b15a45]"

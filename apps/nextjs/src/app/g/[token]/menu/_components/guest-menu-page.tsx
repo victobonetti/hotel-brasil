@@ -173,7 +173,7 @@ export function GuestMenuPage(props: { guestSessionToken: string }) {
 				<div className="space-y-4">
 					<GuestMenuActions guestSessionToken={props.guestSessionToken} />
 
-					<section className="rounded-[30px] border border-[#ecdfd9] bg-white px-4 py-5 shadow-[0_24px_50px_-42px_rgba(86,59,52,0.22)] sm:px-5">
+					<section className="rounded-[30px] border border-[#ecdfd9] bg-white px-4 py-5 shadow-[0_24px_50px_-42px_rgba(86,59,52,0.18)] sm:px-5">
 						<div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
 							<div className="space-y-3">
 								<div className="inline-flex items-center gap-2 rounded-full bg-[#fff1e9] px-3 py-1 font-medium text-[#b45a43] text-[11px] uppercase tracking-[0.2em]">
@@ -203,33 +203,43 @@ export function GuestMenuPage(props: { guestSessionToken: string }) {
 
 					<div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_24rem] xl:items-start">
 						<div className="space-y-4">
-							<section className="rounded-[30px] border border-[#efe0da] bg-[#fffdfb] p-4 shadow-[0_28px_60px_-44px_rgba(86,59,52,0.3)] sm:p-5">
-								<div className="flex items-center justify-between gap-3">
+							<section className="rounded-[30px] border border-[#efe0da] bg-[#fffdfb] p-4 shadow-[0_28px_60px_-44px_rgba(86,59,52,0.22)] sm:p-5">
+								<div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
 									<div className="space-y-1">
 										<p className="font-semibold text-[#251613] text-xl">Menu</p>
 										<p className="text-[#7b645d] text-sm leading-6">
-											Toque em um item para ajustar antes de adicionar.
+											Escolha uma categoria, abra o item e envie para o
+											carrinho.
 										</p>
 									</div>
-									<div className="hidden rounded-full bg-[#fff1e9] px-3 py-1 font-medium text-[#b45a43] text-xs uppercase tracking-[0.18em] sm:inline-flex">
-										Adicionar
+									<div className="flex flex-wrap gap-2">
+										{menuQuery.data?.categories.map((category) => (
+											<a
+												className="rounded-full border border-[#ebddd7] bg-white px-3 py-1.5 text-[#6b524c] text-xs"
+												href={`#category-${category.id}`}
+												key={category.id}
+											>
+												{category.name}
+											</a>
+										))}
 									</div>
 								</div>
 							</section>
 
 							{menuQuery.data?.categories.map((category) => (
-								<CategorySection
-									category={category}
-									key={category.id}
-									onSelectItem={setSelectedItem}
-								/>
+								<div id={`category-${category.id}`} key={category.id}>
+									<CategorySection
+										category={category}
+										onSelectItem={setSelectedItem}
+									/>
+								</div>
 							))}
 							{pagination ? (
 								<PaginationControls pagination={pagination} />
 							) : null}
 						</div>
 
-						<section className="hidden rounded-[32px] border border-[#eadbd5] bg-[#fffdfb] p-5 shadow-[0_30px_60px_-46px_rgba(86,59,52,0.34)] xl:sticky xl:top-5 xl:block">
+						<section className="hidden rounded-[32px] border border-[#eadbd5] bg-[#fffdfb] p-5 shadow-[0_30px_60px_-46px_rgba(86,59,52,0.24)] xl:sticky xl:top-5 xl:block">
 							<GuestCartCheckout
 								createOrderErrorMessage={createOrderMutation.error?.message}
 								isSubmitting={createOrderMutation.isPending}

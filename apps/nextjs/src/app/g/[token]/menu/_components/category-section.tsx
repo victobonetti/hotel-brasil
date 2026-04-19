@@ -57,7 +57,7 @@ export function CategorySection(props: {
 	]);
 
 	return (
-		<section className="space-y-4 rounded-[30px] border border-[#efe0da] bg-[linear-gradient(180deg,#fffdfb_0%,#fff8f4_100%)] p-4 shadow-[0_26px_60px_-48px_rgba(86,59,52,0.4)] sm:p-5">
+		<section className="space-y-4 rounded-[30px] border border-[#efe0da] bg-[linear-gradient(180deg,#fffdfb_0%,#fff8f4_100%)] p-4 shadow-[0_26px_60px_-48px_rgba(86,59,52,0.24)] sm:p-5">
 			<div className="flex items-start justify-between gap-3">
 				<div className="space-y-1">
 					<h2 className="font-semibold text-2xl text-[#2c1b19] tracking-tight">
@@ -69,7 +69,7 @@ export function CategorySection(props: {
 						</p>
 					) : null}
 				</div>
-				<div className="self-start rounded-full border border-[#f0d8d0] bg-white px-3 py-1 font-medium text-[#b15a45] text-xs shadow-[0_14px_28px_-24px_rgba(86,59,52,0.35)]">
+				<div className="self-start rounded-full border border-[#f0d8d0] bg-white px-3 py-1 font-medium text-[#b15a45] text-xs shadow-[0_14px_28px_-24px_rgba(86,59,52,0.2)]">
 					{props.category.items.length} item(ns)
 				</div>
 			</div>

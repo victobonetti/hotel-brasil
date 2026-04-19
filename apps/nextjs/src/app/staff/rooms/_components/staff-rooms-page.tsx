@@ -27,7 +27,11 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import QRCode from "qrcode";
 import { useEffect, useState } from "react";
 
-import { PageShell, SectionHeader } from "~/app/_components/page-shell";
+import {
+	PageShell,
+	SectionHeader,
+	StickyAdminHeader,
+} from "~/app/_components/page-shell";
 import { PaginationControls } from "~/app/_components/pagination-controls";
 import {
 	buildPageSearch,
@@ -69,7 +73,13 @@ function formatFloorLabel(floor: number | null) {
 	return floor === null ? "Sem andar" : `Andar ${floor}`;
 }
 
-export function StaffRoomsPage() {
+export function StaffRoomsPage(props: {
+	staffContext?: {
+		hotelName: string;
+		role: "admin" | "frontdesk" | "kitchen" | "manager";
+		userName: string;
+	} | null;
+}) {
 	const trpc = useTRPC();
 	const pathname = usePathname();
 	const router = useRouter();
@@ -233,55 +243,62 @@ export function StaffRoomsPage() {
 	}
 
 	return (
-		<PageShell containerClassName="max-w-6xl gap-6" sidebar={<StaffNav />}>
-			<SectionHeader
-				badge="Quartos"
-				description="Acesso dos quartos."
-				supportingPanel={
-					<div className="flex items-center gap-2 text-muted-foreground text-sm">
-						<BedIcon className="size-4" />
-						<span>{pagination?.totalItems ?? 0} ativos no painel</span>
-					</div>
-				}
-				title="Quartos"
-			/>
-
+		<PageShell
+			containerClassName="max-w-6xl gap-6"
+			sidebar={<StaffNav context={props.staffContext} />}
+		>
 			<StaffHotelGuard errorMessage={roomsQuery.error?.message} state={state}>
-				<div className="grid gap-3 md:grid-cols-3">
-					<div className="rounded-[1.4rem] border border-border/70 bg-card/90 p-5 shadow-sm">
-						<div className="flex items-center gap-2 text-muted-foreground text-sm">
-							<BedIcon className="size-4" />
-							<span>Quartos</span>
+				<StickyAdminHeader>
+					<SectionHeader
+						badge="Quartos"
+						description="Controle o acesso por quarto com lista enxuta, status claro e detalhe sob demanda."
+						supportingPanel={
+							<div className="flex items-center gap-2 text-muted-foreground text-sm">
+								<BedIcon className="size-4" />
+								<span>{pagination?.totalItems ?? 0} ativos no painel</span>
+							</div>
+						}
+						title="Acesso por quarto"
+					/>
+
+					<div className="grid gap-3 md:grid-cols-3">
+						<div className="rounded-[1.4rem] border border-border/70 bg-card/90 p-5 shadow-sm">
+							<div className="flex items-center gap-2 text-muted-foreground text-sm">
+								<BedIcon className="size-4" />
+								<span>Quartos</span>
+							</div>
+							<p className="mt-3 font-semibold text-3xl">
+								{pagination?.totalItems ?? 0}
+							</p>
 						</div>
-						<p className="mt-3 font-semibold text-3xl">
-							{pagination?.totalItems ?? 0}
-						</p>
-					</div>
-					<div className="rounded-[1.4rem] border border-border/70 bg-card/90 p-5 shadow-sm">
-						<div className="flex items-center gap-2 text-muted-foreground text-sm">
-							<ToggleOnIcon className="size-4" />
-							<span>Ativos</span>
+						<div className="rounded-[1.4rem] border border-border/70 bg-card/90 p-5 shadow-sm">
+							<div className="flex items-center gap-2 text-muted-foreground text-sm">
+								<ToggleOnIcon className="size-4" />
+								<span>Ativos</span>
+							</div>
+							<p className="mt-3 font-semibold text-3xl">
+								{rooms.filter((room) => room.active).length}
+							</p>
 						</div>
-						<p className="mt-3 font-semibold text-3xl">
-							{rooms.filter((room) => room.active).length}
-						</p>
-					</div>
-					<div className="rounded-[1.4rem] border border-border/70 bg-card/90 p-5 shadow-sm">
-						<div className="flex items-center gap-2 text-muted-foreground text-sm">
-							<BuildingIcon className="size-4" />
-							<span>Sem andar</span>
+						<div className="rounded-[1.4rem] border border-border/70 bg-card/90 p-5 shadow-sm">
+							<div className="flex items-center gap-2 text-muted-foreground text-sm">
+								<BuildingIcon className="size-4" />
+								<span>Sem andar</span>
+							</div>
+							<p className="mt-3 font-semibold text-3xl">
+								{rooms.filter((room) => room.floor === null).length}
+							</p>
 						</div>
-						<p className="mt-3 font-semibold text-3xl">
-							{rooms.filter((room) => room.floor === null).length}
-						</p>
 					</div>
-				</div>
+				</StickyAdminHeader>
 
 				<div className="grid gap-6 lg:grid-cols-[18rem_minmax(0,1fr)]">
 					<Card className="border-border/70 bg-card/90 shadow-sm lg:sticky lg:top-6 lg:h-fit">
 						<CardHeader>
-							<CardTitle>Criar</CardTitle>
-							<CardDescription>Link e QR prontos na hora.</CardDescription>
+							<CardTitle>Novo quarto</CardTitle>
+							<CardDescription>
+								Crie o acesso e gere o QR no mesmo fluxo.
+							</CardDescription>
 						</CardHeader>
 						<CardContent className="space-y-4">
 							<div className="space-y-2">
@@ -326,9 +343,9 @@ export function StaffRoomsPage() {
 
 					<Card className="border-border/70 bg-card/90 shadow-sm">
 						<CardHeader>
-							<CardTitle>Painel</CardTitle>
+							<CardTitle>Lista de quartos</CardTitle>
 							<CardDescription>
-								Status, link e QR em um fluxo so.
+								Estado e acesso rapido. Edicao completa no detalhe.
 							</CardDescription>
 						</CardHeader>
 						<CardContent className="space-y-4">

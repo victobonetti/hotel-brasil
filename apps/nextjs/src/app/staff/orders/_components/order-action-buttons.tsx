@@ -64,10 +64,11 @@ export function OrderActionButtons(props: {
 
 	return (
 		<div className="space-y-3">
-			<p className="font-medium text-primary text-sm">Acoes operacionais</p>
+			<p className="font-medium text-primary text-sm">Proxima acao</p>
 			<div className="flex flex-wrap gap-2">
 				{props.status === "pending" ? (
 					<Button
+						className="min-w-[168px]"
 						disabled={isBusy}
 						onClick={() => acceptMutation.mutate({ orderId: props.orderId })}
 					>
@@ -76,26 +77,29 @@ export function OrderActionButtons(props: {
 				) : null}
 				{props.status === "accepted" ? (
 					<Button
+						className="min-w-[168px]"
 						disabled={isBusy}
 						onClick={() => preparingMutation.mutate({ orderId: props.orderId })}
-						variant="secondary"
+						variant="default"
 					>
 						Marcar preparo
 					</Button>
 				) : null}
 				{props.status === "preparing" ? (
 					<Button
+						className="min-w-[168px]"
 						disabled={isBusy}
 						onClick={() =>
 							outForDeliveryMutation.mutate({ orderId: props.orderId })
 						}
-						variant="secondary"
+						variant="default"
 					>
 						Sair para entrega
 					</Button>
 				) : null}
 				{props.status === "out_for_delivery" ? (
 					<Button
+						className="min-w-[168px]"
 						disabled={isBusy}
 						onClick={() => deliveredMutation.mutate({ orderId: props.orderId })}
 					>
@@ -106,7 +110,7 @@ export function OrderActionButtons(props: {
 					<Button
 						disabled={isBusy}
 						onClick={() => cancelMutation.mutate({ orderId: props.orderId })}
-						variant="destructive"
+						variant="outline"
 					>
 						Cancelar
 					</Button>

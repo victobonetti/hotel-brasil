@@ -1,5 +1,15 @@
 "use client";
 
+import {
+	AlertDialog,
+	AlertDialogAction,
+	AlertDialogCancel,
+	AlertDialogContent,
+	AlertDialogDescription,
+	AlertDialogFooter,
+	AlertDialogHeader,
+	AlertDialogTitle,
+} from "@nowait24/ui/alert-dialog";
 import { Button } from "@nowait24/ui/button";
 import {
 	Card,
@@ -21,6 +31,7 @@ import {
 import { Textarea } from "@nowait24/ui/textarea";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import type { Route } from "next";
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -64,7 +75,7 @@ function ItemImagePreview(props: { alt: string; src?: string | null }) {
 	}
 
 	return (
-		<img
+		<Image
 			alt={props.alt}
 			className="aspect-square w-24 rounded-2xl border border-primary/10 object-cover shadow-primary/10 shadow-sm"
 			height={ITEM_IMAGE_SIZE}
@@ -74,7 +85,13 @@ function ItemImagePreview(props: { alt: string; src?: string | null }) {
 	);
 }
 
-export function StaffMenuItemsPage() {
+export function StaffMenuItemsPage(props: {
+	staffContext?: {
+		hotelName: string;
+		role: "admin" | "frontdesk" | "kitchen" | "manager";
+		userName: string;
+	} | null;
+}) {
 	const trpc = useTRPC();
 	const pathname = usePathname();
 	const router = useRouter();
@@ -89,6 +106,21 @@ export function StaffMenuItemsPage() {
 	const [itemActionError, setItemActionError] = useState<string | null>(null);
 	const [isSubmittingCreateItem, setIsSubmittingCreateItem] = useState(false);
 	const [pendingItemId, setPendingItemId] = useState<string | null>(null);
+	const [selectedItemId, setSelectedItemId] = useState<string | null>(null);
+	const [itemDrafts, setItemDrafts] = useState<
+		Record<
+			string,
+			{
+				available: boolean;
+				categoryId: string;
+				description: string;
+				imageUrl: string | null;
+				name: string;
+				preparationTimeMinutes: string;
+				priceInCents: number;
+			}
+		>
+	>({});
 	const currentPage = parsePageParam(searchParams.get("page") ?? undefined);
 
 	const categoryOptionsQuery = useQuery(
@@ -113,20 +145,6 @@ export function StaffMenuItemsPage() {
 				setPreparationTimeMinutes("15");
 				setImageUrl(null);
 				setFormError(null);
-			},
-		}),
-	);
-	const toggleItemMutation = useMutation(
-		trpc.catalogAdmin.toggleMenuItemAvailability.mutationOptions({
-			onError: (error) => {
-				setItemActionError(error.message);
-			},
-			onSettled: () => {
-				setPendingItemId(null);
-			},
-			onSuccess: () => {
-				void itemsQuery.refetch();
-				setItemActionError(null);
 			},
 		}),
 	);
@@ -158,6 +176,24 @@ export function StaffMenuItemsPage() {
 	}
 	const items = itemsQuery.data?.items ?? [];
 	const pagination = itemsQuery.data?.pagination;
+	const selectedItem =
+		selectedItemId === null
+			? null
+			: (items.find((item) => item.id === selectedItemId) ?? null);
+	const selectedItemDraft =
+		selectedItem === null
+			? null
+			: (itemDrafts[selectedItem.id] ?? {
+					available: selectedItem.available,
+					categoryId: selectedItem.categoryId,
+					description: selectedItem.description ?? "",
+					imageUrl: selectedItem.imageUrl ?? null,
+					name: selectedItem.name,
+					preparationTimeMinutes: String(
+						selectedItem.preparationTimeMinutes ?? 15,
+					),
+					priceInCents: selectedItem.priceInCents,
+				});
 
 	useEffect(() => {
 		if (!pagination || !shouldSyncPageParam(currentPage, pagination)) {
@@ -248,6 +284,21 @@ export function StaffMenuItemsPage() {
 			const uploadedImage = await uploadProcessedMenuItemImage(
 				processedImageDataUrlToFile(processedImage),
 			);
+			setItemDrafts((currentDrafts) => ({
+				...currentDrafts,
+				[itemId]: {
+					...(currentDrafts[itemId] ?? {
+						available: true,
+						categoryId: "",
+						description: "",
+						imageUrl: null,
+						name: "",
+						preparationTimeMinutes: "15",
+						priceInCents: 0,
+					}),
+					imageUrl: uploadedImage.url,
+				},
+			}));
 			await updateItemMutation.mutateAsync({
 				imageStorageKey: uploadedImage.key,
 				imageUrl: uploadedImage.url,
@@ -263,8 +314,37 @@ export function StaffMenuItemsPage() {
 		}
 	};
 
+	async function handleSaveSelectedItem() {
+		if (!selectedItem || !selectedItemDraft) {
+			return;
+		}
+
+		try {
+			setPendingItemId(selectedItem.id);
+			await updateItemMutation.mutateAsync({
+				available: selectedItemDraft.available,
+				categoryId: selectedItemDraft.categoryId,
+				description: selectedItemDraft.description.trim() || undefined,
+				imageStorageKey: selectedItemDraft.imageUrl ? undefined : "",
+				imageUrl: selectedItemDraft.imageUrl ?? "",
+				itemId: selectedItem.id,
+				name: selectedItemDraft.name.trim(),
+				preparationTimeMinutes: Number(
+					selectedItemDraft.preparationTimeMinutes,
+				),
+				priceInCents: selectedItemDraft.priceInCents,
+			});
+			setSelectedItemId(null);
+		} catch {
+			// Error state already handled by mutation callbacks.
+		}
+	}
+
 	return (
-		<PageShell containerClassName="max-w-6xl gap-6" sidebar={<StaffNav />}>
+		<PageShell
+			containerClassName="max-w-6xl gap-6"
+			sidebar={<StaffNav context={props.staffContext} />}
+		>
 			<SectionHeader
 				actions={
 					<Button render={<Link href="/staff/menu" />} variant="outline">
@@ -273,7 +353,7 @@ export function StaffMenuItemsPage() {
 					</Button>
 				}
 				badge="Cardapio"
-				description="Itens, preco, imagem e disponibilidade."
+				description="Gerencie conteudo do cardapio com lista mais enxuta e detalhe acionavel para cada item."
 				supportingPanel={
 					<div className="space-y-0.5">
 						<p className="font-medium text-sm">Padrao</p>
@@ -282,7 +362,7 @@ export function StaffMenuItemsPage() {
 						</p>
 					</div>
 				}
-				title="Itens"
+				title="Conteudo do cardapio"
 			/>
 
 			<StaffHotelGuard
@@ -316,7 +396,10 @@ export function StaffMenuItemsPage() {
 					<Card className="border-border/70 bg-card/90 shadow-sm">
 						<CardHeader>
 							<CardTitle>Novo item</CardTitle>
-							<CardDescription>Preencha o basico e publique.</CardDescription>
+							<CardDescription>
+								Cadastre o basico primeiro e publique com imagem quando
+								precisar.
+							</CardDescription>
 						</CardHeader>
 						<CardContent className="space-y-4">
 							<div className="space-y-2">
@@ -451,7 +534,10 @@ export function StaffMenuItemsPage() {
 					<Card className="border-border/70 bg-card/90 shadow-sm">
 						<CardHeader>
 							<CardTitle>Lista de itens</CardTitle>
-							<CardDescription>Disponibilidade e imagem.</CardDescription>
+							<CardDescription>
+								Visao geral dos itens ativos e acesso ao detalhe de cada
+								registro.
+							</CardDescription>
 						</CardHeader>
 						<CardContent className="space-y-3">
 							{itemActionError ? (
@@ -500,69 +586,46 @@ export function StaffMenuItemsPage() {
 													</p>
 												</div>
 											</div>
-											<Button
-												onClick={() => {
-													setPendingItemId(item.id);
-													toggleItemMutation.mutate({
-														itemId: item.id,
-													});
-												}}
-												size="sm"
-												variant={item.available ? "secondary" : "outline"}
-											>
-												{item.available ? (
-													<ToggleOffIcon className="size-4" />
-												) : (
-													<ToggleOnIcon className="size-4" />
-												)}
-												{item.available ? "Desativar" : "Ativar"}
-											</Button>
+											<div className="flex flex-col items-end gap-2">
+												<div className="rounded-full border border-border/70 bg-background/80 px-3 py-1 text-muted-foreground text-xs">
+													{item.available ? "Disponivel" : "Indisponivel"}
+												</div>
+												<Button
+													onClick={() => setSelectedItemId(item.id)}
+													size="sm"
+													variant="outline"
+												>
+													Gerenciar
+												</Button>
+											</div>
 										</div>
-										<div className="flex flex-wrap items-center gap-3 rounded-[1.1rem] border border-border/70 bg-background/80 p-3">
-											<Input
-												accept="image/*"
-												className="sr-only"
-												id={`item-image-${item.id}`}
-												onChange={(event) =>
-													handleExistingItemImageChange(item.id, event)
-												}
-												type="file"
-											/>
-											<Button
-												render={
-													<label
-														className="cursor-pointer"
-														htmlFor={`item-image-${item.id}`}
-													>
-														<span className="sr-only">
-															Selecionar imagem para {item.name}
-														</span>
-													</label>
-												}
-												size="sm"
-												variant="outline"
-											>
-												<ImageIcon className="size-4" />
-												{item.imageUrl ? "Trocar imagem" : "Enviar imagem"}
-											</Button>
-											<Button
-												disabled={
-													!item.imageUrl || updateItemMutation.isPending
-												}
-												onClick={() => {
-													setPendingItemId(item.id);
-													void updateItemMutation.mutate({
-														imageStorageKey: "",
-														imageUrl: "",
-														itemId: item.id,
-													});
-												}}
-												size="sm"
-												variant="outline"
-											>
-												<TrashIcon className="size-4" />
-												Remover imagem
-											</Button>
+										<div className="grid gap-2 sm:grid-cols-3">
+											<div className="rounded-[1rem] bg-background/80 px-3 py-2">
+												<p className="text-[11px] text-muted-foreground uppercase tracking-[0.18em]">
+													Categoria
+												</p>
+												<p className="mt-1 text-sm">
+													{categoryOptionsQuery.data?.find(
+														(category) => category.id === item.categoryId,
+													)?.name ?? "Categoria"}
+												</p>
+											</div>
+											<div className="rounded-[1rem] bg-background/80 px-3 py-2">
+												<p className="text-[11px] text-muted-foreground uppercase tracking-[0.18em]">
+													Preco
+												</p>
+												<p className="mt-1 text-sm">
+													{formatPriceLabel(item.priceInCents)}
+												</p>
+											</div>
+											<div className="rounded-[1rem] bg-background/80 px-3 py-2">
+												<p className="text-[11px] text-muted-foreground uppercase tracking-[0.18em]">
+													Preparo
+												</p>
+												<p className="mt-1 text-sm">
+													{item.preparationTimeMinutes ?? 15} min
+												</p>
+											</div>
 										</div>
 									</div>
 								);
@@ -579,6 +642,240 @@ export function StaffMenuItemsPage() {
 					</Card>
 				</div>
 			</StaffHotelGuard>
+
+			<AlertDialog
+				onOpenChange={(open) => {
+					if (!open) {
+						setSelectedItemId(null);
+						setItemActionError(null);
+					}
+				}}
+				open={selectedItem !== null}
+			>
+				<AlertDialogContent className="max-w-2xl rounded-[30px] border-white/70 bg-white p-0 sm:max-w-2xl">
+					{selectedItem && selectedItemDraft ? (
+						<div className="space-y-0">
+							<div className="border-border/60 border-b px-5 py-5">
+								<AlertDialogHeader className="items-start text-left">
+									<AlertDialogTitle>{selectedItem.name}</AlertDialogTitle>
+									<AlertDialogDescription className="text-left">
+										Edite os dados principais, disponibilidade e imagem deste
+										item.
+									</AlertDialogDescription>
+								</AlertDialogHeader>
+							</div>
+							<div className="space-y-5 p-5">
+								<div className="grid gap-5 md:grid-cols-[minmax(0,1fr)_220px]">
+									<div className="space-y-4">
+										<div className="grid gap-4 md:grid-cols-2">
+											<div className="space-y-2">
+												<Label htmlFor={`item-name-${selectedItem.id}`}>
+													Nome
+												</Label>
+												<Input
+													id={`item-name-${selectedItem.id}`}
+													onChange={(event) =>
+														setItemDrafts((currentDrafts) => ({
+															...currentDrafts,
+															[selectedItem.id]: {
+																...selectedItemDraft,
+																name: event.target.value,
+															},
+														}))
+													}
+													value={selectedItemDraft.name}
+												/>
+											</div>
+											<div className="space-y-2">
+												<Label>Categoria</Label>
+												<Select
+													onValueChange={(value) =>
+														setItemDrafts((currentDrafts) => ({
+															...currentDrafts,
+															[selectedItem.id]: {
+																...selectedItemDraft,
+																categoryId: value,
+															},
+														}))
+													}
+													value={selectedItemDraft.categoryId}
+												>
+													<SelectTrigger className="w-full">
+														<SelectValue />
+													</SelectTrigger>
+													<SelectContent>
+														{categoryOptionsQuery.data?.map((category) => (
+															<SelectItem key={category.id} value={category.id}>
+																{category.name}
+															</SelectItem>
+														))}
+													</SelectContent>
+												</Select>
+											</div>
+										</div>
+										<div className="space-y-2">
+											<Label htmlFor={`item-description-${selectedItem.id}`}>
+												Descricao
+											</Label>
+											<Textarea
+												id={`item-description-${selectedItem.id}`}
+												onChange={(event) =>
+													setItemDrafts((currentDrafts) => ({
+														...currentDrafts,
+														[selectedItem.id]: {
+															...selectedItemDraft,
+															description: event.target.value,
+														},
+													}))
+												}
+												value={selectedItemDraft.description}
+											/>
+										</div>
+										<div className="grid gap-4 md:grid-cols-2">
+											<div className="space-y-2">
+												<Label htmlFor={`item-price-${selectedItem.id}`}>
+													Preco
+												</Label>
+												<PriceField
+													id={`item-price-${selectedItem.id}`}
+													onChange={(value) =>
+														setItemDrafts((currentDrafts) => ({
+															...currentDrafts,
+															[selectedItem.id]: {
+																...selectedItemDraft,
+																priceInCents: value,
+															},
+														}))
+													}
+													valueInCents={selectedItemDraft.priceInCents}
+												/>
+											</div>
+											<div className="space-y-2">
+												<Label htmlFor={`item-prep-${selectedItem.id}`}>
+													Preparo (min)
+												</Label>
+												<Input
+													id={`item-prep-${selectedItem.id}`}
+													onChange={(event) =>
+														setItemDrafts((currentDrafts) => ({
+															...currentDrafts,
+															[selectedItem.id]: {
+																...selectedItemDraft,
+																preparationTimeMinutes: event.target.value,
+															},
+														}))
+													}
+													type="number"
+													value={selectedItemDraft.preparationTimeMinutes}
+												/>
+											</div>
+										</div>
+									</div>
+									<div className="space-y-4 rounded-[1.4rem] border border-border/70 bg-background/60 p-4">
+										<ItemImagePreview
+											alt={selectedItem.name}
+											src={selectedItemDraft.imageUrl}
+										/>
+										<Input
+											accept="image/*"
+											className="sr-only"
+											id={`item-image-${selectedItem.id}`}
+											onChange={(event) =>
+												handleExistingItemImageChange(selectedItem.id, event)
+											}
+											type="file"
+										/>
+										<div className="space-y-2">
+											<p className="font-medium text-sm">Disponibilidade</p>
+											<Button
+												className="w-full"
+												onClick={() =>
+													setItemDrafts((currentDrafts) => ({
+														...currentDrafts,
+														[selectedItem.id]: {
+															...selectedItemDraft,
+															available: !selectedItemDraft.available,
+														},
+													}))
+												}
+												type="button"
+												variant={
+													selectedItemDraft.available ? "secondary" : "outline"
+												}
+											>
+												{selectedItemDraft.available ? (
+													<ToggleOffIcon className="size-4" />
+												) : (
+													<ToggleOnIcon className="size-4" />
+												)}
+												{selectedItemDraft.available
+													? "Marcar indisponivel"
+													: "Marcar disponivel"}
+											</Button>
+										</div>
+										<div className="space-y-2">
+											<Button
+												className="w-full"
+												render={
+													<label
+														className="cursor-pointer"
+														htmlFor={`item-image-${selectedItem.id}`}
+													>
+														<span className="sr-only">
+															Selecionar imagem para {selectedItem.name}
+														</span>
+													</label>
+												}
+												type="button"
+												variant="outline"
+											>
+												<ImageIcon className="size-4" />
+												{selectedItemDraft.imageUrl
+													? "Trocar imagem"
+													: "Enviar imagem"}
+											</Button>
+											<Button
+												className="w-full"
+												disabled={!selectedItemDraft.imageUrl}
+												onClick={() =>
+													setItemDrafts((currentDrafts) => ({
+														...currentDrafts,
+														[selectedItem.id]: {
+															...selectedItemDraft,
+															imageUrl: null,
+														},
+													}))
+												}
+												type="button"
+												variant="outline"
+											>
+												<TrashIcon className="size-4" />
+												Remover imagem
+											</Button>
+										</div>
+									</div>
+								</div>
+
+								{itemActionError ? (
+									<p className="text-destructive text-sm">{itemActionError}</p>
+								) : null}
+
+								<AlertDialogFooter>
+									<AlertDialogCancel className="rounded-full">
+										Fechar
+									</AlertDialogCancel>
+									<AlertDialogAction
+										className="rounded-full"
+										onClick={() => void handleSaveSelectedItem()}
+									>
+										Salvar alteracoes
+									</AlertDialogAction>
+								</AlertDialogFooter>
+							</div>
+						</div>
+					) : null}
+				</AlertDialogContent>
+			</AlertDialog>
 		</PageShell>
 	);
 }

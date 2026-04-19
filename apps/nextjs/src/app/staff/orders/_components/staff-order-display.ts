@@ -11,7 +11,7 @@ const statusLabelMap: Record<StaffOrderStatus, string> = {
 	cancelled: "Cancelado",
 	delivered: "Entregue",
 	out_for_delivery: "Saiu para entrega",
-	pending: "Recebido",
+	pending: "Pendente",
 	preparing: "Em preparo",
 };
 

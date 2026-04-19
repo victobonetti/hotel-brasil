@@ -24,7 +24,7 @@ function formatDate(date: Date) {
 
 export function OrderTimeline(props: { history: Array<HistoryItem> }) {
 	return (
-		<Card className="overflow-hidden rounded-[32px] border-[#efe0da] bg-[#fffdfb] shadow-[0_28px_60px_-44px_rgba(86,59,52,0.3)]">
+		<Card className="overflow-hidden rounded-[32px] border-[#efe0da] bg-[#fffdfb] shadow-[0_28px_60px_-44px_rgba(86,59,52,0.22)]">
 			<CardContent className="space-y-5 p-4">
 				<div className="space-y-2 rounded-[28px] bg-[#fff7f3] p-4">
 					<div className="inline-flex rounded-full bg-white px-3 py-1 font-medium text-[#b15a45] text-[11px] uppercase tracking-[0.2em]">
@@ -32,11 +32,11 @@ export function OrderTimeline(props: { history: Array<HistoryItem> }) {
 					</div>
 					<div className="space-y-1">
 						<p className="font-semibold text-[#2c1b19] text-xl">
-							Cada etapa aparece aqui
+							Linha do tempo do pedido
 						</p>
 						<p className="text-[#7d6660] text-sm leading-6">
-							Voce acompanha a evolucao do pedido em ordem cronologica, sem
-							precisar atualizar manualmente.
+							Cada mudanca aparece aqui em ordem cronologica, com atualizacao
+							automatica.
 						</p>
 					</div>
 				</div>
@@ -58,7 +58,7 @@ export function OrderTimeline(props: { history: Array<HistoryItem> }) {
 									</span>
 								</div>
 								<p className="font-medium text-[#2c1b19] text-sm">
-									Etapa {index + 1} concluida
+									Etapa {index + 1}
 								</p>
 								<p className="text-[#7d6660] text-sm leading-6">
 									{entry.reason ||

@@ -104,10 +104,12 @@ export function OrderDetailsDrawer(props: {
 
 	if (!props.orderId) {
 		return (
-			<Card className="border-border/70 bg-card/90 shadow-sm">
+			<Card className="rounded-[1.75rem] border-border/70 bg-card/92 shadow-[0_24px_50px_-44px_rgba(25,18,15,0.28)]">
 				<CardHeader>
-					<CardTitle>Detalhes do pedido</CardTitle>
-					<CardDescription>Selecione um pedido.</CardDescription>
+					<CardTitle>Detalhe do pedido</CardTitle>
+					<CardDescription>
+						Selecione um pedido da fila para ver itens, contexto e acoes.
+					</CardDescription>
 				</CardHeader>
 			</Card>
 		);
@@ -146,7 +148,7 @@ export function OrderDetailsDrawer(props: {
 	});
 
 	return (
-		<Card className="border-border/70 bg-card/90 shadow-sm">
+		<Card className="rounded-[1.75rem] border-border/70 bg-card/92 shadow-[0_24px_50px_-44px_rgba(25,18,15,0.28)]">
 			<CardHeader className="border-border/60 border-b pb-4">
 				<div className="space-y-3">
 					<div className="flex flex-wrap items-start justify-between gap-3">
@@ -158,7 +160,7 @@ export function OrderDetailsDrawer(props: {
 						</div>
 						<Badge variant="outline">{orderDisplay.statusLabel}</Badge>
 					</div>
-					<div className="grid gap-3 sm:grid-cols-2">
+					<div className="grid gap-3 sm:grid-cols-3">
 						<div className="rounded-[1.25rem] border border-border/70 bg-background/70 p-4">
 							<p className="text-muted-foreground text-xs uppercase tracking-[0.18em]">
 								Quarto
@@ -176,10 +178,32 @@ export function OrderDetailsDrawer(props: {
 								{orderDetailsQuery.data.items.length}
 							</p>
 						</div>
+						<div className="rounded-[1.25rem] border border-border/70 bg-background/70 p-4">
+							<p className="text-muted-foreground text-xs uppercase tracking-[0.18em]">
+								Total
+							</p>
+							<p className="mt-2 font-medium">
+								{new Intl.NumberFormat("pt-BR", {
+									currency: "BRL",
+									style: "currency",
+								}).format(orderDetailsQuery.data.totalAmountInCents / 100)}
+							</p>
+						</div>
 					</div>
 				</div>
 			</CardHeader>
 			<CardContent className="space-y-5 pt-5">
+				{orderDetailsQuery.data.notes ? (
+					<div className="rounded-[1.25rem] border border-border/70 bg-background/60 p-4">
+						<p className="font-medium text-primary text-sm">
+							Observacoes gerais
+						</p>
+						<p className="mt-2 text-sm leading-6">
+							{orderDetailsQuery.data.notes}
+						</p>
+					</div>
+				) : null}
+
 				<div className="space-y-3">
 					<p className="font-medium text-primary text-sm">Itens</p>
 					{paginatedItems.items.map((item) => (

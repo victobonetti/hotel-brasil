@@ -39,6 +39,13 @@ function formatDate(date: Date) {
 	}).format(date);
 }
 
+function formatTime(date: Date) {
+	return new Intl.DateTimeFormat("pt-BR", {
+		hour: "2-digit",
+		minute: "2-digit",
+	}).format(date);
+}
+
 export function OrderQueueBoard(props: {
 	emptyMessage: string;
 	onSelect: (orderId: string) => void;
@@ -47,7 +54,7 @@ export function OrderQueueBoard(props: {
 	title: string;
 }) {
 	return (
-		<Card className="border-border/70 bg-card/90 shadow-sm">
+		<Card className="rounded-[1.75rem] border-border/70 bg-card/92 shadow-[0_24px_50px_-44px_rgba(25,18,15,0.28)]">
 			<CardHeader className="border-border/60 border-b pb-4">
 				<CardTitle className="text-lg">{props.title}</CardTitle>
 			</CardHeader>
@@ -63,28 +70,43 @@ export function OrderQueueBoard(props: {
 
 					return (
 						<Button
-							className="h-auto w-full justify-start rounded-[1.25rem] border-border/70 px-4 py-3.5 text-left shadow-none"
+							className="h-auto w-full justify-start rounded-[1.4rem] border-border/70 px-4 py-4 text-left shadow-none"
 							key={order.id}
 							onClick={() => props.onSelect(order.id)}
 							variant={
 								props.selectedOrderId === order.id ? "secondary" : "outline"
 							}
 						>
-							<div className="flex w-full flex-col gap-2">
-								<div className="flex items-center justify-between gap-3">
-									<div>
-										<p className="font-medium">{orderDisplay.orderTitle}</p>
+							<div className="flex w-full flex-col gap-3">
+								<div className="flex items-start justify-between gap-3">
+									<div className="space-y-1">
+										<p className="font-medium">{orderDisplay.orderReference}</p>
 										<p className="text-muted-foreground text-sm">
-											{orderDisplay.timingLabel} - {formatDate(order.placedAt)}
+											{formatDate(order.placedAt)}
 										</p>
 									</div>
 									<Badge variant="outline">
 										{getStaffOrderStatusLabel(order.status)}
 									</Badge>
 								</div>
-								<p className="text-sm">
-									{formatPrice(order.totalAmountInCents)}
-								</p>
+								<div className="grid grid-cols-2 gap-2 text-sm">
+									<div className="rounded-[1rem] bg-background/80 px-3 py-2">
+										<p className="text-[11px] text-muted-foreground uppercase tracking-[0.18em]">
+											Horario
+										</p>
+										<p className="mt-1 font-medium">
+											{formatTime(order.placedAt)}
+										</p>
+									</div>
+									<div className="rounded-[1rem] bg-background/80 px-3 py-2">
+										<p className="text-[11px] text-muted-foreground uppercase tracking-[0.18em]">
+											Total
+										</p>
+										<p className="mt-1 font-medium">
+											{formatPrice(order.totalAmountInCents)}
+										</p>
+									</div>
+								</div>
 							</div>
 						</Button>
 					);
