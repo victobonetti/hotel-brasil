@@ -7,7 +7,7 @@ describe("getStaffAccessSummary", () => {
 		expect(getStaffAccessSummary(null)).toMatchObject({
 			canAccessCatalog: false,
 			canAccessOrders: false,
-			title: "Aguardando vinculacao a um hotel",
+			title: "Concluir setup do hotel",
 		});
 	});
 

@@ -40,8 +40,8 @@ describe("auth showcase signed-in view", () => {
 
 		expect(html).toContain("Painel da equipe");
 		expect(html).toContain("Victor");
-		expect(html).toContain("Aguardando vinculacao a um hotel");
-		expect(html).not.toContain('href="/staff/orders"');
-		expect(html).not.toContain("Abrir painel");
+		expect(html).toContain("Concluir setup do hotel");
+		expect(html).toContain('href="/staff/onboarding"');
+		expect(html).toContain("Concluir setup");
 	});
 });

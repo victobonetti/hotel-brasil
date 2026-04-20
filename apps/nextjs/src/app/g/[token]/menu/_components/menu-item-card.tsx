@@ -2,6 +2,7 @@ import type { MenuItemView } from "@nowait24/api";
 import { Badge } from "@nowait24/ui/badge";
 import { Card, CardContent } from "@nowait24/ui/card";
 import Image from "next/image";
+import { resolveMenuItemImageSrc } from "~/app/_components/item-image";
 
 function formatPrice(priceInCents: number) {
 	return new Intl.NumberFormat("pt-BR", {
@@ -14,6 +15,11 @@ export function MenuItemCard(props: {
 	item: MenuItemView;
 	onSelect: (item: MenuItemView) => void;
 }) {
+	const imageSrc = resolveMenuItemImageSrc({
+		imageStorageKey: props.item.imageStorageKey,
+		imageUrl: props.item.imageUrl,
+	});
+
 	return (
 		<Card className="group overflow-hidden rounded-[28px] border-[#ecdcd6] bg-[#fffdfb] shadow-[0_24px_56px_-46px_rgba(86,59,52,0.24)] transition-transform duration-200 hover:-translate-y-0.5">
 			<button
@@ -23,12 +29,12 @@ export function MenuItemCard(props: {
 			>
 				<div className="flex gap-3 p-3">
 					<div className="relative w-24 shrink-0 overflow-hidden rounded-[22px] bg-[#fff1ea] sm:w-28">
-						{props.item.imageUrl ? (
+						{imageSrc ? (
 							<Image
 								alt={props.item.name}
 								className="aspect-square w-full object-cover transition-transform duration-300 group-hover:scale-[1.03]"
 								height={320}
-								src={props.item.imageUrl}
+								src={imageSrc}
 								width={320}
 							/>
 						) : (

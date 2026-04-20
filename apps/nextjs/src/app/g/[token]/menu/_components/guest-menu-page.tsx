@@ -18,6 +18,7 @@ import Image from "next/image";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 
+import { resolveMenuItemImageSrc } from "~/app/_components/item-image";
 import { formatRoomReference } from "~/app/_components/order-display";
 import { PageShell } from "~/app/_components/page-shell";
 import { PaginationControls } from "~/app/_components/pagination-controls";
@@ -158,6 +159,12 @@ export function GuestMenuPage(props: { guestSessionToken: string }) {
 				roomLabel: menuQuery.data.guestSession.roomLabel,
 			})
 		: "Seu quarto";
+	const selectedItemImageSrc = selectedItem
+		? resolveMenuItemImageSrc({
+				imageStorageKey: selectedItem.imageStorageKey,
+				imageUrl: selectedItem.imageUrl,
+			})
+		: null;
 
 	return (
 		<PageShell
@@ -321,12 +328,12 @@ export function GuestMenuPage(props: { guestSessionToken: string }) {
 						{selectedItem ? (
 							<>
 								<div className="relative">
-									{selectedItem.imageUrl ? (
+									{selectedItemImageSrc ? (
 										<Image
 											alt={selectedItem.name}
 											className="aspect-[4/3] w-full object-cover"
 											height={320}
-											src={selectedItem.imageUrl}
+											src={selectedItemImageSrc}
 											width={420}
 										/>
 									) : (

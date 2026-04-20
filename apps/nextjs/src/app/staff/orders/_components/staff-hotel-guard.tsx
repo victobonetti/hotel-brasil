@@ -33,13 +33,17 @@ export function StaffHotelGuard(props: {
 		return (
 			<Card className="border-primary/15 bg-card/88">
 				<CardHeader>
-					<CardTitle>Login necessário</CardTitle>
+					<CardTitle>Login necessario</CardTitle>
 					<CardDescription>
-						Faça login com sua conta Google para acessar o painel do hotel.
+						Faca login com sua conta Google para acessar o painel do hotel.
 					</CardDescription>
 				</CardHeader>
 				<CardContent>
-					<Button onClick={() => (window.location.href = "/")}>
+					<Button
+						onClick={() => {
+							window.location.href = "/";
+						}}
+					>
 						Ir para login
 					</Button>
 				</CardContent>
@@ -54,7 +58,7 @@ export function StaffHotelGuard(props: {
 					<CardTitle>Acesso negado</CardTitle>
 					<CardDescription>
 						{props.errorMessage ??
-							"Sua conta está autenticada, mas ainda não possui vínculo com um hotel."}
+							"Sua conta precisa concluir o setup inicial do hotel antes de acessar esta area."}
 					</CardDescription>
 				</CardHeader>
 			</Card>

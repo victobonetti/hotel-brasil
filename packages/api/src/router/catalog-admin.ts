@@ -1,11 +1,11 @@
 import { menuCategories, menuItems } from "@nowait24/db/schema";
 import { PAGE_SIZES } from "@nowait24/utils";
+import { env } from "@nowait24/utils/env";
 import {
 	getS3CompatibleStorageConfig,
 	isManagedStorageKey,
 	S3CompatibleStorage,
 } from "@nowait24/utils/storage";
-import { env } from "@nowait24/utils/env";
 import type { TRPCRouterRecord } from "@trpc/server";
 import { TRPCError } from "@trpc/server";
 import { count, eq, inArray } from "drizzle-orm";
@@ -23,6 +23,7 @@ import {
 	updateMenuItem,
 } from "../services/catalog-admin-service";
 import { protectedProcedure } from "../trpc";
+import { findStaffMembershipByUserId } from "./staff-membership";
 
 function mapCatalogAdminServiceError(error: unknown): never {
 	if (error instanceof CatalogAdminServiceError) {
@@ -56,16 +57,6 @@ function mapCatalogAdminServiceError(error: unknown): never {
 		code: "INTERNAL_SERVER_ERROR",
 		message: fallback.message,
 	});
-}
-
-async function findMembershipByUserId(ctx: { db: any }, userId: string) {
-	const membership = await ctx.db.query.staffUserHotels.findFirst({
-		columns: { hotelId: true, role: true, userId: true },
-		where: (table: any, operators: { eq: typeof eq }) =>
-			operators.eq(table.userId, userId),
-	});
-
-	return membership ?? null;
 }
 
 function getStorage() {
@@ -117,7 +108,7 @@ export const catalogAdminRouter = {
 							await ctx.db.insert(menuCategories).values(category);
 						},
 						findMembershipByUserId: async (userId) =>
-							await findMembershipByUserId(ctx, userId),
+							await findStaffMembershipByUserId(ctx.db, userId),
 						listCategoriesByHotelId: async (hotelId) =>
 							await ctx.db.query.menuCategories.findMany({
 								where: (table, { eq }) => eq(table.hotelId, hotelId),
@@ -146,7 +137,7 @@ export const catalogAdminRouter = {
 								where: (table, { eq }) => eq(table.id, categoryId),
 							})) ?? null,
 						findMembershipByUserId: async (userId) =>
-							await findMembershipByUserId(ctx, userId),
+							await findStaffMembershipByUserId(ctx.db, userId),
 					},
 					{
 						...input,
@@ -172,7 +163,7 @@ export const catalogAdminRouter = {
 							return result?.totalItems ?? 0;
 						},
 						findMembershipByUserId: async (userId) =>
-							await findMembershipByUserId(ctx, userId),
+							await findStaffMembershipByUserId(ctx.db, userId),
 						listCategoriesByHotelId: async (hotelId, pagination) =>
 							await ctx.db.query.menuCategories.findMany({
 								limit: pagination.limit,
@@ -207,7 +198,7 @@ export const catalogAdminRouter = {
 						return record?.totalItems ?? 0;
 					},
 					findMembershipByUserId: async (userId) =>
-						await findMembershipByUserId(ctx, userId),
+						await findStaffMembershipByUserId(ctx.db, userId),
 					listCategoriesByHotelId: async (hotelId, pagination) =>
 						await ctx.db.query.menuCategories.findMany({
 							limit: pagination.limit,
@@ -246,7 +237,7 @@ export const catalogAdminRouter = {
 							return result?.totalItems ?? 0;
 						},
 						findMembershipByUserId: async (userId) =>
-							await findMembershipByUserId(ctx, userId),
+							await findStaffMembershipByUserId(ctx.db, userId),
 						listMenuItemsByHotelId: async (hotelId, pagination) =>
 							await ctx.db.query.menuItems.findMany({
 								limit: pagination.limit,
@@ -276,7 +267,7 @@ export const catalogAdminRouter = {
 				return await reorderCategories(
 					{
 						findMembershipByUserId: async (userId) =>
-							await findMembershipByUserId(ctx, userId),
+							await findStaffMembershipByUserId(ctx.db, userId),
 						listCategoriesByIds: async (categoryIds) =>
 							categoryIds.length === 0
 								? []
@@ -311,7 +302,7 @@ export const catalogAdminRouter = {
 				return await toggleMenuItemAvailability(
 					{
 						findMembershipByUserId: async (userId) =>
-							await findMembershipByUserId(ctx, userId),
+							await findStaffMembershipByUserId(ctx.db, userId),
 						findMenuItemById: async (itemId) =>
 							(await ctx.db.query.menuItems.findFirst({
 								where: (table, { eq }) => eq(table.id, itemId),
@@ -350,7 +341,7 @@ export const catalogAdminRouter = {
 								where: (table, { eq }) => eq(table.id, categoryId),
 							})) ?? null,
 						findMembershipByUserId: async (userId) =>
-							await findMembershipByUserId(ctx, userId),
+							await findStaffMembershipByUserId(ctx.db, userId),
 						updateCategoryRecord: async (categoryId, category) => {
 							await ctx.db
 								.update(menuCategories)
@@ -394,7 +385,7 @@ export const catalogAdminRouter = {
 								where: (table, { eq }) => eq(table.id, categoryId),
 							})) ?? null,
 						findMembershipByUserId: async (userId) =>
-							await findMembershipByUserId(ctx, userId),
+							await findStaffMembershipByUserId(ctx.db, userId),
 						findMenuItemById: async (itemId) =>
 							(await ctx.db.query.menuItems.findFirst({
 								where: (table, { eq }) => eq(table.id, itemId),

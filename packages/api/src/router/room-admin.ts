@@ -1,4 +1,3 @@
-import type { Drizzle } from "@nowait24/db/client";
 import { rooms } from "@nowait24/db/schema";
 import { PAGE_SIZES } from "@nowait24/utils";
 import type { TRPCRouterRecord } from "@trpc/server";
@@ -14,6 +13,7 @@ import {
 	updateRoom,
 } from "../services/room-admin-service";
 import { protectedProcedure } from "../trpc";
+import { findStaffMembershipByUserId } from "./staff-membership";
 
 function mapRoomAdminServiceError(error: unknown): never {
 	if (error instanceof RoomAdminServiceError) {
@@ -46,15 +46,6 @@ function mapRoomAdminServiceError(error: unknown): never {
 	});
 }
 
-async function findMembershipByUserId(ctx: { db: Drizzle }, userId: string) {
-	const membership = await ctx.db.query.staffUserHotels.findFirst({
-		columns: { hotelId: true, role: true, userId: true },
-		where: (table, operators) => operators.eq(table.userId, userId),
-	});
-
-	return membership ?? null;
-}
-
 const pageInput = z
 	.object({
 		page: z.number().int().optional(),
@@ -78,7 +69,7 @@ export const roomAdminRouter = {
 							await ctx.db.insert(rooms).values(room);
 						},
 						findMembershipByUserId: async (userId) =>
-							await findMembershipByUserId(ctx, userId),
+							await findStaffMembershipByUserId(ctx.db, userId),
 						listRoomsByHotelId: async (hotelId) =>
 							await ctx.db.query.rooms.findMany({
 								where: (table, { eq }) => eq(table.hotelId, hotelId),
@@ -108,7 +99,7 @@ export const roomAdminRouter = {
 							return result?.totalItems ?? 0;
 						},
 						findMembershipByUserId: async (userId) =>
-							await findMembershipByUserId(ctx, userId),
+							await findStaffMembershipByUserId(ctx.db, userId),
 						listRoomsByHotelId: async (hotelId, pagination) =>
 							await ctx.db.query.rooms.findMany({
 								limit: pagination.limit,
@@ -138,7 +129,7 @@ export const roomAdminRouter = {
 				return await regenerateRoomToken(
 					{
 						findMembershipByUserId: async (userId) =>
-							await findMembershipByUserId(ctx, userId),
+							await findStaffMembershipByUserId(ctx.db, userId),
 						findRoomById: async (roomId) =>
 							(await ctx.db.query.rooms.findFirst({
 								where: (table, { eq }) => eq(table.id, roomId),
@@ -170,7 +161,7 @@ export const roomAdminRouter = {
 				return await updateRoom(
 					{
 						findMembershipByUserId: async (userId) =>
-							await findMembershipByUserId(ctx, userId),
+							await findStaffMembershipByUserId(ctx.db, userId),
 						findRoomById: async (roomId) =>
 							(await ctx.db.query.rooms.findFirst({
 								where: (table, { eq }) => eq(table.id, roomId),

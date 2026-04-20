@@ -1,9 +1,17 @@
+import { redirect } from "next/navigation";
 import { Suspense } from "react";
 
 import { AuthShowcase } from "./_components/auth-showcase";
 import { HomeLandingView } from "./_components/home-landing-view";
+import { getStaffAccessContext } from "./_components/staff-access-context";
 
-export default function HomePage() {
+async function HomePageContent() {
+	const access = await getStaffAccessContext();
+
+	if (access.session && access.needsOnboarding) {
+		redirect("/staff/onboarding");
+	}
+
 	return (
 		<HomeLandingView
 			authSlot={
@@ -12,5 +20,13 @@ export default function HomePage() {
 				</Suspense>
 			}
 		/>
+	);
+}
+
+export default function HomePage() {
+	return (
+		<Suspense fallback={null}>
+			<HomePageContent />
+		</Suspense>
 	);
 }

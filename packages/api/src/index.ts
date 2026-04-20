@@ -83,6 +83,15 @@ export {
 	resolveGuestSession,
 } from "./services/guest-session-service";
 export {
+	createInitialHotel,
+	getHotelOnboardingStatus,
+	type HotelOnboardingInput,
+	HotelOnboardingServiceError,
+	type HotelOnboardingStatus,
+	normalizeHotelOnboardingInput,
+	normalizeHotelSlug,
+} from "./services/hotel-onboarding-service";
+export {
 	type GuestMenuView,
 	getMenuForGuestSession,
 	listAvailableItems,

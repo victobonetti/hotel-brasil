@@ -23,14 +23,14 @@ export function AuthShowcaseSignedInView(props: {
 					</p>
 				</div>
 			</div>
-			{props.access.canAccessOrders ? (
-				<a
-					className="mt-3 inline-flex h-9 items-center rounded-full border border-primary/20 bg-primary/10 px-3.5 font-medium text-primary text-sm transition hover:bg-primary/16"
-					href="/staff/orders"
-				>
-					Abrir painel
-				</a>
-			) : null}
+			<a
+				className="mt-3 inline-flex h-9 items-center rounded-full border border-primary/20 bg-primary/10 px-3.5 font-medium text-primary text-sm transition hover:bg-primary/16"
+				href={
+					props.access.canAccessOrders ? "/staff/orders" : "/staff/onboarding"
+				}
+			>
+				{props.access.canAccessOrders ? "Abrir painel" : "Concluir setup"}
+			</a>
 		</section>
 	);
 }

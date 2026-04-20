@@ -35,10 +35,12 @@ import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
+import { FileUploadTrigger } from "~/app/_components/file-upload-trigger";
 import {
 	ITEM_IMAGE_SIZE,
 	processedImageDataUrlToFile,
 	processMenuItemImage,
+	resolveMenuItemImageSrc,
 	uploadProcessedMenuItemImage,
 } from "~/app/_components/item-image";
 import { PageShell, SectionHeader } from "~/app/_components/page-shell";
@@ -65,8 +67,17 @@ import { useTRPC } from "~/trpc/react";
 import { StaffHotelGuard } from "../../../orders/_components/staff-hotel-guard";
 import { getMenuItemLoadingState } from "./staff-menu-items-state";
 
-function ItemImagePreview(props: { alt: string; src?: string | null }) {
-	if (!props.src) {
+function ItemImagePreview(props: {
+	alt: string;
+	imageStorageKey?: string | null;
+	src?: string | null;
+}) {
+	const resolvedSrc = resolveMenuItemImageSrc({
+		imageStorageKey: props.imageStorageKey,
+		imageUrl: props.src,
+	});
+
+	if (!resolvedSrc) {
 		return (
 			<div className="flex aspect-square w-24 items-center justify-center rounded-2xl border border-primary/20 border-dashed bg-primary/[0.03] text-center text-muted-foreground text-xs">
 				Sem imagem
@@ -79,7 +90,7 @@ function ItemImagePreview(props: { alt: string; src?: string | null }) {
 			alt={props.alt}
 			className="aspect-square w-24 rounded-2xl border border-primary/10 object-cover shadow-primary/10 shadow-sm"
 			height={ITEM_IMAGE_SIZE}
-			src={props.src}
+			src={resolvedSrc}
 			width={ITEM_IMAGE_SIZE}
 		/>
 	);
@@ -114,6 +125,7 @@ export function StaffMenuItemsPage(props: {
 				available: boolean;
 				categoryId: string;
 				description: string;
+				imageStorageKey: string | null;
 				imageUrl: string | null;
 				name: string;
 				preparationTimeMinutes: string;
@@ -187,6 +199,7 @@ export function StaffMenuItemsPage(props: {
 					available: selectedItem.available,
 					categoryId: selectedItem.categoryId,
 					description: selectedItem.description ?? "",
+					imageStorageKey: selectedItem.imageStorageKey ?? null,
 					imageUrl: selectedItem.imageUrl ?? null,
 					name: selectedItem.name,
 					preparationTimeMinutes: String(
@@ -291,11 +304,13 @@ export function StaffMenuItemsPage(props: {
 						available: true,
 						categoryId: "",
 						description: "",
+						imageStorageKey: null,
 						imageUrl: null,
 						name: "",
 						preparationTimeMinutes: "15",
 						priceInCents: 0,
 					}),
+					imageStorageKey: uploadedImage.key,
 					imageUrl: uploadedImage.url,
 				},
 			}));
@@ -325,7 +340,7 @@ export function StaffMenuItemsPage(props: {
 				available: selectedItemDraft.available,
 				categoryId: selectedItemDraft.categoryId,
 				description: selectedItemDraft.description.trim() || undefined,
-				imageStorageKey: selectedItemDraft.imageUrl ? undefined : "",
+				imageStorageKey: selectedItemDraft.imageStorageKey ?? "",
 				imageUrl: selectedItemDraft.imageUrl ?? "",
 				itemId: selectedItem.id,
 				name: selectedItemDraft.name.trim(),
@@ -476,23 +491,15 @@ export function StaffMenuItemsPage(props: {
 											Recorte automatico em 200x200.
 										</p>
 										<div className="flex flex-wrap gap-2">
-											<Button
-												render={
-													<label
-														className="cursor-pointer"
-														htmlFor="item-image"
-													>
-														<span className="sr-only">
-															Selecionar imagem do item
-														</span>
-													</label>
-												}
+											<FileUploadTrigger
+												className="gap-2"
+												inputId="item-image"
+												label={imageUrl ? "Trocar imagem" : "Enviar imagem"}
 												size="sm"
 												variant={imageUrl ? "outline" : "default"}
 											>
 												<ImageIcon className="size-4" />
-												{imageUrl ? "Trocar imagem" : "Enviar imagem"}
-											</Button>
+											</FileUploadTrigger>
 											{imageUrl ? (
 												<Button
 													onClick={() => setImageUrl(null)}
@@ -566,7 +573,11 @@ export function StaffMenuItemsPage(props: {
 										) : null}
 										<div className="flex flex-wrap items-start justify-between gap-3">
 											<div className="flex min-w-0 items-start gap-3">
-												<ItemImagePreview alt={item.name} src={item.imageUrl} />
+												<ItemImagePreview
+													alt={item.name}
+													imageStorageKey={item.imageStorageKey}
+													src={item.imageUrl}
+												/>
 												<div className="space-y-1">
 													<p className="flex items-center gap-2 font-medium">
 														<FolderIcon className="size-4 text-primary" />
@@ -694,7 +705,8 @@ export function StaffMenuItemsPage(props: {
 															...currentDrafts,
 															[selectedItem.id]: {
 																...selectedItemDraft,
-																categoryId: value,
+																categoryId:
+																	value ?? selectedItemDraft.categoryId,
 															},
 														}))
 													}
@@ -774,6 +786,7 @@ export function StaffMenuItemsPage(props: {
 									<div className="space-y-4 rounded-[1.4rem] border border-border/70 bg-background/60 p-4">
 										<ItemImagePreview
 											alt={selectedItem.name}
+											imageStorageKey={selectedItemDraft.imageStorageKey}
 											src={selectedItemDraft.imageUrl}
 										/>
 										<Input
@@ -814,26 +827,16 @@ export function StaffMenuItemsPage(props: {
 											</Button>
 										</div>
 										<div className="space-y-2">
-											<Button
-												className="w-full"
-												render={
-													<label
-														className="cursor-pointer"
-														htmlFor={`item-image-${selectedItem.id}`}
-													>
-														<span className="sr-only">
-															Selecionar imagem para {selectedItem.name}
-														</span>
-													</label>
+											<FileUploadTrigger
+												className="w-full gap-2"
+												inputId={`item-image-${selectedItem.id}`}
+												label={
+													selectedItemDraft.imageUrl
+														? "Trocar imagem"
+														: "Enviar imagem"
 												}
-												type="button"
 												variant="outline"
-											>
-												<ImageIcon className="size-4" />
-												{selectedItemDraft.imageUrl
-													? "Trocar imagem"
-													: "Enviar imagem"}
-											</Button>
+											/>
 											<Button
 												className="w-full"
 												disabled={!selectedItemDraft.imageUrl}
@@ -842,6 +845,7 @@ export function StaffMenuItemsPage(props: {
 														...currentDrafts,
 														[selectedItem.id]: {
 															...selectedItemDraft,
+															imageStorageKey: null,
 															imageUrl: null,
 														},
 													}))

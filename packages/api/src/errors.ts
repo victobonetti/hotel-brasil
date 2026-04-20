@@ -1,5 +1,6 @@
 import { CatalogAdminServiceError } from "./services/catalog-admin-service";
 import { GuestSessionServiceError } from "./services/guest-session-service";
+import { HotelOnboardingServiceError } from "./services/hotel-onboarding-service";
 import { MenuServiceError } from "./services/menu-service";
 import { OrderServiceError } from "./services/order-service";
 import { RoomAdminServiceError } from "./services/room-admin-service";
@@ -17,6 +18,7 @@ function getErrorCode(error: unknown) {
 	if (
 		error instanceof CatalogAdminServiceError ||
 		error instanceof GuestSessionServiceError ||
+		error instanceof HotelOnboardingServiceError ||
 		error instanceof MenuServiceError ||
 		error instanceof OrderServiceError ||
 		error instanceof RoomAdminServiceError
@@ -123,6 +125,30 @@ export function mapDomainErrorToUserMessage(
 					"Sua conta está autenticada, mas ainda não possui acesso a um hotel válido.",
 				retryable: false,
 				title: "Acesso indisponível",
+			};
+		case "ALREADY_HAS_HOTEL":
+			return {
+				code,
+				message:
+					"Sua conta jÃ¡ possui um hotel vinculado. Vamos abrir o painel existente.",
+				retryable: false,
+				title: "Hotel jÃ¡ configurado",
+			};
+		case "INVALID_HOTEL_ONBOARDING":
+			return {
+				code,
+				message:
+					"Revise os dados obrigatÃ³rios do hotel antes de concluir o cadastro inicial.",
+				retryable: true,
+				title: "Cadastro incompleto",
+			};
+		case "SLUG_CONFLICT":
+			return {
+				code,
+				message:
+					"Esse identificador do hotel jÃ¡ estÃ¡ em uso. Escolha outro slug para continuar.",
+				retryable: true,
+				title: "Slug indisponÃ­vel",
 			};
 		case "UNAUTHORIZED_ROLE":
 			return {

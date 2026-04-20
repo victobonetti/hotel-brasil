@@ -1,9 +1,9 @@
 import { Suspense } from "react";
+
 import { parsePageParam } from "~/app/_components/pagination-state";
 import { getStaffShellContext } from "~/app/_components/staff-shell-context";
+import { OperationalDashboardPage } from "~/app/staff/orders/_components/operational-dashboard-page";
 import { HydrateClient, prefetch, trpc } from "~/trpc/server";
-
-import { OperationalDashboardPage } from "./_components/operational-dashboard-page";
 
 async function StaffOrdersData(props: {
 	searchParams?: Promise<Record<string, string | Array<string> | undefined>>;

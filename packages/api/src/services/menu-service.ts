@@ -24,6 +24,7 @@ export interface MenuItemSummary {
 	description: string | null;
 	hotelId: string;
 	id: string;
+	imageStorageKey?: string | null;
 	imageUrl: string | null;
 	name: string;
 	preparationTimeMinutes: number | null;
@@ -41,6 +42,7 @@ export interface MenuCategoryWithItems {
 export interface MenuItemView {
 	description: string | null;
 	id: string;
+	imageStorageKey?: string | null;
 	imageUrl: string | null;
 	name: string;
 	preparationTimeMinutes: number | null;
@@ -171,6 +173,7 @@ export async function getMenuForGuestSession(
 		categoryItems.push({
 			description: item.description,
 			id: item.id,
+			imageStorageKey: item.imageStorageKey,
 			imageUrl: item.imageUrl,
 			name: item.name,
 			preparationTimeMinutes: item.preparationTimeMinutes,

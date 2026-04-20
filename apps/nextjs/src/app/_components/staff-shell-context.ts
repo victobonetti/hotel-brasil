@@ -1,6 +1,4 @@
-import { db } from "@nowait24/db/client";
-
-import { getSession } from "~/auth/server";
+import { getStaffAccessContext } from "./staff-access-context";
 
 export interface StaffShellContext {
 	hotelName: string;
@@ -9,33 +7,15 @@ export interface StaffShellContext {
 }
 
 export async function getStaffShellContext(): Promise<StaffShellContext | null> {
-	const session = await getSession();
+	const access = await getStaffAccessContext();
 
-	if (!session) {
-		return null;
-	}
-
-	const membership = await db.query.staffUserHotels.findFirst({
-		columns: {
-			role: true,
-		},
-		where: (table, { eq }) => eq(table.userId, session.user.id),
-		with: {
-			hotel: {
-				columns: {
-					name: true,
-				},
-			},
-		},
-	});
-
-	if (!membership) {
+	if (!access.session || !access.membership || !access.userName) {
 		return null;
 	}
 
 	return {
-		hotelName: membership.hotel.name,
-		role: membership.role,
-		userName: session.user.name ?? session.user.email,
+		hotelName: access.membership.hotelName,
+		role: access.membership.role,
+		userName: access.userName,
 	};
 }

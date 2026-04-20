@@ -3,6 +3,28 @@
 export const ITEM_IMAGE_SIZE = 200;
 export const MAX_ITEM_IMAGE_DATA_URL_LENGTH = 200_000;
 
+function encodeStorageKeySegment(segment: string) {
+	return encodeURIComponent(segment);
+}
+
+export function buildMenuImageProxyUrl(storageKey: string) {
+	return `/api/storage/menu-images/object/${storageKey
+		.split("/")
+		.map((segment) => encodeStorageKeySegment(segment))
+		.join("/")}`;
+}
+
+export function resolveMenuItemImageSrc(input: {
+	imageStorageKey?: string | null;
+	imageUrl?: string | null;
+}) {
+	if (input.imageStorageKey) {
+		return buildMenuImageProxyUrl(input.imageStorageKey);
+	}
+
+	return input.imageUrl ?? null;
+}
+
 export function getCenteredSquareCrop(width: number, height: number) {
 	const size = Math.min(width, height);
 
@@ -65,11 +87,11 @@ export async function uploadProcessedMenuItemImage(file: File) {
 		method: "POST",
 	});
 
-	type UploadMenuItemImageResponse = {
+	interface UploadMenuItemImageResponse {
 		error?: string;
 		key?: string;
 		url?: string;
-	};
+	}
 
 	let payload: UploadMenuItemImageResponse | null = null;
 	try {
@@ -95,7 +117,7 @@ function readFileAsDataUrl(file: File) {
 		const reader = new FileReader();
 
 		reader.onload = () => {
-			const result = reader.result;
+			const { result } = reader;
 			if (typeof result !== "string") {
 				reject(new Error("Nao foi possivel ler a imagem selecionada."));
 				return;

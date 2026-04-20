@@ -1,9 +1,12 @@
-// biome-ignore lint/correctness/noUnusedImports: Import env files to validate at build time
 import { env } from "@nowait24/utils/env";
 import type { NextConfig } from "next/types";
+import { getRemoteImagePatterns } from "./src/image-config";
 
 const config: NextConfig = {
 	cacheComponents: true,
+	images: {
+		remotePatterns: getRemoteImagePatterns(env.STORAGE_PUBLIC_BASE_URL),
+	},
 	/** Enables hot reloading for local packages without a build step */
 	transpilePackages: [
 		"@nowait24/api",

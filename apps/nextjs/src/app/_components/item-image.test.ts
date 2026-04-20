@@ -1,9 +1,11 @@
 import { describe, expect, test } from "bun:test";
 
 import {
+	buildMenuImageProxyUrl,
 	getCenteredSquareCrop,
 	ITEM_IMAGE_SIZE,
 	processedImageDataUrlToFile,
+	resolveMenuItemImageSrc,
 	uploadProcessedMenuItemImage,
 	validateProcessedImageDataUrl,
 } from "./item-image";
@@ -40,6 +42,30 @@ describe("item-image helpers", () => {
 		expect(file.type).toBe("image/webp");
 		expect(file.name).toBe("menu-item-image.webp");
 		expect(Buffer.from(await file.arrayBuffer()).toString("utf8")).toBe("foo");
+	});
+
+	test("builds a proxy url for storage-backed menu images", () => {
+		expect(buildMenuImageProxyUrl("menu-items/hotel 1/item.webp")).toBe(
+			"/api/storage/menu-images/object/menu-items/hotel%201/item.webp",
+		);
+	});
+
+	test("prefers the proxy route when a storage key is available", () => {
+		expect(
+			resolveMenuItemImageSrc({
+				imageStorageKey: "menu-items/hotel-1/item.webp",
+				imageUrl: "https://cdn.example.com/menu-items/hotel-1/item.webp",
+			}),
+		).toBe("/api/storage/menu-images/object/menu-items/hotel-1/item.webp");
+	});
+
+	test("falls back to the raw image url when there is no storage key", () => {
+		expect(
+			resolveMenuItemImageSrc({
+				imageStorageKey: null,
+				imageUrl: "data:image/webp;base64,Zm9v",
+			}),
+		).toBe("data:image/webp;base64,Zm9v");
 	});
 
 	test("uploads the processed image through the app route", async () => {

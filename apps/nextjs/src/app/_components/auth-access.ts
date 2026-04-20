@@ -11,8 +11,8 @@ export function getStaffAccessSummary(
 			canAccessCatalog: false,
 			canAccessOrders: false,
 			description:
-				"Sua conta esta autenticada, mas ainda nao foi vinculada a um hotel. Peca para um admin criar sua associacao de staff.",
-			title: "Aguardando vinculacao a um hotel",
+				"Sua conta esta pronta para iniciar. Conclua o cadastro do hotel para liberar o painel e configurar a operacao.",
+			title: "Concluir setup do hotel",
 		};
 	}
 

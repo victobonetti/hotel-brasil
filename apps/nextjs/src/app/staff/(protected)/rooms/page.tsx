@@ -1,23 +1,23 @@
 import { Suspense } from "react";
+
 import { getStaffShellContext } from "~/app/_components/staff-shell-context";
+import { StaffRoomsPage } from "~/app/staff/rooms/_components/staff-rooms-page";
 import { HydrateClient } from "~/trpc/server";
 
-import { StaffMenuPage } from "./_components/staff-menu-page";
-
-async function StaffMenuData() {
+async function StaffRoomsData() {
 	const staffContext = await getStaffShellContext();
 
 	return (
 		<HydrateClient>
-			<StaffMenuPage staffContext={staffContext} />
+			<StaffRoomsPage staffContext={staffContext} />
 		</HydrateClient>
 	);
 }
 
-export default function StaffMenuRoute() {
+export default function StaffRoomsRoute() {
 	return (
 		<Suspense>
-			<StaffMenuData />
+			<StaffRoomsData />
 		</Suspense>
 	);
 }

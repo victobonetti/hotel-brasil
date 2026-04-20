@@ -1,12 +1,11 @@
-import { db } from "@nowait24/db/client";
-
-import { getSession } from "~/auth/server";
 import { getStaffAccessSummary } from "./auth-access";
 import { AuthShowcaseSignedInView } from "./auth-showcase-view";
 import { GoogleSignInButton } from "./google-sign-in-button";
+import { getStaffAccessContext } from "./staff-access-context";
 
 export async function AuthShowcase() {
-	const session = await getSession();
+	const accessContext = await getStaffAccessContext();
+	const { session } = accessContext;
 
 	if (!session) {
 		return (
@@ -18,24 +17,11 @@ export async function AuthShowcase() {
 		);
 	}
 
-	const membership = await db.query.staffUserHotels.findFirst({
-		columns: {
-			role: true,
-		},
-		where: (table, { eq }) => eq(table.userId, session.user.id),
-		with: {
-			hotel: {
-				columns: {
-					name: true,
-				},
-			},
-		},
-	});
 	const access = getStaffAccessSummary(
-		membership
+		accessContext.membership
 			? {
-					hotelName: membership.hotel.name,
-					role: membership.role,
+					hotelName: accessContext.membership.hotelName,
+					role: accessContext.membership.role,
 				}
 			: null,
 	);
