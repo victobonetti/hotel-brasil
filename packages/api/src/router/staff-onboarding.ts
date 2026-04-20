@@ -11,6 +11,26 @@ import {
 import { protectedProcedure } from "../trpc";
 import { findStaffMembershipWithHotelByUserId } from "./staff-membership";
 
+function isDatabaseSchemaOutdatedError(error: unknown) {
+	if (typeof error !== "object" || error === null) {
+		return false;
+	}
+
+	const code =
+		"code" in error && typeof error.code === "string" ? error.code : "";
+	const message =
+		"message" in error && typeof error.message === "string"
+			? error.message
+			: "";
+
+	return (
+		code === "42703" ||
+		code === "42P01" ||
+		/column .+ does not exist/i.test(message) ||
+		/relation .+ does not exist/i.test(message)
+	);
+}
+
 function mapHotelOnboardingError(error: unknown): never {
 	if (error instanceof HotelOnboardingServiceError) {
 		const userMessage = mapDomainErrorToUserMessage(error, "staff");
@@ -25,6 +45,17 @@ function mapHotelOnboardingError(error: unknown): never {
 				message: userMessage.message,
 			});
 		}
+	}
+
+	if (isDatabaseSchemaOutdatedError(error)) {
+		const userMessage = mapDomainErrorToUserMessage(
+			{ code: "DATABASE_SCHEMA_OUTDATED" },
+			"staff",
+		);
+		throw new TRPCError({
+			code: "INTERNAL_SERVER_ERROR",
+			message: userMessage.message,
+		});
 	}
 
 	const fallback = mapDomainErrorToUserMessage(error, "staff");

@@ -99,4 +99,43 @@ describe("staffOnboardingRouter", () => {
 		});
 		expect(insertedTables).toBe(2);
 	});
+
+	test("createInitialHotel exposes a clear error when the database schema is outdated", async () => {
+		const caller = await createCallerWithDb({
+			query: {
+				hotels: {
+					findFirst: async () => null,
+				},
+				staffUserHotels: {
+					findFirst: async () => null,
+				},
+			},
+			transaction: async () => {
+				throw Object.assign(
+					new Error('column "addressLine" of relation "hotel" does not exist'),
+					{
+						code: "42703",
+					},
+				);
+			},
+		});
+
+		await expect(
+			caller.staffOnboarding.createInitialHotel({
+				addressLine: "Rua A, 10",
+				city: "Rio de Janeiro",
+				country: "Brasil",
+				currency: "BRL",
+				email: "reservas@hotelbrasil.com",
+				hotelName: "Hotel Brasil",
+				phone: "+55 21 99999-0000",
+				slug: "hotel-brasil",
+				state: "RJ",
+				timezone: "America/Sao_Paulo",
+			}),
+		).rejects.toMatchObject({
+			code: "INTERNAL_SERVER_ERROR",
+			message: expect.stringContaining("banco de dados local"),
+		});
+	});
 });

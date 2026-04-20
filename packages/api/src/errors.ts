@@ -1,10 +1,3 @@
-import { CatalogAdminServiceError } from "./services/catalog-admin-service";
-import { GuestSessionServiceError } from "./services/guest-session-service";
-import { HotelOnboardingServiceError } from "./services/hotel-onboarding-service";
-import { MenuServiceError } from "./services/menu-service";
-import { OrderServiceError } from "./services/order-service";
-import { RoomAdminServiceError } from "./services/room-admin-service";
-
 export type UserFacingAudience = "guest" | "staff";
 
 export interface UserFacingErrorMessage {
@@ -15,17 +8,6 @@ export interface UserFacingErrorMessage {
 }
 
 function getErrorCode(error: unknown) {
-	if (
-		error instanceof CatalogAdminServiceError ||
-		error instanceof GuestSessionServiceError ||
-		error instanceof HotelOnboardingServiceError ||
-		error instanceof MenuServiceError ||
-		error instanceof OrderServiceError ||
-		error instanceof RoomAdminServiceError
-	) {
-		return error.code;
-	}
-
 	if (
 		typeof error === "object" &&
 		error !== null &&
@@ -149,6 +131,14 @@ export function mapDomainErrorToUserMessage(
 					"Esse identificador do hotel jÃ¡ estÃ¡ em uso. Escolha outro slug para continuar.",
 				retryable: true,
 				title: "Slug indisponÃ­vel",
+			};
+		case "DATABASE_SCHEMA_OUTDATED":
+			return {
+				code,
+				message:
+					"O banco de dados local está desatualizado para concluir esse cadastro. Aplique as mudanças de schema e tente novamente.",
+				retryable: true,
+				title: "Banco desatualizado",
 			};
 		case "UNAUTHORIZED_ROLE":
 			return {
